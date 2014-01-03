@@ -42,7 +42,7 @@ void PrepareScreen::on_refresh()
     }
 }
 
-/***************** ORIGINAL EDGE
+/***************** ORIGINAL EDGE **/
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
@@ -72,8 +72,8 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
             //case 8: this->panel->enter_screen(this->temp_screen      ); break;
     }
 }
-*/
-/***************** ZMORPH EDGE *************/
+
+/***************** ZMORPH EDGE *************
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
@@ -107,6 +107,7 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
             //case 8: this->panel->enter_screen(this->temp_screen      ); break;
     }
 }
+*/
 void PrepareScreen::preheat()
 {
     float t = panel->get_default_hotend_temp();
