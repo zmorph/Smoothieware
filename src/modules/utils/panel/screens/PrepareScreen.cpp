@@ -42,13 +42,16 @@ void PrepareScreen::on_refresh()
     }
 }
 
+<<<<<<< HEAD
 /***************** ORIGINAL EDGE **/
+=======
+/***************** ORIGINAL EDGE */
+>>>>>>> 7bbe401d58a0b19d1581c7a93fed04f88ee60c23
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: this->panel->lcd->printf("Back"           ); break;
         case 1: this->panel->lcd->printf("Home All Axis"  ); break;
-        case 2: this->panel->lcd->printf("Set Home"       ); break;
         case 3: this->panel->lcd->printf("Set Z0"         ); break;
         case 4: this->panel->lcd->printf("Pre Heat"       ); break;
         case 5: this->panel->lcd->printf("Cool Down"      ); break;
