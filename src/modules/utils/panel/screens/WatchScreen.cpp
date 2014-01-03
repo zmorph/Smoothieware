@@ -244,7 +244,7 @@ const char *WatchScreen::get_status()
 
     const char *ip = get_network();
     if (ip == NULL) {
-        return "Smoothie ready";
+        return "ZMorph ready";
     } else {
         return ip;
     }
