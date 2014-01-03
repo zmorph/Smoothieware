@@ -42,13 +42,12 @@ void PrepareScreen::on_refresh()
     }
 }
 
-/***************** ORIGINAL EDGE
+/***************** ORIGINAL EDGE */
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: this->panel->lcd->printf("Back"           ); break;
         case 1: this->panel->lcd->printf("Home All Axis"  ); break;
-        case 2: this->panel->lcd->printf("Set Home"       ); break;
         case 3: this->panel->lcd->printf("Set Z0"         ); break;
         case 4: this->panel->lcd->printf("Pre Heat"       ); break;
         case 5: this->panel->lcd->printf("Cool Down"      ); break;
@@ -72,8 +71,8 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
             //case 8: this->panel->enter_screen(this->temp_screen      ); break;
     }
 }
-*/
-/***************** ZMORPH EDGE *************/
+
+/***************** ZMORPH EDGE *************
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
@@ -107,6 +106,7 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
             //case 8: this->panel->enter_screen(this->temp_screen      ); break;
     }
 }
+*/
 void PrepareScreen::preheat()
 {
     float t = panel->get_default_hotend_temp();

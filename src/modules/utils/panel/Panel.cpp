@@ -242,8 +242,8 @@ void Panel::on_idle(void *argument)
         this->lcd->clear();
         this->lcd->setCursor(0, 0); this->lcd->printf("Welcome to ZMorph 3D");
         //this->lcd->setCursor(0, 1); this->lcd->printf("%s", build.substr(0, 20).c_str());
-		this->lcd->setCursor(0, 1); this->lcd->printf("All-time best");
-		this->lcd->setCursor(0, 2); this->lcd->printf("          3D printer");
+		this->lcd->setCursor(0, 1); this->lcd->printf("Personal Fabricator");
+		this->lcd->setCursor(0, 2); this->lcd->printf("          ");
         this->lcd->setCursor(0, 3); this->lcd->printf("%s", date.substr(0, 20).c_str());
         this->lcd->setCursor(0, 4); this->lcd->printf("Please wait....");
 
