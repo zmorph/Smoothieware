@@ -42,11 +42,6 @@ void PrepareScreen::on_refresh()
     }
 }
 
-<<<<<<< HEAD
-/***************** ORIGINAL EDGE **/
-=======
-/***************** ORIGINAL EDGE */
->>>>>>> 7bbe401d58a0b19d1581c7a93fed04f88ee60c23
 void PrepareScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {

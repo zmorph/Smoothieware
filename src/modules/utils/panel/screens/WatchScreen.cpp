@@ -244,7 +244,7 @@ const char *WatchScreen::get_status()
 
     const char *ip = get_network();
     if (ip == NULL) {
-        return "ZMorph ready";
+        return "ZMorph3D ready";
     } else {
         return ip;
     }
