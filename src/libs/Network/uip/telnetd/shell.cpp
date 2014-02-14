@@ -182,6 +182,11 @@ static void unknown(char *str, Shell *sh)
     if (strlen(str) > 0) {
         CommandQueue::getInstance()->add(str, sh->getStream());
     }
+/*
+    if(CommandQueue::getInstance()->size() > UIP_CONF_TELNET_MAXQUEUE) {
+        DEBUG_PRINTF("Telnet: stopped: %d\n", CommandQueue::getInstance()->size());
+        uip_stop();
+    }*/
 }
 /*---------------------------------------------------------------------------*/
 static struct ptentry parsetab[] = {

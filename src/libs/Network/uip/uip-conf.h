@@ -106,7 +106,7 @@ typedef unsigned short uip_stats_t;
  */
 #define UIP_CONF_BUFFER_SIZE     400
 
-#define UIP_CONF_BROADCAST 1
+#define UIP_CONF_BROADCAST 0
 
 /**
  * CPU byte order.
@@ -127,7 +127,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP             1
+#define UIP_CONF_UDP             0
 #define UIP_CONF_UDP_CONNS 4
 /**
  * UDP checksums on or off
@@ -142,6 +142,16 @@ typedef unsigned short uip_stats_t;
  * \hideinitializer
  */
 #define UIP_CONF_STATISTICS      0
+
+/*========================================/
+ 		ZMORPH custom settings
+*/
+
+#define UIP_CONF_TELNET_MAXQUEUE 30
+#define UIP_CONF_TELENT_RESUMEQUEUE 10
+
+/*		ZMORPH custom settings end
+==========================================*/
 
 #ifdef __cplusplus
 extern "C" void app_select_appcall(void);

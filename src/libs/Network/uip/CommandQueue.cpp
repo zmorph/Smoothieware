@@ -54,10 +54,14 @@ bool CommandQueue::pop()
     struct SerialMessage message;
     message.message = cmd;
     message.stream = c.pstream;
-
+    ///////////////////////ZMORPHDEBUG
+    printf("qsize: %d command: %s\n calling...\n ", q.size(), cmd);
+    ///////////////////////ZMORPHDEBUGEND
     free(cmd);
     THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message );
-
+    ///////////////////////ZMORPHDEBUG
+    printf("command executed\n");
+    ///////////////////////ZMORPHDEBUGEND
     if(message.stream != null_stream) {
         message.stream->puts(NULL); // indicates command is done
         // decrement usage count

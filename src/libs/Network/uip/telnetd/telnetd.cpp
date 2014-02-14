@@ -312,7 +312,7 @@ void Telnetd::newdata(void)
     }
 
     // if the command queue is getting too big we stop TCP
-    if(shell->queue_size() > 20) {
+    if(shell->queue_size() > UIP_CONF_TELNET_MAXQUEUE) {
         DEBUG_PRINTF("Telnet: stopped: %d\n", shell->queue_size());
         uip_stop();
     }
@@ -396,7 +396,7 @@ void Telnetd::appcall(void)
         instance->senddata();
     }
 
-    if(uip_poll() && uip_stopped(uip_conn) && instance->shell->queue_size() < 5) {
+    if(uip_poll() && uip_stopped(uip_conn) && instance->shell->queue_size() < UIP_CONF_TELENT_RESUMEQUEUE) {
         DEBUG_PRINTF("restarted %d - %p\n", instance->shell->queue_size(), instance);
         uip_restart();
     }
