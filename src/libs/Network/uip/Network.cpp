@@ -18,6 +18,7 @@
 #include "webserver.h"
 #include "dhcpc.h"
 #include "sftpd.h"
+#include "wait_api.h"
 
 
 #include <mri.h>
@@ -42,6 +43,7 @@ Network::Network()
     theNetwork= this;
     sftpd= NULL;
     instance= this;
+    isDownloading = false;
 }
 
 Network::~Network()
@@ -191,11 +193,28 @@ void Network::on_idle(void *argument)
     if (!ethernet->isUp()) return;
 
     int len;
-    if (ethernet->_receive_frame(uip_buf, &len)) {
+    int count = 0;
+    //printf("Before recieve...\n");
+    bool recieved = false;
+    while (isDownloading && count++<10000)
+        if (ethernet->_receive_frame(uip_buf, &len))
+        {
+            count=0;
+            //printf("recieved! length: %d\n", len);
+            uip_len = len;
+            this->handlePacket();
+            recieved = true;
+            //wait_us(1);
+        }
+    //printf("After recieve.\n");
+    isDownloading = false;
+    if (ethernet->_receive_frame(uip_buf, &len))
+    {
         uip_len = len;
         this->handlePacket();
-
-    } else {
+        recieved = true;
+    }
+    if (!recieved) {
 
         if (timer_expired(&periodic_timer)) { /* no packet but periodic_timer time out (0.1s)*/
             timer_reset(&periodic_timer);

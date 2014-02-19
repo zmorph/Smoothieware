@@ -933,7 +933,7 @@ uip_process(u8_t flag)
             uip_ipaddr_cmp(BUF->destipaddr, all_ones_addr)
             /*&&
             uip_ipchksum() == 0xffff*/) {
-            goto udp_input;
+            goto udp_input; 
         }
 #endif /* UIP_BROADCAST */
 

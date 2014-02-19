@@ -3,6 +3,7 @@
 #include "sftpd.h"
 #include "string.h"
 #include "stdlib.h"
+#include "Network.h"
 
 extern "C" {
 #include "uip.h"
@@ -53,7 +54,12 @@ int Sftpd::handle_command()
             if (strncmp(buf, "USER", 4) == 0) {
                 outbuf = "!user logged in\n";
 
-            } else if (strncmp(buf, "KILL", 4) == 0) {
+            }  else if (strncmp(buf, "LOCK", 4) == 0)
+                {
+                    outbuf = "+ ok, upload lock engaged\n";
+                    Network::getInstance()->isDownloading = true;                    
+                }
+                else if (strncmp(buf, "KILL", 4) == 0) {
                 if (len < 6) {
                     outbuf = "- incomplete KILL command\n";
                 } else {
@@ -144,6 +150,7 @@ int Sftpd::handle_download()
             fclose(fd);
             fd = NULL;
             outbuf = "- Error saving file\n";
+            Network::getInstance()->isDownloading = false;
             state = STATE_CONNECTED;
             return 0;
         }
@@ -160,6 +167,7 @@ int Sftpd::handle_download()
         fd = NULL;
         outbuf = "+ Saved file\n";
         state = STATE_CONNECTED;
+        Network::getInstance()->isDownloading = false;
         return 0;
     }
     return 1;
