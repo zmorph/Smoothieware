@@ -72,6 +72,8 @@ private:
 
     bool first_time;
 
+    bool reporting_buffer;
+
     int sendline(char *line);
     void acked(void);
     void senddata(void);

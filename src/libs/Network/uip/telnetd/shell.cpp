@@ -188,6 +188,13 @@ static void unknown(char *str, Shell *sh)
         uip_stop();
     }*/
 }
+
+static void bufferinfo(char *str, Shell *sh)
+{
+    char resp[15];
+    sprintf(resp, "buffer: %d\n", UIP_CONF_TELNET_MAXQUEUE - sh->queue_size()-1);
+    sh->output(resp);
+}
 /*---------------------------------------------------------------------------*/
 static struct ptentry parsetab[] = {
     {CHECKSUM("netstat"), connections},
@@ -195,6 +202,7 @@ static struct ptentry parsetab[] = {
     {CHECKSUM("quit"), quit},
     {CHECKSUM("test"), test},
     {CHECKSUM("?"), help},
+    {CHECKSUM("buffer"), bufferinfo},
 
     /* Default action */
     {0, unknown}

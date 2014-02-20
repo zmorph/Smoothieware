@@ -334,6 +334,7 @@ Telnetd::Telnetd()
         lines[i] = NULL;
     }
 
+    reporting_buffer = false;
     first_time= true;
     bufptr = 0;
     state = STATE_NORMAL;
