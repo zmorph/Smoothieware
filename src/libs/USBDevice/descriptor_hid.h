@@ -42,7 +42,7 @@
 #define HID_UNIT_EXPONENT(size)     (0x54 | size)
 #define HID_UNIT(size)              (0x64 | size)
 #define HID_REPORT_SIZE(size)       (0x74 | size)
-#define HID_EPORT_COUNT(size)      (0x94 | size)
+#define HID_REPORT_COUNT(size)      (0x94 | size)
 #define HID_PUSH(size)              (0xa4 | size)
 #define HID_POP(size)               (0xb4 | size)
 
@@ -79,7 +79,6 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t bNumDescriptors;
 	uint8_t bDescriptorType2;
 	uint16_t wDescriptorLength;
-	uint8_t dummy1; uint8_t dummy2; uint8_t dummy3; 
 } usbhid_report;
 
 #endif

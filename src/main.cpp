@@ -35,6 +35,7 @@
 #include "libs/USBDevice/USBMSD/SDCard.h"
 #include "libs/USBDevice/USBSerial/USBSerial.h"
 #include "libs/USBDevice/USBHID/USBMessageStream.h"
+//#include "libs/USBDevice/USBHID/USBMouse.h"
 #include "libs/USBDevice/DFU.h"
 #include "libs/SDFAT.h"
 
@@ -58,6 +59,7 @@ USBMessageStream usbmessagestream(&u);
 //USBMSD msc(&u, &sd);
 //USBMSD *msc= NULL;
 DFU dfu(&u);
+//USBMouse mouse(&u);
 
 SDFAT mounter("sd", &sd);
 
@@ -128,6 +130,7 @@ int main() {
     //kernel->add_module( &msc );
     //kernel->add_module( &usbserial );
     kernel->add_module( &usbmessagestream );
+    //kernel->add_module( &mouse );
     //if( kernel->config->value( second_usb_serial_enable_checksum )->by_default(false)->as_bool() ){
     //    kernel->add_module( new USBSerial(&u) );
     //}

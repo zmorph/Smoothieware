@@ -53,6 +53,8 @@ protected:
     uint8_t output_length;
     uint8_t input_length;
 
+    uint8_t * entireHIDdescriptor();
+
 };
 
 #endif
