@@ -27,11 +27,13 @@ protected:
     bool read(HID_REPORT * report);
 	bool readNB(HID_REPORT * report);
 
-	// not yet sure what should the following do:
+	// not yet sure what should the following do, but they are enforced:
     virtual bool USBEvent_Request(CONTROL_TRANSFER&);
-    //virtual bool USBEvent_RequestComplete(CONTROL_TRANSFER&, uint8_t*, uint32_t);
-    virtual bool USBEvent_EPIn(uint8_t, uint8_t);
-    virtual bool USBEvent_EPOut(uint8_t, uint8_t);
+    virtual bool USBEvent_RequestComplete(CONTROL_TRANSFER&, uint8_t*, uint32_t);
+    
+    // ain't got no default actions for ins and outs
+    //virtual bool USBEvent_EPIn(uint8_t, uint8_t);
+    //virtual bool USBEvent_EPOut(uint8_t, uint8_t);
 
 
     virtual uint8_t * reportDesc();

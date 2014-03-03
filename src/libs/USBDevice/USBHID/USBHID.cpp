@@ -207,3 +207,9 @@ uint16_t USBHID::reportDescLength() {
     reportDesc();
     return reportLength;
 }
+
+
+bool USBMSD::USBEvent_RequestComplete(CONTROL_TRANSFER &transfer, uint8_t *buf, uint32_t length)
+{
+    return true;
+}
