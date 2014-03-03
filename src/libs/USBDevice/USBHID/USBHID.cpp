@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "USBHID.h"
+#include "libs/Kernel.h"
 
 #define iprintf(...) do { } while (0)
 
@@ -31,7 +32,7 @@ USBHID::USBHID(USB *u, uint8_t output_report_length, uint8_t input_report_length
         this,                       // callback
     };
 
-    HID_report_descriptor = {
+    HID_hid_descriptor = {
     	HID_DESCRIPTOR_LENGTH,          // bLength
         HID_DESCRIPTOR,                 // bDescriptorType
         HID_VERSION_1_11,          		// wcdHID
@@ -39,11 +40,12 @@ USBHID::USBHID(USB *u, uint8_t output_report_length, uint8_t input_report_length
         0x01,                           // bNumDescriptors
         HID_REPORT_DESCRIPTOR,          // bDescriptorType
         this->reportDescLength(),  		// wDescriptorLength
+        0,0,0 //padding
     };
 
     HID_endpoint_in = {
 		DL_ENDPOINT,     				// bLength
-        DL_ENDPOINT,            		// bDescriptorType
+        DT_ENDPOINT,            		// bDescriptorType
         EP_DIR_IN,          			// bEndpointAddress: we provide direction, address is filled in by addEndpoint()
         EA_INTERRUPT,                   // bmAttributes
         MAX_PACKET_SIZE_EPINT,     		// wMaxPacketSize
@@ -54,7 +56,7 @@ USBHID::USBHID(USB *u, uint8_t output_report_length, uint8_t input_report_length
 
     HID_endpoint_out = {
 		DL_ENDPOINT,     				// bLength
-        DL_ENDPOINT,            		// bDescriptorType
+        DT_ENDPOINT,            		// bDescriptorType
         EP_DIR_OUT,          			// bEndpointAddress: we provide direction, address is filled in by addEndpoint()
         EA_INTERRUPT,                   // bmAttributes
         MAX_PACKET_SIZE_EPINT,     		// wMaxPacketSize
@@ -63,12 +65,13 @@ USBHID::USBHID(USB *u, uint8_t output_report_length, uint8_t input_report_length
         this,                  			// endpoint callback        
     };
 
-    usbdesc_string_l(16) s = usbstring("Smoothie HID");
+    usbdesc_string_l(13) s = usbstring("Smoothie HID");
     memcpy(&HID_description, &s, sizeof(HID_description));
 
     usb->addInterface(&HID_interface);
 
-    usb->addDescriptor(&HID_report_descriptor);
+    usb->addDescriptor(&HID_hid_descriptor);
+	usb->addDescriptor(reportDesc());
 
     usb->addEndpoint(&HID_endpoint_in);
     usb->addEndpoint(&HID_endpoint_out);
@@ -113,6 +116,8 @@ bool USBHID::readNB(HID_REPORT *report)
 
 bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
 
+	THEKERNEL->streams->printf("USBEvent_Request fired\n");
+
 	bool success = false;
 
     // Process additional standard requests
@@ -142,7 +147,7 @@ bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
                             //if (hidDescriptor != NULL)
                             //{
                                 transfer.remaining = HID_DESCRIPTOR_LENGTH;
-                                transfer.ptr = (uint8_t *) &HID_interface;
+                                transfer.ptr = (uint8_t *) &HID_hid_descriptor;
                                 transfer.direction = DEVICE_TO_HOST;
                                 success = true;
                             //}
@@ -209,7 +214,7 @@ uint16_t USBHID::reportDescLength() {
 }
 
 
-bool USBMSD::USBEvent_RequestComplete(CONTROL_TRANSFER &transfer, uint8_t *buf, uint32_t length)
+bool USBHID::USBEvent_RequestComplete(CONTROL_TRANSFER &transfer, uint8_t *buf, uint32_t length)
 {
     return true;
 }

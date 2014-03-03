@@ -79,6 +79,7 @@ typedef struct __attribute__ ((packed)) {
 	uint8_t bNumDescriptors;
 	uint8_t bDescriptorType2;
 	uint16_t wDescriptorLength;
+	uint8_t dummy1; uint8_t dummy2; uint8_t dummy3; 
 } usbhid_report;
 
 #endif

@@ -43,11 +43,11 @@ protected:
 
     // descriptors
     usbdesc_interface   HID_interface;
-    usbhid_report       HID_report_descriptor;
+    usbhid_report       HID_hid_descriptor;
     usbdesc_endpoint    HID_endpoint_in;
     usbdesc_endpoint    HID_endpoint_out;
 
-    usbdesc_string_l(15) HID_description;
+    usbdesc_string_l(12) HID_description;
 
     HID_REPORT outputReport;
     uint8_t output_length;

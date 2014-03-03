@@ -34,6 +34,7 @@
 #include "libs/USBDevice/USBMSD/USBMSD.h"
 #include "libs/USBDevice/USBMSD/SDCard.h"
 #include "libs/USBDevice/USBSerial/USBSerial.h"
+#include "libs/USBDevice/USBHID/USBMessageStream.h"
 #include "libs/USBDevice/DFU.h"
 #include "libs/SDFAT.h"
 
@@ -52,8 +53,9 @@ SDCard sd(P0_9, P0_8, P0_7, P0_6);      // this selects SPI1 as the sdcard as it
 //SDCard sd(P0_18, P0_17, P0_15, P0_16);  // this selects SPI0 as the sdcard
 
 USB u;
-USBSerial usbserial(&u);
-USBMSD msc(&u, &sd);
+//USBSerial usbserial(&u);
+USBMessageStream usbmessagestream(&u);
+//USBMSD msc(&u, &sd);
 //USBMSD *msc= NULL;
 DFU dfu(&u);
 
@@ -123,11 +125,12 @@ int main() {
     //     kernel->add_module( msc );
     // }
 
-    kernel->add_module( &msc );
-    kernel->add_module( &usbserial );
-    if( kernel->config->value( second_usb_serial_enable_checksum )->by_default(false)->as_bool() ){
-        kernel->add_module( new USBSerial(&u) );
-    }
+    //kernel->add_module( &msc );
+    //kernel->add_module( &usbserial );
+    kernel->add_module( &usbmessagestream );
+    //if( kernel->config->value( second_usb_serial_enable_checksum )->by_default(false)->as_bool() ){
+    //    kernel->add_module( new USBSerial(&u) );
+    //}
     kernel->add_module( &dfu );
     kernel->add_module( &u );
 
