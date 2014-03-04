@@ -172,7 +172,7 @@ bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
     if (transfer.setup.bmRequestType.Type == CLASS_TYPE)
     {
     	THEKERNEL->streams->printf("CLASS_TYPE request\n");
-    	THEKERNEL->streams->printf("request number: %d\n", transfer.setup.bRequest);
+    	THEKERNEL->streams->printf("request number: %u\n", transfer.setup.bRequest);
         switch (transfer.setup.bRequest)
         {
             case HID_REPORT_DESCRIPTOR:
@@ -244,8 +244,8 @@ bool USBHID::USBEvent_RequestComplete(CONTROL_TRANSFER &transfer, uint8_t *buf, 
 uint8_t * USBHID::entireHIDdescriptor()
 {
 	static uint8_t entiredescriptor[] = {		
+        0x1e,  // bDescriptorLength
         HID_REPORT_DESCRIPTOR,          // bDescriptorType
-        (uint8_t)this->reportDescLength(),  // wDescriptorLength (LSB)
         0x06, LSB(0xFFAB), MSB(0xFFAB),
         0x0A, LSB(0x0200), MSB(0x0200),
         0xA1, 0x01,         // Collection 0x01

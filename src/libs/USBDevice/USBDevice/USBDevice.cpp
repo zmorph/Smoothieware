@@ -27,8 +27,11 @@
 #include "USBDevice.h"
 #include "USBDescriptor.h"
 
+#include "libs/Kernel.h"
+#define iprintf THEKERNEL->streams->printf
+
 #define DEBUG 1
-#define printf iprintf
+//#define printf iprintf
 
 /* Device status */
 #define DEVICE_STATUS_SELF_POWERED  (1U<<0)
@@ -45,7 +48,7 @@
 #define WINDEX_TO_PHYSICAL(endpoint) (((endpoint & 0x0f) << 1) + \
     ((endpoint & 0x80) ? 1 : 0))
 
-#define iprintf(...)
+//#define iprintf(...)
 
 #define setled(a, b) do {} while (0)
 // extern void setled(int, bool);
@@ -191,6 +194,11 @@ bool USBDevice::requestGetDescriptor(void)
         }
         transfer.direction = DEVICE_TO_HOST;
         return true;
+    }
+    else {
+
+
+
     }
 
     return false;
@@ -601,8 +609,10 @@ bool USBDevice::controlSetup(void)
 #endif
 
     /* Class / vendor specific */
+    iprintf("before USBEvent_Request\n");
     if (!USBEvent_Request(transfer))
     {
+        iprintf("USBEvent_Request failure, trying requestSetup...");
         /* Standard requests */
         if (!requestSetup())
         {

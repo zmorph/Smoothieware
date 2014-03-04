@@ -18,9 +18,9 @@ void USBMessageStream::on_module_loaded()
 void USBMessageStream::on_main_loop(void *argument)
 {
 	// execute all pending messages
-	HID_REPORT recv_report;
+	/*HID_REPORT recv_report;
 	//THEKERNEL->streams->printf("befor puts");
-	//puts("sabaka to ja!\n");
+	//puts("sabaka");
 	//THEKERNEL->streams->printf("after puts");
 	while (readNB(&recv_report)) 
 	{
@@ -29,9 +29,12 @@ void USBMessageStream::on_main_loop(void *argument)
         struct SerialMessage message;
         // ZTODO the following conversion is dangerous - unsigned to signed
         message.message = string((const char *)recv_report.data);
+        if (message.message.find("sendme") != string::npos)
+        	puts("something");
         message.stream = this;
+        THEKERNEL->streams->printf("message: %s", message.message.c_str());
         THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message);
-	}
+	}*/
 }
 
 int USBMessageStream::puts(const char *str)
@@ -55,4 +58,19 @@ bool USBMessageStream::USBEvent_EPIn(uint8_t, uint8_t) {
 	return false;}
 bool USBMessageStream::USBEvent_EPOut(uint8_t, uint8_t) {
 	THEKERNEL->streams->printf("EPOut called!\n");
+	// execute all pending messages
+	HID_REPORT recv_report;
+	while (readNB(&recv_report)) 
+	{
+		THEKERNEL->streams->printf("I have recieved an HID report!\n");
+
+        struct SerialMessage message;
+        // ZTODO the following conversion is dangerous - unsigned to signed
+        message.message = string((const char *)recv_report.data);
+        if (message.message.find("sendme") != string::npos)
+        	puts("something");
+        message.stream = this;
+        THEKERNEL->streams->printf("message: %s", message.message.c_str());
+        THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message);
+	}
 	return false;}
