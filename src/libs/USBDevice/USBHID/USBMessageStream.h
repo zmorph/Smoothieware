@@ -16,6 +16,8 @@ class USBMessageStream : public USBHID, public Module, public StreamOutput
 public:
 	USBMessageStream(USB *);
 
+    int _putc(int c);
+    int _getc();
     int puts(const char *);
 	
     uint8_t available();

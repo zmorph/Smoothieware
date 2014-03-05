@@ -58,7 +58,7 @@ USB u;
 USBMessageStream usbmessagestream(&u);
 //USBMSD msc(&u, &sd);
 //USBMSD *msc= NULL;
-DFU dfu(&u);
+//DFU dfu(&u);
 //USBMouse mouse(&u);
 
 SDFAT mounter("sd", &sd);
@@ -134,7 +134,7 @@ int main() {
     //if( kernel->config->value( second_usb_serial_enable_checksum )->by_default(false)->as_bool() ){
     //    kernel->add_module( new USBSerial(&u) );
     //}
-    kernel->add_module( &dfu );
+ //   kernel->add_module( &dfu );
     kernel->add_module( &u );
 
     // clear up the config cache to save some memory

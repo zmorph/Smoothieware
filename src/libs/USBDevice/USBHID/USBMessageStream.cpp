@@ -7,6 +7,8 @@
 #include "libs/Kernel.h"
 #include "libs/SerialMessage.h"
 
+#define iprintf THEKERNEL->streams->printf
+
 USBMessageStream::USBMessageStream(USB *u) : USBHID(u, 64,64),
 	rxbuf(256 + 8), 
 	txbuf(128 + 8),
@@ -18,7 +20,7 @@ USBMessageStream::USBMessageStream(USB *u) : USBHID(u, 64,64),
 void USBMessageStream::on_module_loaded()
 {
     this->register_for_event(ON_MAIN_LOOP);
-    THEKERNEL->streams->append_stream(this);
+    //THEKERNEL->streams->append_stream(this);
 }
 
 uint8_t USBMessageStream::available()
@@ -30,10 +32,14 @@ void USBMessageStream::on_main_loop(void *argument)
 {
     if (nl_in_rx)
     {
+    	iprintf("on_main_loop: there is nl in rx\n");
+
         string received;
+        int idebug = 0;
         while (available())
         {
             char c = _getc();
+            iprintf("got char: %u number %d \n", c, idebug++);
             if( c == '\n' || c == '\r')
             {
                 struct SerialMessage message;
@@ -53,6 +59,8 @@ void USBMessageStream::on_main_loop(void *argument)
 
 int USBMessageStream::puts(const char *str)
 {
+	iprintf("UMS puts: %s\n", str);
+
     int i = 0;
     while (*str)
     {
@@ -213,4 +221,39 @@ bool USBMessageStream::USBEvent_EPOut(uint8_t bEP, uint8_t bEPStatus)
 	usb->readStart(HID_endpoint_out.bEndpointAddress, MAX_PACKET_SIZE_EPBULK);
     iprintf("USBMessageStream:EpOut Complete\n");
     return r;
+}
+
+int USBMessageStream::_putc(int c)
+{
+    ensure_tx_space(1);
+    txbuf.queue(c);
+
+    usb->endpointSetInterrupt(HID_endpoint_in.bEndpointAddress, true);
+    return 1;
+}
+
+int USBMessageStream::_getc()
+{
+    uint8_t c = 0;
+    //setled(4, 1); while (rxbuf.isEmpty()); setled(4, 0);
+    rxbuf.dequeue(&c);
+    if (rxbuf.free() == MAX_PACKET_SIZE_EPBULK)
+    {
+        usb->endpointSetInterrupt(HID_endpoint_out.bEndpointAddress, true);
+        iprintf("rxbuf has room for another packet, interrupt enabled\n");
+    }
+    else if ((rxbuf.free() < MAX_PACKET_SIZE_EPBULK) && (nl_in_rx == 0))
+    {
+        // handle potential deadlock where a short line, and the beginning of a very long line are bundled in one usb packet
+        rxbuf.flush();
+        flush_to_nl = true;
+
+        usb->endpointSetInterrupt(HID_endpoint_out.bEndpointAddress, true);
+        iprintf("rxbuf has room for another packet, interrupt enabled\n");
+    }
+    if (nl_in_rx > 0)
+        if (c == '\n' || c == '\r')
+            nl_in_rx--;
+
+    return c;
 }
