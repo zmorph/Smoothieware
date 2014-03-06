@@ -28,10 +28,11 @@
 #include "USBDescriptor.h"
 
 #include "libs/Kernel.h"
-#define iprintf THEKERNEL->streams->printf
+//#define iprintf THEKERNEL->streams->printf
+#define iprintf(...) do {} while(0)
 
 #define DEBUG 1
-//#define printf iprintf
+#define printf iprintf
 
 /* Device status */
 #define DEVICE_STATUS_SELF_POWERED  (1U<<0)

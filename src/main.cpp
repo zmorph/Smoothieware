@@ -56,7 +56,7 @@ SDCard sd(P0_9, P0_8, P0_7, P0_6);      // this selects SPI1 as the sdcard as it
 USB u;
 //USBSerial usbserial(&u);
 USBMessageStream usbmessagestream(&u);
-//USBMSD msc(&u, &sd);
+USBMSD msc(&u, &sd);
 //USBMSD *msc= NULL;
 //DFU dfu(&u);
 //USBMouse mouse(&u);
@@ -127,7 +127,7 @@ int main() {
     //     kernel->add_module( msc );
     // }
 
-    //kernel->add_module( &msc );
+    kernel->add_module( &msc );
     //kernel->add_module( &usbserial );
     kernel->add_module( &usbmessagestream );
     //kernel->add_module( &mouse );

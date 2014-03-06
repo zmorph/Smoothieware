@@ -120,7 +120,7 @@ USBMSD::USBMSD(USB *u, MSD_Disk *d) {
     };
 
     // because gcc-4.6 won't let us simply do MSC_Description = usbstring("Smoothie MSD")
-    usbdesc_string_l(13) us = usbstring("Smoothie MSD");
+    usbdesc_string_l(13) us = usbstring("ZMorph MSD");
     memcpy(&MSC_Description, &us, sizeof(MSC_Description));
 
     usb->addInterface(&MSC_Interface);

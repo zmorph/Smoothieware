@@ -7,7 +7,7 @@
 #include "libs/Kernel.h"
 #include "libs/SerialMessage.h"
 
-#define iprintf THEKERNEL->streams->printf
+#define iprintf(...) do {} while(0) //THEKERNEL->streams->printf
 
 USBMessageStream::USBMessageStream(USB *u) : USBHID(u, 64,64),
 	rxbuf(256 + 8), 
@@ -35,7 +35,7 @@ void USBMessageStream::on_main_loop(void *argument)
     	iprintf("on_main_loop: there is nl in rx\n");
 
         string received;
-        int idebug = 0;
+        //int idebug = 0;
         while (available())
         {
             char c = _getc();
@@ -171,6 +171,10 @@ bool USBMessageStream::USBEvent_EPOut(uint8_t bEP, uint8_t bEPStatus)
     read(&report);
     iprintf("Read report of length %lu\n", report.length);
 	for (uint8_t i = 0; i < report.length; i++) {
+
+		// we ignore blank data
+		if (report.data[i] == 0x00)
+			continue;
 
         if (flush_to_nl == false)
             rxbuf.queue(report.data[i]);

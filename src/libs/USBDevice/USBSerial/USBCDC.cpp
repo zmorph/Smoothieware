@@ -130,7 +130,7 @@ USBCDC::USBCDC(USB *u) {
         this,                   // endpoint callback
     };
 
-    usbdesc_string_l(16) s = usbstring("Smoothie Serial");
+    usbdesc_string_l(16) s = usbstring("ZMorph Serial");
     memcpy(&CDC_string, &s, sizeof(CDC_string));
 
     usb->addDescriptor(&CDC_iad);

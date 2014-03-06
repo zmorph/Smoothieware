@@ -5,9 +5,9 @@
 #include "descriptor_cdc.h"
 #include "descriptor_msc.h"
 
-//#define iprintf(...) do { } while (0)
+#define iprintf(...) do { } while (0)
 #include "libs/Kernel.h"
-#define iprintf THEKERNEL->streams->printf
+//#define iprintf THEKERNEL->streams->printf
 
 usbdesc_base *USB::descriptors[N_DESCRIPTORS];
 
@@ -34,9 +34,9 @@ static usbdesc_language lang = {
 	{ SL_USENGLISH, },
 };
 
-static usbstring_const_init(manufacturer, "Uberclock");
+static usbstring_const_init(manufacturer, "ZMorph");
 
-static usbstring_const_init(product, "Smoothieboard");
+static usbstring_const_init(product, "ZMorph3d");
 
 static usbstring_init(serial, "01234567abcdefgh01234567abcdefgh");
 

@@ -64,7 +64,7 @@ USBHID::USBHID(USB *u, uint8_t output_report_length, uint8_t input_report_length
         this,                  			// endpoint callback        
     };
 
-    usbdesc_string_l(13) s = usbstring("Smoothie HID");
+    usbdesc_string_l(13) s = usbstring("ZMorph HID");
     memcpy(&HID_description, &s, sizeof(HID_description));
 
     usb->addInterface(&HID_interface);
@@ -116,7 +116,7 @@ bool USBHID::readNB(HID_REPORT *report)
 
 bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
 
-	THEKERNEL->streams->printf("USBEvent_Request fired\n");
+	iprintf("USBEvent_Request fired\n");
 
 	bool success = false;
 
@@ -124,18 +124,18 @@ bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
 
     if ((transfer.setup.bmRequestType.Type == STANDARD_TYPE))
     {
-    	THEKERNEL->streams->printf("STANDARD_TYPE request\n");
+    	iprintf("STANDARD_TYPE request\n");
         switch (transfer.setup.bRequest)
         {
             case GET_DESCRIPTOR:
-    			THEKERNEL->streams->printf("GET_DESCRIPTOR request\n");
+    			iprintf("GET_DESCRIPTOR request\n");
                 switch (DESCRIPTOR_TYPE(transfer.setup.wValue))
                 {
                     case HID_REPORT_DESCRIPTOR:
                         if ((reportDesc() != NULL) \
                             && (reportDescLength() != 0))
                         {
-                        	THEKERNEL->streams->printf("HID_REPORT_DESCRIPTOR requested\n");
+                        	iprintf("HID_REPORT_DESCRIPTOR requested\n");
 
                             transfer.remaining = reportDescLength();
                             transfer.ptr = reportDesc();
@@ -150,7 +150,7 @@ bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
                             //hidDescriptor = usb->findDescriptor(HID_DESCRIPTOR);
                             //if (hidDescriptor != NULL)
                             //{
-                    		THEKERNEL->streams->printf("HID_DESCRIPTOR requested\n");
+                    		iprintf("HID_DESCRIPTOR requested\n");
                                 transfer.remaining = HID_DESCRIPTOR_LENGTH;
                                 transfer.ptr = (uint8_t *) &HID_hid_descriptor;
                                 transfer.direction = DEVICE_TO_HOST;
@@ -171,25 +171,12 @@ bool USBHID::USBEvent_Request(CONTROL_TRANSFER &transfer) {
 
     if (transfer.setup.bmRequestType.Type == CLASS_TYPE)
     {
-    	THEKERNEL->streams->printf("CLASS_TYPE request\n");
-    	THEKERNEL->streams->printf("request number: %u\n", transfer.setup.bRequest);
+    	iprintf("CLASS_TYPE request\n");
+    	iprintf("request number: %u\n", transfer.setup.bRequest);
         switch (transfer.setup.bRequest)
         {
-            case HID_REPORT_DESCRIPTOR:
-                if ((reportDesc() != NULL) \
-                    && (reportDescLength() != 0))
-                {
-                	THEKERNEL->streams->printf("HID_REPORT_DESCRIPTOR requested\n");
-
-                    transfer.remaining = reportDescLength();
-                    transfer.ptr = reportDesc();
-                    transfer.direction = DEVICE_TO_HOST;
-                    success = true;
-                }
-                break;
-
              case HID_SET_REPORT:
-             	THEKERNEL->streams->printf("HID_SET_REPORT fired\n");
+             	iprintf("HID_SET_REPORT fired\n");
                 // First byte will be used for report ID
                 outputReport.data[0] = transfer.setup.wValue & 0xff;
                 outputReport.length = transfer.setup.wLength + 1;
@@ -238,27 +225,4 @@ uint16_t USBHID::reportDescLength() {
 bool USBHID::USBEvent_RequestComplete(CONTROL_TRANSFER &transfer, uint8_t *buf, uint32_t length)
 {
     return true;
-}
-
-
-uint8_t * USBHID::entireHIDdescriptor()
-{
-	static uint8_t entiredescriptor[] = {		
-        0x1e,  // bDescriptorLength
-        HID_REPORT_DESCRIPTOR,          // bDescriptorType
-        0x06, LSB(0xFFAB), MSB(0xFFAB),
-        0x0A, LSB(0x0200), MSB(0x0200),
-        0xA1, 0x01,         // Collection 0x01
-        0x75, 0x08,         // report size = 8 bits
-        0x15, 0x00,         // logical minimum = 0
-        0x26, 0xFF, 0x00,   // logical maximum = 255
-        0x95, input_length, // report count
-        0x09, 0x01,         // usage
-        0x81, 0x02,         // Input (array)
-        0x95, output_length,// report count
-        0x09, 0x02,         // usage
-        0x91, 0x02,         // Output (array)
-        0xC0                // end collection
-	};
-	return entiredescriptor;
 }
