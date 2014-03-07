@@ -117,6 +117,7 @@ bool USBMessageStream::USBEvent_EPIn(uint8_t bEP, uint8_t bEPStatus)
     iprintf("USBMessageStream:EpIn: 0x%02X\n", bEPStatus);
 
    	HID_REPORT report;    
+    memset(report.data, 0, output_length);
 
     int l = txbuf.available();
     iprintf("%d bytes queued\n", l);
@@ -135,7 +136,7 @@ bool USBMessageStream::USBEvent_EPIn(uint8_t bEP, uint8_t bEPStatus)
             }
         }
         iprintf("\nSending...\n");
-        report.length = l;
+        report.length = output_length;
         send(&report);
         iprintf("Sent\n");
         if (txbuf.available() == 0)
