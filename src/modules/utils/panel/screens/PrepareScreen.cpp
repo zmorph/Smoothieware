@@ -47,7 +47,6 @@ void PrepareScreen::display_menu_line(uint16_t line)
     switch ( line ) {
         case 0: this->panel->lcd->printf("Back"           ); break;
         case 1: this->panel->lcd->printf("Home All Axis"  ); break;
-        case 2: this->panel->lcd->printf("Set Home"       ); break;
         case 3: this->panel->lcd->printf("Set Z0"         ); break;
         case 4: this->panel->lcd->printf("Pre Heat"       ); break;
         case 5: this->panel->lcd->printf("Cool Down"      ); break;
@@ -72,9 +71,44 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
     }
 }
 
+/***************** ZMORPH EDGE *************
+void PrepareScreen::display_menu_line(uint16_t line)
+{
+    switch ( line ) {
+        case 0: this->panel->lcd->printf("Back"           	); break;
+        case 1: this->panel->lcd->printf("Home All Axis"  	); break;
+		case 2: this->panel->lcd->printf("Home X Axis"  	); break;
+		case 3: this->panel->lcd->printf("Home Y Axis"  	); break;
+		case 4: this->panel->lcd->printf("Home Z Axis"  	); break;
+        case 5: this->panel->lcd->printf("Pre Heat ABS"     ); break;
+		case 6: this->panel->lcd->printf("Pre Heat PLA"    	); break;
+        case 7: this->panel->lcd->printf("Cool Down"      	); break;
+        case 8: this->panel->lcd->printf("Extrude"        	); break;
+        case 9: this->panel->lcd->printf("Motors off"     	); break;
+            //case 8: this->panel->lcd->printf("Set Temperature"); break;
+    }
+}
+
+void PrepareScreen::clicked_menu_entry(uint16_t line)
+{
+    switch ( line ) {
+        case 0: this->panel->enter_screen(this->parent); break;
+        case 1: command = "G28"; break;
+        case 2: command = "G28 X0"; break;
+		case 3: command = "G28 Y0"; break;
+		case 4: command = "G28 Z0"; break;
+        case 5: command = "M104 S255 M140 S120"; break;
+        case 6: command = "M104 S190 M140 S60"; break;
+		case 7: command = "M105 M140 S0"; break;
+        case 8: this->panel->enter_screen(this->extruder_screen); break;
+        case 9: command = "M84"; break;
+            //case 8: this->panel->enter_screen(this->temp_screen      ); break;
+    }
+}
+*/
 void PrepareScreen::preheat()
 {
-    double t = panel->get_default_hotend_temp();
+    float t = panel->get_default_hotend_temp();
     THEKERNEL->public_data->set_value( temperature_control_checksum, hotend_checksum, &t );
     t = panel->get_default_bed_temp();
     THEKERNEL->public_data->set_value( temperature_control_checksum, bed_checksum, &t );
@@ -82,7 +116,7 @@ void PrepareScreen::preheat()
 
 void PrepareScreen::cooldown()
 {
-    double t = 0;
+    float t = 0;
     THEKERNEL->public_data->set_value( temperature_control_checksum, hotend_checksum, &t );
     THEKERNEL->public_data->set_value( temperature_control_checksum, bed_checksum, &t );
 }

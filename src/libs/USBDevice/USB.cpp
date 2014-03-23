@@ -6,6 +6,8 @@
 #include "descriptor_msc.h"
 
 #define iprintf(...) do { } while (0)
+#include "libs/Kernel.h"
+//#define iprintf THEKERNEL->streams->printf
 
 usbdesc_base *USB::descriptors[N_DESCRIPTORS];
 
@@ -32,9 +34,9 @@ static usbdesc_language lang = {
 	{ SL_USENGLISH, },
 };
 
-static usbstring_const_init(manufacturer, "Uberclock");
+static usbstring_const_init(manufacturer, "ZMorph");
 
-static usbstring_const_init(product, "Smoothieboard");
+static usbstring_const_init(product, "ZMorph3d");
 
 static usbstring_init(serial, "01234567abcdefgh01234567abcdefgh");
 
@@ -188,21 +190,28 @@ bool USB::USBEvent_suspendStateChanged(bool suspended)
 
 bool USB::USBEvent_Request(CONTROL_TRANSFER& transfer)
 {
-/*    if (transfer.setup.bmRequestType.Type == CLASS_TYPE)
+
+	iprintf("inside USB's USBEventRequest\n");
+
+    if (transfer.setup.bmRequestType.Type == STANDARD_TYPE)
+        iprintf("[STANDARD]");
+    if (transfer.setup.bmRequestType.Type == CLASS_TYPE)
         iprintf("[CLASS]");
     if (transfer.setup.bmRequestType.Type == VENDOR_TYPE)
-        iprintf("[VENDOR]")*/;
+        iprintf("[VENDOR]");
     if (
         (transfer.setup.bmRequestType.Type == CLASS_TYPE)
         ||
         (transfer.setup.bmRequestType.Type == VENDOR_TYPE)
+        ||
+        (transfer.setup.bmRequestType.Type == STANDARD_TYPE)
        )
     {
         // decode request destination
         switch(transfer.setup.bmRequestType.Recipient)
         {
             case INTERFACE_RECIPIENT: {
-//                 iprintf("[INTERFACE %d]", transfer.setup.wIndex);
+                 iprintf("[INTERFACE %d]", transfer.setup.wIndex);
                 int i = findDescriptorIndex(0, DT_INTERFACE, transfer.setup.wIndex, 0);
                 if (i >.0)
                 {
@@ -218,7 +227,7 @@ bool USB::USBEvent_Request(CONTROL_TRANSFER& transfer)
                 break;
             };
             case ENDPOINT_RECIPIENT: {
-//                 iprintf("[ENDPOINT 0x%02X]", transfer.setup.wIndex);
+                 iprintf("[ENDPOINT 0x%02X]", transfer.setup.wIndex);
                 int i = findDescriptorIndex(0, DT_ENDPOINT, transfer.setup.wIndex, 0);
                 if (i >.0)
                 {

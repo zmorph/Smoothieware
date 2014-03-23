@@ -39,6 +39,7 @@
 #define jog_x_feedrate_checksum     CHECKSUM("alpha_jog_feedrate")
 #define jog_y_feedrate_checksum     CHECKSUM("beta_jog_feedrate")
 #define jog_z_feedrate_checksum     CHECKSUM("gamma_jog_feedrate")
+#define	longpress_delay_checksum	CHECKSUM("longpress_delay")
 
 #define hotend_temp_checksum CHECKSUM("hotend_temperature")
 #define bed_temp_checksum    CHECKSUM("bed_temperature")
@@ -65,14 +66,14 @@ Panel::~Panel()
 void Panel::on_module_loaded()
 {
     // Exit if this module is not enabled
-    if ( !this->kernel->config->value( panel_checksum, enable_checksum )->by_default(false)->as_bool() ) {
+    if ( !THEKERNEL->config->value( panel_checksum, enable_checksum )->by_default(false)->as_bool() ) {
         delete this;
         return;
     }
 
     // Initialise the LCD, see which LCD to use
     if (this->lcd != NULL) delete this->lcd;
-    int lcd_cksm = get_checksum(this->kernel->config->value(panel_checksum, lcd_checksum)->by_default("i2c")->as_string());
+    int lcd_cksm = get_checksum(THEKERNEL->config->value(panel_checksum, lcd_checksum)->by_default("i2c")->as_string());
 
     // Note checksums are not const expressions when in debug mode, so don't use switch
     if (lcd_cksm == i2c_lcd_checksum) {
@@ -104,19 +105,19 @@ void Panel::on_module_loaded()
 
     // some encoders may need more clicks to move menu, this is a divisor and is in config as it is
     // an end user usability issue
-    this->menu_offset = this->kernel->config->value( panel_checksum, menu_offset_checksum )->by_default(0)->as_number();
+    this->menu_offset = THEKERNEL->config->value( panel_checksum, menu_offset_checksum )->by_default(0)->as_number();
 
     // override default encoder resolution if needed
-    this->encoder_click_resolution = this->kernel->config->value( panel_checksum, encoder_resolution_checksum )->by_default(this->lcd->getEncoderResolution())->as_number();
+    this->encoder_click_resolution = THEKERNEL->config->value( panel_checksum, encoder_resolution_checksum )->by_default(this->lcd->getEncoderResolution())->as_number();
 
     // load jogging feedrates in mm/min
-    jogging_speed_mm_min[0] = this->kernel->config->value( panel_checksum, jog_x_feedrate_checksum )->by_default(3000.0)->as_number();
-    jogging_speed_mm_min[1] = this->kernel->config->value( panel_checksum, jog_y_feedrate_checksum )->by_default(3000.0)->as_number();
-    jogging_speed_mm_min[2] = this->kernel->config->value( panel_checksum, jog_z_feedrate_checksum )->by_default(300.0)->as_number();
+    jogging_speed_mm_min[0] = THEKERNEL->config->value( panel_checksum, jog_x_feedrate_checksum )->by_default(3000.0f)->as_number();
+    jogging_speed_mm_min[1] = THEKERNEL->config->value( panel_checksum, jog_y_feedrate_checksum )->by_default(3000.0f)->as_number();
+    jogging_speed_mm_min[2] = THEKERNEL->config->value( panel_checksum, jog_z_feedrate_checksum )->by_default(300.0f )->as_number();
 
     // load the default preset temeratures
-    default_hotend_temperature = this->kernel->config->value( panel_checksum, hotend_temp_checksum )->by_default(185.0)->as_number();
-    default_bed_temperature = this->kernel->config->value( panel_checksum, bed_temp_checksum )->by_default(60.0)->as_number();
+    default_hotend_temperature = THEKERNEL->config->value( panel_checksum, hotend_temp_checksum )->by_default(185.0f )->as_number();
+    default_bed_temperature    = THEKERNEL->config->value( panel_checksum, bed_temp_checksum    )->by_default(60.0f  )->as_number();
 
 
     this->up_button.up_attach(    this, &Panel::on_up );
@@ -125,8 +126,18 @@ void Panel::on_module_loaded()
     this->back_button.up_attach(  this, &Panel::on_back );
     this->pause_button.up_attach( this, &Panel::on_pause );
 
-    this->kernel->slow_ticker->attach( 100,  this, &Panel::button_tick );
-    this->kernel->slow_ticker->attach( 1000, this, &Panel::encoder_check );
+
+    //setting longpress_delay
+    int longpress_delay =  THEKERNEL->config->value( panel_checksum, longpress_delay_checksum )->by_default(0)->as_number();
+    this->up_button.set_longpress_delay(longpress_delay);
+    this->down_button.set_longpress_delay(longpress_delay);
+//    this->click_button.set_longpress_delay(longpress_delay);
+//    this->back_button.set_longpress_delay(longpress_delay);
+//    this->pause_button.set_longpress_delay(longpress_delay);
+	
+	
+    THEKERNEL->slow_ticker->attach( 100,  this, &Panel::button_tick );
+    THEKERNEL->slow_ticker->attach( 1000, this, &Panel::encoder_check );
 
     // Register for events
     this->register_for_event(ON_IDLE);
@@ -134,7 +145,7 @@ void Panel::on_module_loaded()
     this->register_for_event(ON_GCODE_RECEIVED);
 
     // Refresh timer
-    this->kernel->slow_ticker->attach( 20, this, &Panel::refresh_tick );
+    THEKERNEL->slow_ticker->attach( 20, this, &Panel::refresh_tick );
 }
 
 // Enter a screen, we only care about it now
@@ -209,21 +220,21 @@ void Panel::on_main_loop(void *argument)
     }
 }
 
-
 #define ohw_logo_antipixel_width 80
-#define ohw_logo_antipixel_height 15
+#define ohw_logo_antipixel_height 20
 static const uint8_t ohw_logo_antipixel_bits[] = {
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x01, 0x80, 0x0C, 0x00, 0x33, 0x18, 0xBB, 0xFF, 0xFF, 0xFF, 0xFD, 0x80, 0x5E,
-    0x80, 0x2D, 0x6B, 0x9B, 0xFF, 0xFF, 0xFF, 0xFD, 0x80, 0xFF, 0xC0, 0x2D, 0x18, 0xAB, 0xFF, 0xFF,
-    0xFF, 0xFD, 0x80, 0xFF, 0xC0, 0x2D, 0x7B, 0xB3, 0xFF, 0xFF, 0xFF, 0xFD, 0x80, 0x7F, 0x80, 0x33,
-    0x78, 0xBB, 0xFF, 0xFF, 0xFF, 0xFD, 0x81, 0xF3, 0xE0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD,
-    0x81, 0xF3, 0xE0, 0x3F, 0xFD, 0xB3, 0x18, 0xDD, 0x98, 0xC5, 0x81, 0xF3, 0xE0, 0x3F, 0xFD, 0xAD,
-    0x6B, 0x5D, 0x6B, 0x5D, 0x80, 0x73, 0x80, 0x3F, 0xFC, 0x21, 0x1B, 0x55, 0x08, 0xC5, 0x80, 0xF3,
-    0xC0, 0x3F, 0xFD, 0xAD, 0x5B, 0x49, 0x6A, 0xDD, 0x80, 0xE1, 0xC0, 0x3F, 0xFD, 0xAD, 0x68, 0xDD,
-    0x6B, 0x45, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+    0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00,
+    0x01, 0xfc, 0x00, 0x00, 0x00, 0xf8, 0x00, 0x00, 0x06, 0x00, 0x07, 0xf8, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x06, 0x00, 
+    0x07, 0xf0, 0x00, 0x00, 0x02, 0x00, 0x80, 0x00, 0x06, 0x00, 0x00, 0x00, 0x0a, 0x98, 0x60, 0x8c, 0x6b, 0x39, 0x86, 0x10, 
+    0x3f, 0xc0, 0x03, 0x0c, 0x31, 0x06, 0x30, 0x30, 0xc6, 0x08, 0x7f, 0x80, 0x03, 0x0c, 0x33, 0x03, 0x30, 0x30, 0x66, 0x08,
+    0x00, 0x00, 0x03, 0x0c, 0x33, 0x03, 0x30, 0x30, 0x66, 0x08, 0xfe, 0x00, 0x03, 0x0c, 0x33, 0x03, 0x30, 0x30, 0x66, 0x08,
+    0xff, 0xff, 0x83, 0x0c, 0x31, 0x02, 0x30, 0x30, 0x46, 0x08, 0x00, 0x00, 0x03, 0x0c, 0x30, 0x84, 0x30, 0x30, 0xc6, 0x08,
+    0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x00, 0x00
 };
+
 
 // On idle things, we don't want to do shit in interrupts
 // don't queue gcodes in this
@@ -236,11 +247,12 @@ void Panel::on_idle(void *argument)
         string build(v.get_build());
         string date(v.get_build_date());
         this->lcd->clear();
-        this->lcd->setCursor(0, 0); this->lcd->printf("Welcome to Smoothie");
-        this->lcd->setCursor(0, 1); this->lcd->printf("%s", build.substr(0, 20).c_str());
-        this->lcd->setCursor(0, 2); this->lcd->printf("%s", date.substr(0, 20).c_str());
-        this->lcd->setCursor(0, 3); this->lcd->printf("Please wait....");
-
+        this->lcd->setCursor(0, 0); this->lcd->printf("Welcome to Zmorph3D");
+        this->lcd->setCursor(0, 1); this->lcd->printf("Personal Fabricator");
+        this->lcd->setCursor(0, 2); this->lcd->printf("Build date:");
+        this->lcd->setCursor(0, 3); this->lcd->printf("%s", date.substr(0, 20).c_str());
+        this->lcd->setCursor(0, 4); this->lcd->printf("Please wait....");
+        
         if (this->lcd->hasGraphics()) {
             this->lcd->bltGlyph(24, 40, ohw_logo_antipixel_width, ohw_logo_antipixel_height, ohw_logo_antipixel_bits);
         }
@@ -481,7 +493,7 @@ bool Panel::control_value_change()
     }
 }
 
-bool Panel::enter_control_mode(double passed_normal_increment, double passed_pressed_increment)
+bool Panel::enter_control_mode(float passed_normal_increment, float passed_pressed_increment)
 {
     this->mode = CONTROL_MODE;
     this->normal_increment  = passed_normal_increment;
@@ -497,12 +509,12 @@ void Panel::control_value_update()
     this->control_value_changed = true;
 }
 
-void Panel::set_control_value(double value)
+void Panel::set_control_value(float value)
 {
     this->control_base_value = value;
 }
 
-double Panel::get_control_value()
+float Panel::get_control_value()
 {
     return this->control_base_value + (this->control_normal_counter * this->normal_increment);
 }

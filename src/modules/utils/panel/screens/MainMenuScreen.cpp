@@ -34,7 +34,7 @@ MainMenuScreen::MainMenuScreen()
 void MainMenuScreen::on_enter()
 {
     this->panel->enter_menu_mode();
-    this->panel->setup_menu(5);
+    this->panel->setup_menu(4);
     this->refresh_menu();
 }
 
@@ -54,8 +54,8 @@ void MainMenuScreen::display_menu_line(uint16_t line)
         case 0: this->panel->lcd->printf("Watch"); break;
         case 1: this->panel->lcd->printf(panel->is_playing() ? "Abort" : "Play"); break;
         case 2: this->panel->lcd->printf("Jog"); break;
-        case 3: this->panel->lcd->printf("Prepare"); break;
-        case 4: this->panel->lcd->printf("Custom"); break;
+        case 3: this->panel->lcd->printf("Prepare/Custom"); break;
+        //case 4: this->panel->lcd->printf("Custom"); break;
             //case 4: this->panel->lcd->printf("Configure"); break;
             //case 5: this->panel->lcd->printf("Tune"); break;
     }
@@ -67,8 +67,8 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
         case 0: this->panel->enter_screen(this->watch_screen   ); break;
         case 1: this->panel->is_playing() ? abort_playing() : this->panel->enter_screen(this->file_screen); break;
         case 2: this->panel->enter_screen(this->jog_screen     ); break;
-        case 3: this->panel->enter_screen(this->prepare_screen ); break;
-        case 4: this->panel->enter_screen(this->panel->custom_screen ); break;
+        //case 3: this->panel->enter_screen(this->prepare_screen ); break;
+        case 3: this->panel->enter_screen(this->panel->custom_screen ); break;
     }
 }
 

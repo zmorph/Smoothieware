@@ -34,6 +34,9 @@ void ControlScreen::on_enter()
 // called in on_idle()
 void ControlScreen::on_refresh()
 {
+    uint16_t min_axis_value = 0;
+    uint16_t max_axis_value_table[] = { 230 , 240 , 165 }; // max_X, max_Y, max_Z
+
     if ( this->panel->menu_change() ) {
         this->refresh_menu();
     }
@@ -45,10 +48,14 @@ void ControlScreen::on_refresh()
             this->refresh_menu();
 
         } else if (this->panel->control_value_change()) {
-            this->pos[this->controlled_axis - 'X'] = this->panel->get_control_value();
-            this->panel->lcd->setCursor(0, 2);
-            this->display_axis_line(this->controlled_axis);
-            this->pos_changed = true; // make the gcode in main_loop
+            if( (min_axis_value <= this->panel->get_control_value()) && 
+                (max_axis_value_table[this->controlled_axis - 'X'] >= this->panel->get_control_value())) {
+
+                this->pos[this->controlled_axis - 'X'] = this->panel->get_control_value();
+                this->panel->lcd->setCursor(0, 2);
+                this->display_axis_line(this->controlled_axis);
+                this->pos_changed = true; // make the gcode in main_loop
+            }
         }
 
     } else {
@@ -112,20 +119,20 @@ void ControlScreen::enter_menu_control()
     this->panel->enter_menu_mode();
 }
 
-void ControlScreen::get_current_pos(double *cp)
+void ControlScreen::get_current_pos(float *cp)
 {
     void *returned_data;
 
     bool ok = THEKERNEL->public_data->get_value( robot_checksum, current_position_checksum, &returned_data );
     if (ok) {
-        double *p = static_cast<double *>(returned_data);
+        float *p = static_cast<float *>(returned_data);
         cp[0] = p[0];
         cp[1] = p[1];
         cp[2] = p[2];
     }
 }
 
-void ControlScreen::set_current_pos(char axis, double p)
+void ControlScreen::set_current_pos(char axis, float p)
 {
     // change pos by issuing a G0 Xnnn
     char buf[32];

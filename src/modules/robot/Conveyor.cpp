@@ -34,7 +34,7 @@ void Conveyor::on_module_loaded(){
 void Conveyor::on_idle(void* argument){
     if (flush_blocks){
         // Cleanly delete block 
-        Block* block = queue.get_tail_ref();
+        Block* block = queue.get_head_ref();
         block->gcodes.clear(); 
         queue.delete_first();
         __disable_irq();
@@ -47,7 +47,7 @@ void Conveyor::on_idle(void* argument){
 Block* Conveyor::new_block(){
 
     // Take the next untaken block on the queue ( the one after the last one )
-    Block* block = this->queue.get_tail_ref();
+    Block* block = this->queue.get_head_ref();
     // Then clean it up
     if( block->conveyor == this ){
         block->gcodes.clear();
@@ -93,7 +93,7 @@ void Conveyor::pop_and_process_new_block(int debug){
     this->current_block = this->queue.get_ref(0);
 
     // Tell all modules about it
-    this->kernel->call_event(ON_BLOCK_BEGIN, this->current_block);
+    THEKERNEL->call_event(ON_BLOCK_BEGIN, this->current_block);
 
 	// In case the module was not taken
     if( this->current_block->times_taken < 1 ){
@@ -110,14 +110,14 @@ void Conveyor::pop_and_process_new_block(int debug){
 // Wait for the queue to have a given number of free blocks
 void Conveyor::wait_for_queue(int free_blocks){
     while( this->queue.size() >= this->queue.capacity()-free_blocks ){
-        this->kernel->call_event(ON_IDLE);
+        THEKERNEL->call_event(ON_IDLE);
     }
 }
 
 // Wait for the queue to be empty
 void Conveyor::wait_for_empty_queue(){
     while( this->queue.size() > 0){
-        this->kernel->call_event(ON_IDLE);
+        THEKERNEL->call_event(ON_IDLE);
     }
 }
 
