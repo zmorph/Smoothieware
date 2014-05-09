@@ -13,6 +13,8 @@ using namespace std;
 #include "SlowTicker.h"
 #include "libs/Hook.h"
 #include "modules/robot/Conveyor.h"
+#include "Pauser.h"
+#include "Gcode.h"
 
 #include <mri.h>
 
@@ -147,12 +149,9 @@ void SlowTicker::on_gcode_received(void* argument){
     Gcode* gcode = static_cast<Gcode*>(argument);
     // Add the gcode to the queue ourselves if we need it
     if( gcode->has_g && gcode->g == 4 ){
-        if( THEKERNEL->conveyor->queue.size() == 0 ){
-            THEKERNEL->call_event(ON_GCODE_EXECUTE, gcode );
-        }else{
-            Block* block = THEKERNEL->conveyor->queue.get_ref( THEKERNEL->conveyor->queue.size() - 1 );
-            block->append_gcode(gcode);
-        }
+        THEKERNEL->conveyor->append_gcode(gcode);
+        // ensure that no subsequent gcodes get executed along with our G4
+        THEKERNEL->conveyor->queue_head_block();
     }
 }
 

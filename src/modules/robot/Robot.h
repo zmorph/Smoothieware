@@ -11,13 +11,8 @@
 #include <string>
 using std::string;
 #include "libs/Module.h"
-#include "libs/Kernel.h"
-#include "../communication/utils/Gcode.h"
-#include "arm_solutions/BaseSolution.h"
-#include "Planner.h"
-#include "libs/Pin.h"
-#include "libs/StepperMotor.h"
-#include "RobotPublicAccess.h"
+
+#include <string.h>
 
 #define NEXT_ACTION_DEFAULT 0
 #define NEXT_ACTION_DWELL 1
@@ -40,7 +35,9 @@ using std::string;
 #define SPINDLE_DIRECTION_CW 0
 #define SPINDLE_DIRECTION_CCW 1
 
-
+class Gcode;
+class BaseSolution;
+class StepperMotor;
 
 class Robot : public Module {
     public:
@@ -61,8 +58,8 @@ class Robot : public Module {
 
     private:
         void distance_in_gcode_is_known(Gcode* gcode);
-        void append_milestone( float target[], float feed_rate);
-        void append_line( Gcode* gcode, float target[], float feed_rate);
+        void append_milestone( float target[], float rate_mm_s);
+        void append_line( Gcode* gcode, float target[], float rate_mm_s);
         //void append_arc(float theta_start, float angular_travel, float radius, float depth, float rate);
         void append_arc( Gcode* gcode, float target[], float offset[], float radius, bool is_clockwise );
 
@@ -72,9 +69,8 @@ class Robot : public Module {
         float theta(float x, float y);
         void select_plane(uint8_t axis_0, uint8_t axis_1, uint8_t axis_2);
 
-        float current_position[3];                           // Current position, in millimeters
         float last_milestone[3];                             // Last position, in millimeters
-        bool inch_mode;                                       // true for inch mode, false for millimeter mode ( default )
+        bool  inch_mode;                                       // true for inch mode, false for millimeter mode ( default )
         int8_t motion_mode;                                   // Motion mode for the current received Gcode
         float seek_rate;                                     // Current rate for seeking moves ( mm/s )
         float feed_rate;                                     // Current rate for feeding moves ( mm/s )
@@ -93,19 +89,11 @@ class Robot : public Module {
 
     // Used by Stepper
     public:
-        Pin alpha_step_pin;
-        Pin alpha_dir_pin;
-        Pin alpha_en_pin;
-        Pin beta_step_pin;
-        Pin beta_dir_pin;
-        Pin beta_en_pin;
-        Pin gamma_step_pin;
-        Pin gamma_dir_pin;
-        Pin gamma_en_pin;
-
         StepperMotor* alpha_stepper_motor;
         StepperMotor* beta_stepper_motor;
         StepperMotor* gamma_stepper_motor;
+
+        std::vector<StepperMotor*> actuators;
 
         float seconds_per_minute;                            // for realtime speed change
 };
@@ -118,7 +106,7 @@ inline float Robot::from_millimeters( float value){
     return this->inch_mode ? value/25.4 : value;
 }
 inline void Robot::get_axis_position(float position[]){
-    memcpy(position, this->current_position, sizeof(float)*3 );
+    memcpy(position, this->last_milestone, sizeof(float)*3 );
 }
 
 #endif

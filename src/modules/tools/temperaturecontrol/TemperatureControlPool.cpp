@@ -13,6 +13,9 @@ using namespace std;
 #include "TemperatureControlPool.h"
 #include "TemperatureControl.h"
 #include "PID_Autotuner.h"
+#include "Config.h"
+#include "checksumm.h"
+#include "ConfigValue.h"
 
 TemperatureControlPool::TemperatureControlPool(){}
 
@@ -26,9 +29,9 @@ void TemperatureControlPool::on_module_loaded(){
         if( THEKERNEL->config->value(temperature_control_checksum, modules[i], enable_checksum )->as_bool() == true ){
             TemperatureControl* controller = new TemperatureControl(modules[i]);
             controller->pool = this;
-            controller->pool_index = i;
+            controllers.push_back( controller );
+            controller->pool_index = controllers.size() - 1;
             THEKERNEL->add_module(controller);
-            this->controllers.push_back( controller );
         }
     }
 

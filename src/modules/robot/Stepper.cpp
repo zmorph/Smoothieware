@@ -5,15 +5,26 @@
       You should have received a copy of the GNU General Public License along with Smoothie. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "Stepper.h"
+
 #include "libs/Module.h"
 #include "libs/Kernel.h"
-#include "Stepper.h"
 #include "Planner.h"
 #include "Conveyor.h"
+#include "StepperMotor.h"
+#include "Robot.h"
+#include "checksumm.h"
+#include "SlowTicker.h"
+#include "Config.h"
+#include "ConfigValue.h"
+#include "Gcode.h"
+
 #include <vector>
 using namespace std;
+
 #include "libs/nuts_bolts.h"
 #include "libs/Hook.h"
+
 #include <mri.h>
 
 
@@ -60,7 +71,7 @@ void Stepper::on_module_loaded(){
 void Stepper::on_config_reload(void* argument){
 
     this->acceleration_ticks_per_second =  THEKERNEL->config->value(acceleration_ticks_per_second_checksum)->by_default(100   )->as_number();
-    this->minimum_steps_per_minute      =  THEKERNEL->config->value(minimum_steps_per_minute_checksum     )->by_default(3000  )->as_number();
+    this->minimum_steps_per_second      =  THEKERNEL->config->value(minimum_steps_per_minute_checksum     )->by_default(3000  )->as_number() / 60.0F;
 
     // Steppers start off by default
     this->turn_enable_pins_off();
@@ -87,14 +98,8 @@ void Stepper::on_gcode_received(void* argument){
     Gcode* gcode = static_cast<Gcode*>(argument);
     // Attach gcodes to the last block for on_gcode_execute
     if( gcode->has_m && (gcode->m == 84 || gcode->m == 17 || gcode->m == 18 )) {
-        gcode->mark_as_taken();
-        if( THEKERNEL->conveyor->queue.size() == 0 ){
-            THEKERNEL->call_event(ON_GCODE_EXECUTE, gcode );
-        }else{
-            Block* block = THEKERNEL->conveyor->queue.get_ref( THEKERNEL->conveyor->queue.size() - 1 );
-            block->append_gcode(gcode);
-        }
-    }  
+        THEKERNEL->conveyor->append_gcode(gcode);
+    }
 }
 
 // React to enable/disable gcodes
@@ -113,17 +118,15 @@ void Stepper::on_gcode_execute(void* argument){
 
 // Enable steppers
 void Stepper::turn_enable_pins_on(){
-    THEKERNEL->robot->alpha_en_pin.set(0);
-    THEKERNEL->robot->beta_en_pin.set(0);
-    THEKERNEL->robot->gamma_en_pin.set(0);
+    for (StepperMotor* m : THEKERNEL->robot->actuators)
+        m->enable(true);
     this->enable_pins_status = true;
 }
 
 // Disable steppers
 void Stepper::turn_enable_pins_off(){
-    THEKERNEL->robot->alpha_en_pin.set(1);
-    THEKERNEL->robot->beta_en_pin.set(1);
-    THEKERNEL->robot->gamma_en_pin.set(1);
+    for (StepperMotor* m : THEKERNEL->robot->actuators)
+        m->enable(false);
     this->enable_pins_status = false;
 }
 
@@ -132,7 +135,7 @@ void Stepper::on_block_begin(void* argument){
     Block* block  = static_cast<Block*>(argument);
 
     // The stepper does not care about 0-blocks
-    if( block->millimeters == 0.0 ){ return; }
+    if( block->millimeters == 0.0F ){ return; }
 
     // Mark the new block as of interrest to us
     if( block->steps[ALPHA_STEPPER] > 0 || block->steps[BETA_STEPPER] > 0 || block->steps[GAMMA_STEPPER] > 0 ){
@@ -196,47 +199,47 @@ uint32_t Stepper::trapezoid_generator_tick( uint32_t dummy ) {
 
     // Do not do the accel math for nothing
     if(this->current_block && !this->paused && this->main_stepper->moving ) {
-       
-        // Store this here because we use it a lot down there 
+
+        // Store this here because we use it a lot down there
         uint32_t current_steps_completed = this->main_stepper->stepped;
 
         // Do not accel, just set the value
         if( this->force_speed_update ){
           this->force_speed_update = false;
-          this->set_step_events_per_minute(this->trapezoid_adjusted_rate);
+          this->set_step_events_per_second(this->trapezoid_adjusted_rate);
           return 0;
         }
 
         // If we are accelerating
         if(current_steps_completed <= this->current_block->accelerate_until + 1) {
-            // Increase speed   
+            // Increase speed
             this->trapezoid_adjusted_rate += this->current_block->rate_delta;
               if (this->trapezoid_adjusted_rate > this->current_block->nominal_rate ) {
                   this->trapezoid_adjusted_rate = this->current_block->nominal_rate;
               }
-              this->set_step_events_per_minute(this->trapezoid_adjusted_rate);
-        
-        // If we are decelerating 
+              this->set_step_events_per_second(this->trapezoid_adjusted_rate);
+
+        // If we are decelerating
         }else if (current_steps_completed > this->current_block->decelerate_after) {
-             // Reduce speed  
+             // Reduce speed
              // NOTE: We will only reduce speed if the result will be > 0. This catches small
               // rounding errors that might leave steps hanging after the last trapezoid tick.
-              if(this->trapezoid_adjusted_rate > this->current_block->rate_delta * 1.5) {
+              if(this->trapezoid_adjusted_rate > this->current_block->rate_delta * 1.5F) {
                   this->trapezoid_adjusted_rate -= this->current_block->rate_delta;
               }else{
-                  this->trapezoid_adjusted_rate = this->current_block->rate_delta * 1.5;
+                  this->trapezoid_adjusted_rate = this->current_block->rate_delta * 1.5F;
               }
               if(this->trapezoid_adjusted_rate < this->current_block->final_rate ) {
                   this->trapezoid_adjusted_rate = this->current_block->final_rate;
               }
-              this->set_step_events_per_minute(this->trapezoid_adjusted_rate);
-        
-        // If we are cruising 
+              this->set_step_events_per_second(this->trapezoid_adjusted_rate);
+
+        // If we are cruising
         }else {
               // Make sure we cruise at exactly nominal rate
               if (this->trapezoid_adjusted_rate != this->current_block->nominal_rate) {
                   this->trapezoid_adjusted_rate = this->current_block->nominal_rate;
-                  this->set_step_events_per_minute(this->trapezoid_adjusted_rate);
+                  this->set_step_events_per_second(this->trapezoid_adjusted_rate);
               }
           }
     }
@@ -258,18 +261,18 @@ inline void Stepper::trapezoid_generator_reset(){
 }
 
 // Update the speed for all steppers
-void Stepper::set_step_events_per_minute( float steps_per_minute ){
-
+void Stepper::set_step_events_per_second( float steps_per_second )
+{
     // We do not step slower than this
-    //steps_per_minute = max(steps_per_minute, this->minimum_steps_per_minute);
-    if( steps_per_minute < this->minimum_steps_per_minute ){
-        steps_per_minute = this->minimum_steps_per_minute;
+    //steps_per_second = max(steps_per_second, this->minimum_steps_per_second);
+    if( steps_per_second < this->minimum_steps_per_second ){
+        steps_per_second = this->minimum_steps_per_second;
     }
 
     // Instruct the stepper motors
-    if( THEKERNEL->robot->alpha_stepper_motor->moving ){ THEKERNEL->robot->alpha_stepper_motor->set_speed( (steps_per_minute/60L) * ( (float)this->current_block->steps[ALPHA_STEPPER] / (float)this->current_block->steps_event_count ) ); }
-    if( THEKERNEL->robot->beta_stepper_motor->moving  ){ THEKERNEL->robot->beta_stepper_motor->set_speed(  (steps_per_minute/60L) * ( (float)this->current_block->steps[BETA_STEPPER ] / (float)this->current_block->steps_event_count ) ); }
-    if( THEKERNEL->robot->gamma_stepper_motor->moving ){ THEKERNEL->robot->gamma_stepper_motor->set_speed( (steps_per_minute/60L) * ( (float)this->current_block->steps[GAMMA_STEPPER] / (float)this->current_block->steps_event_count ) ); }
+    if( THEKERNEL->robot->alpha_stepper_motor->moving ){ THEKERNEL->robot->alpha_stepper_motor->set_speed( steps_per_second * ( (float)this->current_block->steps[ALPHA_STEPPER] / (float)this->current_block->steps_event_count ) ); }
+    if( THEKERNEL->robot->beta_stepper_motor->moving  ){ THEKERNEL->robot->beta_stepper_motor->set_speed(  steps_per_second * ( (float)this->current_block->steps[BETA_STEPPER ] / (float)this->current_block->steps_event_count ) ); }
+    if( THEKERNEL->robot->gamma_stepper_motor->moving ){ THEKERNEL->robot->gamma_stepper_motor->set_speed( steps_per_second * ( (float)this->current_block->steps[GAMMA_STEPPER] / (float)this->current_block->steps_event_count ) ); }
 
     // Other modules might want to know the speed changed
     THEKERNEL->call_event(ON_SPEED_CHANGE, this);
@@ -277,7 +280,7 @@ void Stepper::set_step_events_per_minute( float steps_per_minute ){
 }
 
 // This function has the role of making sure acceleration and deceleration curves have their
-// rythm synchronized. The accel/decel must start at the same moment as the speed update routine
+// rhythm synchronized. The accel/decel must start at the same moment as the speed update routine
 // This is caller in "step just occured" or "block just began" ( step Timer ) context, so we need to be fast.
 // All we do is reset the other timer so that it does what we want
 uint32_t Stepper::synchronize_acceleration(uint32_t dummy){

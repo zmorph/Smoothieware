@@ -12,6 +12,11 @@ using namespace std;
 #include <vector>
 #include "SwitchPool.h"
 #include "Switch.h"
+#include "Config.h"
+#include "checksumm.h"
+#include "ConfigValue.h"
+
+#define    switch_checksum              CHECKSUM("switch")
 
 SwitchPool::SwitchPool(){}
 

@@ -6,16 +6,21 @@
 */
 
 
+#include "StepTicker.h"
 
 using namespace std;
 #include <vector>
+
 #include "libs/nuts_bolts.h"
 #include "libs/Module.h"
 #include "libs/Kernel.h"
-#include "StepTicker.h"
-#include "system_LPC17xx.h" // mbed.h lib
+#include "StepperMotor.h"
 
+#include "system_LPC17xx.h" // mbed.h lib
+#include <math.h>
 #include <mri.h>
+
+extern bool _isr_context;
 
 // StepTicker handles the base frequency ticking for the Stepper Motors / Actuators
 // It has a list of those, and calls their tick() functions at regular intervals
@@ -83,7 +88,7 @@ inline void StepTicker::tick(){
     _isr_context = true;
     int i;
     uint32_t bm = 1;
-    // We iterate over each active motor 
+    // We iterate over each active motor
     for (i = 0; i < 12; i++, bm <<= 1){
         if (this->active_motor_bm & bm){
             this->active_motors[i]->tick();
@@ -125,7 +130,7 @@ inline void StepTicker::reset_tick(){
     for (i = 0, bm = 1; i < 12; i++, bm <<= 1)
     {
         if (this->active_motor_bm & bm)
-            this->active_motors[i]->step_pin->set(0);
+            this->active_motors[i]->unstep();
     }
 
     _isr_context = false;
@@ -161,13 +166,13 @@ extern "C" void TIMER0_IRQHandler (void){
         LPC_TIM0->MR0 = global_step_ticker->period;
         return;
     }
-    
+
     // If a move finished in this tick, we have to tell the actuator to act accordingly
-    if( global_step_ticker->moves_finished ){ 
- 
+    if( global_step_ticker->moves_finished ){
+
         // Do not get out of here before everything is nice and tidy
         LPC_TIM0->MR0 = 20000000;
-        
+
         global_step_ticker->signal_moves_finished();
 
         // If we went over the duration an interrupt is supposed to last, we have a problem
