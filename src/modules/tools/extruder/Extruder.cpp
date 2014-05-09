@@ -43,6 +43,13 @@
 #define dir_pin_checksum                     CHECKSUM("dir_pin")
 #define en_pin_checksum                      CHECKSUM("en_pin")
 #define max_speed_checksum                   CHECKSUM("max_speed")
+#define x_offset_checksum                    CHECKSUM("x_offset")
+#define y_offset_checksum                    CHECKSUM("y_offset")
+#define z_offset_checksum                    CHECKSUM("z_offset")
+
+#define X_AXIS      0
+#define Y_AXIS      1
+#define Z_AXIS      2
 
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
@@ -53,9 +60,14 @@
 
 Extruder::Extruder( uint16_t config_identifier ) {
     this->absolute_mode = true;
+    this->enabled       = false;
     this->paused        = false;
     this->single_config = false;
     this->identifier    = config_identifier;
+
+    for(int i=0;i<3;i++){
+        this->offset[i] = 0;
+    }
 }
 
 void Extruder::on_module_loaded() {
@@ -105,6 +117,12 @@ void Extruder::on_config_reload(void* argument){
         this->dir_pin.from_string(          THEKERNEL->config->value(extruder_dir_pin_checksum           )->by_default("nc" )->as_string())->as_output();
         this->en_pin.from_string(           THEKERNEL->config->value(extruder_en_pin_checksum            )->by_default("nc" )->as_string())->as_output();
 
+        for(int i=0;i<3;i++){
+            this->offset[i] = 0;
+        }
+
+        this->enabled = true;
+
     }else{
     // If this module was created with the new multi extruder configuration style
 
@@ -116,6 +134,10 @@ void Extruder::on_config_reload(void* argument){
         this->step_pin.from_string(         THEKERNEL->config->value(extruder_checksum, this->identifier, step_pin_checksum          )->by_default("nc" )->as_string())->as_output();
         this->dir_pin.from_string(          THEKERNEL->config->value(extruder_checksum, this->identifier, dir_pin_checksum           )->by_default("nc" )->as_string())->as_output();
         this->en_pin.from_string(           THEKERNEL->config->value(extruder_checksum, this->identifier, en_pin_checksum            )->by_default("nc" )->as_string())->as_output();
+
+        this->offset[X_AXIS]              = THEKERNEL->config->value(extruder_checksum, this->identifier, x_offset_checksum          )->by_default(0)->as_number();
+        this->offset[Y_AXIS]              = THEKERNEL->config->value(extruder_checksum, this->identifier, y_offset_checksum          )->by_default(0)->as_number();
+        this->offset[Z_AXIS]              = THEKERNEL->config->value(extruder_checksum, this->identifier, z_offset_checksum          )->by_default(0)->as_number();
 
     }
 
@@ -140,13 +162,13 @@ void Extruder::on_gcode_received(void *argument){
 
     // Gcodes to execute immediately
     if (gcode->has_m){
-        if (gcode->m == 114){
+        if (gcode->m == 114 && this->enabled){
             char buf[16];
             int n= snprintf(buf, sizeof(buf), " E:%1.3f ", this->current_position);
             gcode->txt_after_ok.append(buf, n);
             gcode->mark_as_taken();
 
-        }else if (gcode->m == 92 ){
+        }else if (gcode->m == 92 && this->enabled ){
             float spm = this->steps_per_millimeter;
             if (gcode->has_letter('E'))
                 spm = gcode->get_value('E');
@@ -167,7 +189,7 @@ void Extruder::on_gcode_received(void *argument){
     }
 
     // Add to the queue for on_gcode_execute to process
-    if( gcode->has_g && gcode->g < 4 && gcode->has_letter('E') ){
+    if( gcode->has_g && gcode->g < 4 && gcode->has_letter('E') && this->enabled ){
         if( !gcode->has_letter('X') && !gcode->has_letter('Y') && !gcode->has_letter('Z') ){
             THEKERNEL->conveyor->append_gcode(gcode);
             // This is a solo move, we add an empty block to the queue to prevent subsequent gcodes being executed at the same time
@@ -202,7 +224,7 @@ void Extruder::on_gcode_execute(void* argument){
 
     if( gcode->has_g ){
         // G92: Reset extruder position
-        if( gcode->g == 92 ){
+        if( gcode->g == 92 && this->enabled ){
             gcode->mark_as_taken();
             if( gcode->has_letter('E') ){
                 this->current_position = gcode->get_value('E');
@@ -213,7 +235,7 @@ void Extruder::on_gcode_execute(void* argument){
                 this->target_position = this->current_position;
                 this->unstepped_distance = 0;
             }
-        }else if ((gcode->g == 0) || (gcode->g == 1)){
+        }else if (((gcode->g == 0) || (gcode->g == 1)) && this->enabled){
             // Extrusion length from 'G' Gcode
             if( gcode->has_letter('E' )){
                 // Get relative extrusion distance depending on mode ( in absolute mode we must substract target_position )
@@ -242,20 +264,22 @@ void Extruder::on_gcode_execute(void* argument){
 
                 this->en_pin.set(0);
             }
-            if (gcode->has_letter('F'))
-            {
-                feed_rate = gcode->get_value('F') / THEKERNEL->robot->seconds_per_minute;
-                if (feed_rate > max_speed)
-                    feed_rate = max_speed;
-            }
         }else if( gcode->g == 90 ){ this->absolute_mode = true;
         }else if( gcode->g == 91 ){ this->absolute_mode = false;
         }
+    }
+
+    if (gcode->has_letter('F') && this->enabled)
+    {
+        feed_rate = gcode->get_value('F') / THEKERNEL->robot->seconds_per_minute;
+        if (feed_rate > max_speed)
+            feed_rate = max_speed;
     }
 }
 
 // When a new block begins, either follow the robot, or step by ourselves ( or stay back and do nothing )
 void Extruder::on_block_begin(void* argument){
+    if(!this->enabled) return;
     Block* block = static_cast<Block*>(argument);
 
 
@@ -320,11 +344,13 @@ void Extruder::on_block_begin(void* argument){
 
 // When a block ends, pause the stepping interrupt
 void Extruder::on_block_end(void* argument){
+    if(!this->enabled) return;
     this->current_block = NULL;
 }
 
 // Called periodically to change the speed to match acceleration or to match the speed of the robot
 uint32_t Extruder::acceleration_tick(uint32_t dummy){
+    if(!this->enabled) return 0;
 
     // Avoid trying to work when we really shouldn't ( between blocks or re-entry )
     if( this->current_block == NULL ||  this->paused || this->mode != SOLO ){ return 0; }
@@ -346,6 +372,7 @@ uint32_t Extruder::acceleration_tick(uint32_t dummy){
 
 // Speed has been updated for the robot's stepper, we must update accordingly
 void Extruder::on_speed_change( void* argument ){
+    if(!this->enabled) return;
 
     // Avoid trying to work when we really shouldn't ( between blocks or re-entry )
     if( this->current_block == NULL ||  this->paused || this->mode != FOLLOW || this->stepper_motor->moving != true ){ return; }
@@ -367,6 +394,7 @@ void Extruder::on_speed_change( void* argument ){
 
 // When the stepper has finished it's move
 uint32_t Extruder::stepper_motor_finished_move(uint32_t dummy){
+    if(!this->enabled) return 0;
 
     //printf("extruder releasing\r\n");
 
@@ -377,5 +405,17 @@ uint32_t Extruder::stepper_motor_finished_move(uint32_t dummy){
     }
     return 0;
 
+}
+
+void Extruder::enable(){
+    this->enabled = true;
+}
+
+void Extruder::disable(){
+    this->enabled = false;
+}
+
+float* Extruder::get_offset(){
+    return this->offset;
 }
 

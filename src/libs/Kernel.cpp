@@ -21,7 +21,7 @@
 #include "libs/PublicData.h"
 #include "modules/communication/SerialConsole.h"
 #include "modules/communication/GcodeDispatch.h"
-#include "modules/tools/toolsmanager/ToolsManager.h"
+#include "modules/tools/toolmanager/ToolManager.h"
 #include "modules/robot/Planner.h"
 #include "modules/robot/Robot.h"
 #include "modules/robot/Stepper.h"
@@ -130,7 +130,7 @@ Kernel::Kernel(){
     this->add_module( this->conveyor       = new Conveyor()      );
     this->add_module( this->pauser         = new Pauser()        );
     this->add_module( this->public_data    = new PublicData()    );
-    this->add_module( this->toolsmanager   = new ToolsManager()    );
+    this->add_module( this->toolmanager   = new ToolManager()    );
 
 }
 
