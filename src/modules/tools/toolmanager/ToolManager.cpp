@@ -17,6 +17,7 @@ using namespace std;
 #include "checksumm.h"
 #include "PublicData.h"
 #include "Gcode.h"
+#include <cstdio>
 
 #include "modules/robot/RobotPublicAccess.h"
 
