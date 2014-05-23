@@ -262,8 +262,8 @@ void WatchScreen::display_menu_line(uint16_t line)
 {
     // in menu mode
     switch ( line ) {
-        case 0: this->panel->lcd->printf("HL%03d/%03dc HR%03d/%03dc", this->hotendtemp, this->hotendtarget, this->hotend2temp, this->hotend2target); break;
-        case 1: this->panel->lcd->printf("B%03d/%03dc  P%03d/%03dc", this->bedtemp, this->bedtarget, this->pcbtemp, this->pcbtarget); break;
+        case 0: this->panel->lcd->printf("T0=%03d/%03dc B=%03d/%03dc", this->hotendtemp, this->hotendtarget, this->bedtemp, this->bedtarget); break;
+        case 1: this->panel->lcd->printf("T1=%03d/%03dc P=%03d/%03dc",  this->hotend2temp, this->hotend2target, this->pcbtemp, this->pcbtarget); break;
         case 2: this->panel->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
         case 3: this->panel->lcd->printf("%3d%% %2lu:%02lu %3u%% sd", this->current_speed, this->elapsed_time / 60, this->elapsed_time % 60, this->sd_pcnt_played); break;
         case 4: this->panel->lcd->printf("%19s", this->get_status()); break;
