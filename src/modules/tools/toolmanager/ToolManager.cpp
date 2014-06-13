@@ -11,7 +11,11 @@
 using namespace std;
 #include <vector>
 #include "ToolManager.h"
+#include "Tool.h"
+#include "PublicDataRequest.h"
+#include "ToolManagerPublicAccess.h"
 #include "Config.h"
+#include "Robot.h"
 #include "ConfigValue.h"
 #include "Conveyor.h"
 #include "checksumm.h"
@@ -19,16 +23,17 @@ using namespace std;
 #include "Gcode.h"
 #include <cstdio>
 
+#include "libs/SerialMessage.h"
+#include "libs/StreamOutput.h"
+#include "FileStream.h"
+
 #include "modules/robot/RobotPublicAccess.h"
 
 #define return_error_on_unhandled_gcode_checksum    CHECKSUM("return_error_on_unhandled_gcode")
 
-#define X_AXIS      0
-#define Y_AXIS      1
-#define Z_AXIS      2
-
 ToolManager::ToolManager(){
     active_tool = 0;
+    current_tool_name = CHECKSUM("hotend");
 }
 
 void ToolManager::on_module_loaded(){
@@ -36,6 +41,8 @@ void ToolManager::on_module_loaded(){
 
     this->register_for_event(ON_CONFIG_RELOAD);
     this->register_for_event(ON_GCODE_RECEIVED);
+    this->register_for_event(ON_GET_PUBLIC_DATA);
+    this->register_for_event(ON_SET_PUBLIC_DATA);
 }
 
 void ToolManager::on_config_reload(void *argument){
@@ -47,10 +54,6 @@ void ToolManager::on_gcode_received(void *argument){
 
     if( gcode->has_letter('T') ){
         int new_tool = gcode->get_value('T');
-        bool make_move = false;
-        if ( gcode->has_letter('F') ){
-            make_move = true;
-        }
         gcode->mark_as_taken();
         if(new_tool >= (int)this->tools.size() || new_tool < 0){
             // invalid tool
@@ -61,53 +64,63 @@ void ToolManager::on_gcode_received(void *argument){
             }
         } else {
             if(new_tool != this->active_tool){
-                void *returned_data;
+                // We must wait for an empty queue before we can disable the current extruder
                 THEKERNEL->conveyor->wait_for_empty_queue();
-                bool ok = THEKERNEL->public_data->get_value( robot_checksum, current_position_checksum, &returned_data );
-                if(ok){
-                    // save current position to return to after applying extruder offset
-                    float *pos = static_cast<float *>(returned_data);
-                    float current_pos[3];
-                    for(int i=0;i<3;i++){
-                        current_pos[i] = pos[i];
-                    }
-                    // update virtual tool position to the offset of the new tool and select it as active
-                    float new_pos[3];
-                    float *active_tool_offset = tools[this->active_tool]->get_offset();
-                    float *new_tool_offset = tools[new_tool]->get_offset();
-                    for(int i=0;i<3;i++){
-                        new_pos[i] = current_pos[i] - active_tool_offset[i] + new_tool_offset[i];
-                    }
+                this->tools[active_tool]->disable();
+                this->active_tool = new_tool;
+                this->current_tool_name = this->tools[active_tool]->get_name();
+                this->tools[active_tool]->enable();
 
-                    this->tools[active_tool]->disable();
-                    this->active_tool = new_tool;
-                    this->tools[active_tool]->enable();
-
-                    char buf[32];
-                    snprintf(buf, 31, "G92 X%g Y%g Z%g", new_pos[X_AXIS], new_pos[Y_AXIS], new_pos[Z_AXIS]);
-                    string s = buf;
-                    Gcode *g = new Gcode(s, gcode->stream);
-                    THEKERNEL->call_event(ON_GCODE_RECEIVED, g);
-                    delete g;
-
-                    if(make_move){
-                        //move to old position
-                        snprintf(buf, 31, "G0 X%g Y%g Z%g", current_pos[X_AXIS], current_pos[Y_AXIS], current_pos[Z_AXIS]);
-                        s = buf;
-                        g = new Gcode(s, gcode->stream);
-                        THEKERNEL->call_event(ON_GCODE_RECEIVED, g);
-                        delete g;
-                    }
-                }
+                //send new_tool_offsets to robot
+                const float *new_tool_offset = tools[new_tool]->get_offset();
+                THEKERNEL->robot->setToolOffset(new_tool_offset);
             }
         }
     }
+}
+
+void ToolManager::on_get_public_data(void* argument){
+    PublicDataRequest* pdr = static_cast<PublicDataRequest*>(argument);
+
+    if(!pdr->starts_with(tool_manager_checksum)) return;
+    if(!pdr->second_element_is(is_active_tool_checksum)) return;
+
+    // check that we control the given tool
+    bool managed= false;
+    for(auto t : tools) {
+        uint16_t n= t->get_name();
+        if(pdr->third_element_is(n)){
+            managed= true;
+            break;
+        }
+    }
+
+    // we are not managing this tool so do not answer
+    if(!managed) return;
+
+    pdr->set_data_ptr(&this->current_tool_name);
+    pdr->set_taken();
+}
+
+void ToolManager::on_set_public_data(void* argument){
+    PublicDataRequest* pdr = static_cast<PublicDataRequest*>(argument);
+
+    if(!pdr->starts_with(tool_manager_checksum)) return;
+
+    // ok this is targeted at us, so change tools
+    //uint16_t tool_name= *static_cast<float*>(pdr->get_data_ptr());
+    // TODO: fire a tool change gcode
+    //pdr->set_taken();
 }
 
 // Add a tool to the tool list
 void ToolManager::add_tool(Tool* tool_to_add){
     if(this->tools.size() == 0){
         tool_to_add->enable();
+        this->current_tool_name = tool_to_add->get_name();
+        //send new_tool_offsets to robot
+        const float *new_tool_offset = tool_to_add->get_offset();
+        THEKERNEL->robot->setToolOffset(new_tool_offset);
     } else {
         tool_to_add->disable();
     }

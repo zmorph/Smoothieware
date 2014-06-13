@@ -44,6 +44,7 @@
 #include "libs/USBDevice/DFU.h"
 #include "libs/SDFAT.h"
 #include "StreamOutputPool.h"
+#include "ToolManager.h"
 
 #include "libs/Watchdog.h"
 
@@ -59,18 +60,17 @@
 // Watchdog wd(5000000, WDT_MRI);
 
 // USB Stuff
-SDCard sd(P0_9, P0_8, P0_7, P0_6);      // this selects SPI1 as the sdcard as it is on Smoothieboard
+SDCard sd  __attribute__ ((section ("AHBSRAM0"))) (P0_9, P0_8, P0_7, P0_6);      // this selects SPI1 as the sdcard as it is on Smoothieboard
 //SDCard sd(P0_18, P0_17, P0_15, P0_16);  // this selects SPI0 as the sdcard
 
-USB u;
-//USBSerial usbserial(&u);
+USB u __attribute__ ((section ("AHBSRAM0")));
 USBMessageStream usbmessagestream(&u);
-USBMSD msc(&u, &sd);
+//USBSerial usbserial __attribute__ ((section ("AHBSRAM0"))) (&u);
+USBMSD msc __attribute__ ((section ("AHBSRAM0"))) (&u, &sd);
 //USBMSD *msc= NULL;
-//DFU dfu(&u);
-//USBMouse mouse(&u);
+//DFU dfu __attribute__ ((section ("AHBSRAM0"))) (&u);
 
-SDFAT mounter("sd", &sd);
+SDFAT mounter __attribute__ ((section ("AHBSRAM0"))) ("sd", &sd);
 
 GPIO leds[5] = {
     GPIO(P1_18),
@@ -118,11 +118,12 @@ int main() {
     kernel->add_module( new Player() );
 
     // these modules can be completely disabled in the Makefile by adding to EXCLUDE_MODULES
-    #ifndef NO_TOOLS_TEMPERATURECONTROL
-    kernel->add_module( new TemperatureControlPool() );
-    #endif
     #ifndef NO_TOOLS_EXTRUDER
     kernel->add_module( new ExtruderMaker() );
+    #endif
+    #ifndef NO_TOOLS_TEMPERATURECONTROL
+    // Note order is important here must be after extruder
+    kernel->add_module( new TemperatureControlPool() );
     #endif
     #ifndef NO_TOOLS_LASER
     kernel->add_module( new Laser() );

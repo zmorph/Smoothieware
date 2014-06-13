@@ -205,7 +205,7 @@ void Network::on_idle(void *argument)
 {
     if (!ethernet->isUp()) return;
 
-    int len;
+    int len= sizeof(uip_buf); // set maximum size
     int count = 0;
     //printf("Before recieve...\n");
     bool recieved = false;

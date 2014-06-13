@@ -11,7 +11,6 @@
 #include "libs/nuts_bolts.h"
 #include "libs/SlowTicker.h"
 #include "libs/Adc.h"
-#include "libs/Pauser.h"
 #include "libs/StreamOutputPool.h"
 #include <mri.h>
 #include "checksumm.h"
@@ -21,17 +20,20 @@
 #include "libs/PublicData.h"
 #include "modules/communication/SerialConsole.h"
 #include "modules/communication/GcodeDispatch.h"
-#include "modules/tools/toolmanager/ToolManager.h"
 #include "modules/robot/Planner.h"
 #include "modules/robot/Robot.h"
 #include "modules/robot/Stepper.h"
 #include "modules/robot/Conveyor.h"
+#include "modules/robot/Pauser.h"
 
 #include <malloc.h>
 #include <array>
 
 #define baud_rate_setting_checksum CHECKSUM("baud_rate")
 #define uart0_checksum             CHECKSUM("uart0")
+
+#define base_stepping_frequency_checksum            CHECKSUM("base_stepping_frequency")
+#define microseconds_per_step_pulse_checksum        CHECKSUM("microseconds_per_step_pulse")
 
 Kernel* Kernel::instance;
 
@@ -130,8 +132,6 @@ Kernel::Kernel(){
     this->add_module( this->conveyor       = new Conveyor()      );
     this->add_module( this->pauser         = new Pauser()        );
     this->add_module( this->public_data    = new PublicData()    );
-    this->add_module( this->toolmanager   = new ToolManager()    );
-
 }
 
 // Add a module to Kernel. We don't actually hold a list of modules, we just tell it where Kernel is
