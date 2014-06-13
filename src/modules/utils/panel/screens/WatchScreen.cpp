@@ -61,7 +61,7 @@ WatchScreen::WatchScreen()
 void WatchScreen::on_enter()
 {
     THEPANEL->lcd->clear();
-    THEPANEL->setup_menu(4);
+    THEPANEL->setup_menu(5);
     get_temp_data();
     get_current_pos(this->pos);
     get_sd_play_info();
@@ -121,18 +121,24 @@ void WatchScreen::on_refresh()
 
         if (THEPANEL->lcd->hasGraphics()) {
             // display the graphical icons below the status are
-            //THEPANEL->lcd->bltGlyph(0, 34, 115, 19, icons);
-            // for (int i = 0; i < 5; ++i) {
+            int x_start = 0;
+            int y_start = 45;
+            // this->panel->lcd->bltGlyph(0, 45, 115, 19, icons);
+            //for (int i = 0; i < 5; ++i) {
             //     THEPANEL->lcd->bltGlyph(i*24, 38, 23, 19, icons, 15, i*24, 0);
             // }
+
             if (this->hotendtarget > 0)
-                THEPANEL->lcd->bltGlyph(8, 38, 20, 19, icons, 15, 0, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 8  , y_start, 20, 19, icons, 15, 0, 0);
+
+            if (this->hotend2target >0)
+                THEPANEL->lcd->bltGlyph(x_start + 24 , y_start, 20, 19, icons, 15, 24, 0);
 
             if (this->bedtarget > 0)
-                THEPANEL->lcd->bltGlyph(32, 38, 23, 19, icons, 15, 64, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 40 , y_start, 23, 19, icons, 15, 64, 0);
 
             if(this->fan_state)
-                THEPANEL->lcd->bltGlyph(96, 38, 23, 19, icons, 15, 96, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 96 , y_start, 23, 19, icons, 15, 96, 0);
         }
     }
 }
@@ -165,6 +171,18 @@ void WatchScreen::get_temp_data()
         this->bedtarget = -1;
     }
 
+    ok = THEKERNEL->public_data->get_value( temperature_control_checksum, pcb_checksum, current_temperature_checksum, &returned_data );
+    if (ok) {
+        struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
+        this->pcbtemp = round(temp.current_temperature);
+        if (this->pcbtemp > 100000) this->hotendtemp = -2;
+        this->pcbtarget = round(temp.target_temperature);
+        //this->hotendpwm= temp.pwm;
+    } else {
+        // temp probably disabled
+        this->pcbtemp = -1;
+        this->pcbtarget = -1;
+    }
 
     ok = THEKERNEL->public_data->get_value( temperature_control_checksum, hotend_checksum, current_temperature_checksum, &returned_data );
     if (ok) {
@@ -172,11 +190,25 @@ void WatchScreen::get_temp_data()
         this->hotendtemp = round(temp.current_temperature);
         if (this->hotendtemp > 100000) this->hotendtemp = -2;
         this->hotendtarget = round(temp.target_temperature);
-        //this->hotendpwm= temp.pwm;
+        //this->pcbpwm= temp.pwm;
     } else {
         // temp probably disabled
         this->hotendtemp = -1;
         this->hotendtarget = -1;
+    }
+
+
+    ok = THEKERNEL->public_data->get_value( temperature_control_checksum, hotend2_checksum, current_temperature_checksum, &returned_data );
+    if (ok) {
+        struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
+        this->hotend2temp = round(temp.current_temperature);
+        if (this->hotend2temp > 100000) this->hotend2temp = -2;
+        this->hotend2target = round(temp.target_temperature);
+        //this->hotend2pwm= temp.pwm;
+    } else {
+        // temp probably disabled
+        this->hotend2temp = -1;
+        this->hotend2target = -1;
     }
 
     // get fan status
@@ -236,10 +268,16 @@ void WatchScreen::display_menu_line(uint16_t line)
 {
     // in menu mode
     switch ( line ) {
-        case 0: THEPANEL->lcd->printf("H%03d/%03dc B%03d/%03dc", this->hotendtemp, this->hotendtarget, this->bedtemp, this->bedtarget); break;
-        case 1: THEPANEL->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
-        case 2: THEPANEL->lcd->printf("%3d%% %2lu:%02lu %3u%% sd", this->current_speed, this->elapsed_time / 60, this->elapsed_time % 60, this->sd_pcnt_played); break;
-        case 3: THEPANEL->lcd->printf("%19s", this->get_status()); break;
+        case 0: {
+            char hotendtemp_text[12]{};
+            char hotend2temp_text[12]{};
+            if(hotendtemp != -2) { sprintf(hotendtemp_text, "H=%03d/%03dc ", this->hotendtemp,  this->hotendtarget); }
+            if(hotend2temp != -2) { sprintf(hotend2temp_text, "Q=%03d/%03dc", this->hotend2temp,  this->hotend2target); }
+                THEPANEL->lcd->printf("%s%s", hotendtemp_text, hotend2temp_text); break; }
+        case 1: THEPANEL->lcd->printf("B=%03d/%03dc P=%03d/%03dc", this->bedtemp,    this->bedtarget,    this->pcbtemp,      this->pcbtarget); break;
+        case 2: THEPANEL->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
+        case 3: THEPANEL->lcd->printf("%3d%% %2lu:%02lu %3u%% sd", this->current_speed, this->elapsed_time / 60, this->elapsed_time % 60, this->sd_pcnt_played); break;
+        case 4: THEPANEL->lcd->printf("%19s", this->get_status()); break;
     }
 }
 

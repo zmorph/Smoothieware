@@ -33,6 +33,10 @@ private:
     bool fan_state;
     int hotendtemp;
     int hotendtarget;
+    int hotend2temp;
+    int hotend2target;
+    int pcbtemp;
+    int pcbtarget;
     int bedtemp;
     int bedtarget;
     int current_speed;
