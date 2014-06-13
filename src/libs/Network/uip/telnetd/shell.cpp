@@ -204,7 +204,7 @@ static const struct ptentry parsetab[] = {
     {"quit", quit},
     {"test", test},
     {"?", help},
-    {CHECKSUM("buffer"), bufferinfo},
+    {"buffer", bufferinfo},
 
     /* Default action */
     {0, unknown}

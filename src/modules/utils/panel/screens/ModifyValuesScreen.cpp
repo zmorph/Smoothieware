@@ -44,6 +44,9 @@ void ModifyValuesScreen::on_enter()
 
 void ModifyValuesScreen::on_refresh()
 {
+    constexpr int hotend_start_temperature {150};
+    constexpr int bed_start_temperature {30};
+
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
     }
@@ -59,6 +62,7 @@ void ModifyValuesScreen::on_refresh()
 
         } else if (THEPANEL->control_value_change()) {
             float value = THEPANEL->get_control_value();
+
             if(!isnan(this->min_value) && value < this->min_value) {
                 THEPANEL->set_control_value((value = this->min_value));
                 THEPANEL->reset_counter();
@@ -67,6 +71,24 @@ void ModifyValuesScreen::on_refresh()
                 THEPANEL->set_control_value((value = this->max_value));
                 THEPANEL->reset_counter();
             }
+
+            if (selected_item_name == 'T' || selected_item_name == 'Q') {
+                if (value < 10 && value > 0)
+                    value = hotend_start_temperature;
+                else if (value < hotend_start_temperature)
+                    value = 0;
+                THEPANEL->set_control_value(value); 
+                THEPANEL->reset_counter();
+            }
+            else if (selected_item_name == 'B') {                
+                if (value < 10 && value > 0)
+                    value = bed_start_temperature;
+                else if (value < bed_start_temperature)
+                    value = 0;
+                THEPANEL->set_control_value(value); 
+                THEPANEL->reset_counter();
+            }
+
             THEPANEL->lcd->setCursor(0, 2);
             THEPANEL->lcd->printf("%10.3f    ", value);
         }
@@ -113,6 +135,8 @@ void ModifyValuesScreen::clicked_menu_entry(uint16_t line)
         THEPANEL->lcd->printf("%s", name);
         THEPANEL->lcd->setCursor(0, 2);
         THEPANEL->lcd->printf("%10.3f", value);
+
+        selected_item_name = name[0];
     }
 }
 

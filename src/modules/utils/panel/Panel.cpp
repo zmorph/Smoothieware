@@ -612,16 +612,22 @@ void Panel::setup_temperature_screen()
 
         struct pad_temperature t =  *static_cast<struct pad_temperature *>(returned_data);
 
+        if (t.designator == "P")
+            continue;
+
         // rename if two of the known types
         const char *name;
-        if(t.designator == "T") name= "Hotend";
-        else if(t.designator == "B") name= "Bed";
-        else name= t.designator.c_str();
+        /*if(t.designator == "T") name= "Hotend";
+        //else if(t.designator == "Q") name= "Hotend2";
+        //else if(t.designator == "B") name= "Bed";
+        else*/ name= t.designator.c_str();
 
         mvs->addMenuItem(name, // menu name
             [i]() -> float { return getTargetTemperature(i); }, // getter
-            [i](float t) { THEKERNEL->public_data->set_value( temperature_control_checksum, i, &t ); }, // setter
-            1.0F, // increment
+            [i](float t) {
+                THEKERNEL->public_data->set_value( temperature_control_checksum, i, &t ); 
+            }, // setter
+            5.0F, // increment
             0.0F, // Min
             500.0F // Max
             );

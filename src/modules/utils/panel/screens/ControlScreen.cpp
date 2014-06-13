@@ -60,8 +60,8 @@ void ControlScreen::on_refresh()
             if( (min_axis_value <= THEPANEL->get_control_value()) && 
                 (max_axis_value_table[this->controlled_axis - 'X'] >= THEPANEL->get_control_value())) {
 
-                this->pos[this->controlled_axis - 'X'] = this->panel->get_control_value();
-                this->panel->lcd->setCursor(0, 2);
+                this->pos[this->controlled_axis - 'X'] = THEPANEL->get_control_value();
+                THEPANEL->lcd->setCursor(0, 2);
                 this->display_axis_line(this->controlled_axis);
                 this->pos_changed = true; // make the gcode in main_loop
             }

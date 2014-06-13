@@ -39,6 +39,8 @@ private:
     float new_value, min_value, max_value;
     char control_mode;
     int selected_item;
+
+    char selected_item_name;
     // name, getter function, setter function, increment
     std::vector<MenuItemType> menu_items;
 };
