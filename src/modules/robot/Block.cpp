@@ -238,7 +238,7 @@ float Block::max_exit_speed()
 void Block::append_gcode(Gcode* gcode)
 {
     Gcode new_gcode = *gcode;
-    gcodes.push_back(new_gcode);
+    gcodes.push_back(std::move(new_gcode));
 }
 
 void Block::begin()
