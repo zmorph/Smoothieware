@@ -72,7 +72,7 @@ void ModifyValuesScreen::on_refresh()
                 THEPANEL->reset_counter();
             }
 
-            if (selected_item_name == 'T' || selected_item_name == 'Q') {
+            if (selected_item_name == 'T' || selected_item_name == 'H' || selected_item_name == 'Q') {
                 if (value < 10 && value > 0)
                     value = hotend_start_temperature;
                 else if (value < hotend_start_temperature)

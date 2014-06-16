@@ -617,10 +617,10 @@ void Panel::setup_temperature_screen()
 
         // rename if two of the known types
         const char *name;
-        /*if(t.designator == "T") name= "Hotend";
-        //else if(t.designator == "Q") name= "Hotend2";
-        //else if(t.designator == "B") name= "Bed";
-        else*/ name= t.designator.c_str();
+        if(t.designator == "T") name= "H";
+        else if(t.designator == "Q") name= "Q";
+        else if(t.designator == "B") name= "B";
+        else name= t.designator.c_str();
 
         mvs->addMenuItem(name, // menu name
             [i]() -> float { return getTargetTemperature(i); }, // getter

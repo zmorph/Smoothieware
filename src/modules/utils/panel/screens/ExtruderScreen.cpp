@@ -24,7 +24,7 @@ ExtruderScreen::ExtruderScreen()
 void ExtruderScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(3);
+    THEPANEL->setup_menu(5);
     this->refresh_menu();
 }
 
@@ -42,8 +42,10 @@ void ExtruderScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Back");  break;
-        case 1: THEPANEL->lcd->printf("Extrude 5mm"); break;
-        case 2: THEPANEL->lcd->printf("Retract 5mm");  break;
+        case 1: THEPANEL->lcd->printf("Extrude H 5mm"); break;
+        case 2: THEPANEL->lcd->printf("Retract H 5mm"); break;
+        case 3: THEPANEL->lcd->printf("Extrude Q 5mm"); break;
+        case 4: THEPANEL->lcd->printf("Retract Q 5mm"); break;
     }
 }
 
@@ -51,8 +53,10 @@ void ExtruderScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); return;
-        case 1: command = "G91\nG1 E5 F100\nG90"; break;
-        case 2: command = "G91\nG1 E-5 F100\nG90"; break;
+        case 1: command = "T0\nG91\nG1 E5 F100\nG90"; break;
+        case 2: command = "T0\nG91\nG1 E-5 F100\nG90"; break;
+        case 3: command = "T1\nG91\nG1 E5 F100\nG90"; break;
+        case 4: command = "T1\nG91\nG1 E-5 F100\nG90"; break;
     }
 }
 
