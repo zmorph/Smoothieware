@@ -624,15 +624,8 @@ void Panel::setup_temperature_screen()
 
         mvs->addMenuItem(name, // menu name
             [i]() -> float { return getTargetTemperature(i); }, // getter
-<<<<<<< HEAD
-            [i](float t) {
-                THEKERNEL->public_data->set_value( temperature_control_checksum, i, &t ); 
-            }, // setter
-            5.0F, // increment
-=======
             [i](float t) { PublicData::set_value( temperature_control_checksum, i, &t ); }, // setter
-            1.0F, // increment
->>>>>>> arthurwolf_edge
+            5.0F, // increment
             0.0F, // Min
             500.0F // Max
             );

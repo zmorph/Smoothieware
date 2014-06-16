@@ -171,7 +171,7 @@ void WatchScreen::get_temp_data()
         this->bedtarget = -1;
     }
 
-    ok = THEKERNEL->public_data->get_value( temperature_control_checksum, pcb_checksum, current_temperature_checksum, &returned_data );
+    ok = PublicData::get_value( temperature_control_checksum, pcb_checksum, current_temperature_checksum, &returned_data );
     if (ok) {
         struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
         this->pcbtemp = round(temp.current_temperature);
@@ -198,7 +198,7 @@ void WatchScreen::get_temp_data()
     }
 
 
-    ok = THEKERNEL->public_data->get_value( temperature_control_checksum, hotend2_checksum, current_temperature_checksum, &returned_data );
+    ok = PublicData::get_value( temperature_control_checksum, hotend2_checksum, current_temperature_checksum, &returned_data );
     if (ok) {
         struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
         this->hotend2temp = round(temp.current_temperature);

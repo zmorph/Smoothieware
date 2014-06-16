@@ -34,7 +34,7 @@ void USBMessageStream::on_main_loop(void *argument)
     {
     	iprintf("on_main_loop: there is nl in rx\n");
 
-        string received;
+        std::string received;
         //int idebug = 0;
         while (available())
         {
