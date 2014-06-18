@@ -5,6 +5,7 @@
     You should have received a copy of the GNU General Public License along with Smoothie. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <memory>
 
 #include "SimpleShell.h"
 #include "libs/Kernel.h"
@@ -339,10 +340,9 @@ void SimpleShell::save_command( string parameters, StreamOutput *stream )
     }
 
     // issue a M500 which will store values in the file stream
-    Gcode *gcode = new Gcode("M500", gs);
-    THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode );
+    auto gcode = std::unique_ptr<Gcode>(new Gcode("M500", gs));
+    THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode.get() );
     delete gs;
-    delete gcode;
 
     stream->printf("Settings Stored to %s\r\n", filename.c_str());
 }

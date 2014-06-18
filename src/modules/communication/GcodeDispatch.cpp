@@ -6,6 +6,7 @@
 */
 
 #include <string>
+#include <memory>
 using std::string;
 #include "libs/Module.h"
 #include "libs/Kernel.h"
@@ -108,7 +109,7 @@ try_again:
 
                 if(!uploading) {
                     //Prepare gcode for dispatch
-                    Gcode *gcode = new Gcode(single_command, new_message.stream);
+                    auto gcode = std::unique_ptr<Gcode>(new Gcode(single_command, new_message.stream));
 
                     if(gcode->has_g) {
                         last_g= gcode->g;
@@ -116,8 +117,6 @@ try_again:
                     if(gcode->has_m) {
                         switch (gcode->m) {
                             case 28: // start upload command
-                                delete gcode;
-
                                 this->upload_filename = "/sd/" + single_command.substr(4); // rest of line is filename
                                 // open file
                                 upload_fd = fopen(this->upload_filename.c_str(), "w");
@@ -134,16 +133,14 @@ try_again:
                                 // replace stream with one that writes to config-override file
                                 gcode->stream = new FileStream(THEKERNEL->config_override_filename());
                                 // dispatch the M500 here so we can free up the stream when done
-                                THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode );
+                                THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode.get() );
                                 delete gcode->stream;
-                                delete gcode;
                                 new_message.stream->printf("Settings Stored to %s\r\nok\r\n", THEKERNEL->config_override_filename());
                                 continue;
 
                             case 502: // M502 deletes config-override so everything defaults to what is in config
                                 remove(THEKERNEL->config_override_filename());
                                 new_message.stream->printf("config override file deleted %s, reboot needed\r\nok\r\n", THEKERNEL->config_override_filename());
-                                delete gcode;
                                 continue;
 
                             case 503: { // M503 display live settings and indicates if there is an override file
@@ -160,9 +157,9 @@ try_again:
                         }
                     }
 
-                    //printf("dispatch %p: '%s' G%d M%d...", gcode, gcode->command.c_str(), gcode->g, gcode->m);
+                    //printf("dispatch %p: '%s' G%d M%d...", gcode.get(), gcode->command.c_str(), gcode->g, gcode->m);
                     //Dispatch message!
-                    THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode );
+                    THEKERNEL->call_event(ON_GCODE_RECEIVED, gcode.get() );
                     if(gcode->add_nl)
                         new_message.stream->printf("\r\n");
 
@@ -173,9 +170,6 @@ try_again:
                         gcode->txt_after_ok.clear();
                     } else
                         new_message.stream->printf("ok\r\n");
-
-                    delete gcode;
-
                 } else {
                     // we are uploading a file so save it
                     if(single_command.substr(0, 3) == "M29") {

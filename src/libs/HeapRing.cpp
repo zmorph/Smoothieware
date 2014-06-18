@@ -11,13 +11,12 @@
 template<class kind> HeapRing<kind>::HeapRing()
 {
     head_i = tail_i = length = 0;
-    ring = NULL;
 }
 
-template<class kind> HeapRing<kind>::HeapRing(unsigned int length)
+template<class kind> HeapRing<kind>::HeapRing(unsigned int length) : 
+ring{new kind[length]}
 {
     head_i = tail_i = 0;
-    ring = new kind[length];
     // TODO: handle allocation failure
     this->length = length;
 }
@@ -28,10 +27,6 @@ template<class kind> HeapRing<kind>::HeapRing(unsigned int length)
 
 template<class kind> HeapRing<kind>::~HeapRing()
 {
-    head_i = tail_i = length = 0;
-    if (ring)
-        delete [] ring;
-    ring = NULL;
 }
 
 /*
@@ -163,9 +158,7 @@ template<class kind> bool HeapRing<kind>::resize(unsigned int length)
 
                 __enable_irq();
 
-                if (ring)
-                    delete [] ring;
-                ring = NULL;
+                ring.reset();
 
                 return true;
             }
@@ -176,55 +169,44 @@ template<class kind> bool HeapRing<kind>::resize(unsigned int length)
         }
 
         // Note: we don't use realloc so we can fall back to the existing ring if allocation fails
-        kind* newring = new kind[length];
+        std::unique_ptr<kind[]> newring { new kind[length] };
 
-        if (newring != NULL)
+        if (newring)
         {
-            kind* oldring = ring;
-
             __disable_irq();
 
             if (is_empty()) // check again in case something was pushed while malloc did its thing
             {
-                ring = newring;
+                ring = std::move(newring);
                 this->length = length;
                 head_i = tail_i = 0;
 
                 __enable_irq();
 
-                if (oldring)
-                    delete [] oldring;
-
                 return true;
             }
 
             __enable_irq();
-
-            delete [] newring;
         }
     }
 
     return false;
 }
 
-template<class kind> bool HeapRing<kind>::provide(kind* buffer, unsigned int length)
+template<class kind> bool HeapRing<kind>::provide(std::unique_ptr<kind[]> buffer, unsigned int length)
 {
     __disable_irq();
 
     if (is_empty())
     {
-        kind* oldring = ring;
-
-        if ((buffer != NULL) && (length > 0))
+        if ((buffer) && (length > 0))
         {
-            ring = buffer;
+            ring = std::move(buffer);
             this->length = length;
             head_i = tail_i = 0;
 
             __enable_irq();
-
-            if (oldring)
-                delete [] oldring;
+            
             return true;
         }
     }

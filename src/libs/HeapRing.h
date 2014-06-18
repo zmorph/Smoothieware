@@ -1,6 +1,8 @@
 #ifndef _HEAPRING_H
 #define _HEAPRING_H
 
+#include <memory>
+
 template<class kind> class HeapRing {
 
     // smoothie-specific friend classes
@@ -54,7 +56,7 @@ public:
      *
      * returns true on success, or false if queue is not empty
      */
-    bool provide(kind*, unsigned int length);
+    bool provide(std::unique_ptr<kind[]> buffer, unsigned int length);
 
 protected:
     /*
@@ -76,7 +78,7 @@ protected:
     volatile unsigned int tail_i;
 
 private:
-    kind* ring;
+    std::unique_ptr<kind[]> ring;
 };
 
 #endif /* _HEAPRING_H */
