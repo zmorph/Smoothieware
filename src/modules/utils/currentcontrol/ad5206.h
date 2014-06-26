@@ -31,7 +31,6 @@ class AD5206 : public DigipotBase {
 			}
         }
 
-
         //taken from 4pi firmware
         unsigned char current_to_wiper( float current ){
             unsigned int count = int((current*1000)*100/743); //6.8k resistor and 10k pot
@@ -43,6 +42,17 @@ class AD5206 : public DigipotBase {
         {
             return currents[channel];
         }
+				
+		void set_MCP4726_adress(int value)
+        {
+           ;
+        }
+		
+		void set_MCP4728_adress(int value)
+        {
+           ;
+        }
+
 
     private:
 

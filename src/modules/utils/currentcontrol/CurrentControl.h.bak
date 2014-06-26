@@ -19,12 +19,9 @@
 #define digipotchip_checksum                    CHECKSUM("digipotchip")
 #define digipot_max_current                     CHECKSUM("digipot_max_current")
 #define digipot_factor                          CHECKSUM("digipot_factor")
-#define mcp4728_adress                          CHECKSUM("mcp4728_adress")
-#define mcp4726_adress                          CHECKSUM("mcp4726_adress")
 
 #define mcp4451_checksum                        CHECKSUM("mcp4451")
 #define ad5206_checksum                         CHECKSUM("ad5206")
-#define mcp4728_checksum                        CHECKSUM("mcp4728")
 
 class CurrentControl : public Module {
     public:
