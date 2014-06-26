@@ -1,1 +1,1 @@
-IF X%1==X (copy C:\Users\PC\Documents\GitHub\Smoothieware-ZMorph-fork\LPC1768\main.bin F:\\FIRMWARE.bin) ELSE (copy C:\Users\PC\Documents\GitHub\Smoothieware-ZMorph-fork\LPC1768\main.bin %1:\\FIRMWARE.bin)
+IF X%1==X (copy %CD%\LPC1768\main.bin F:\\FIRMWARE.bin) ELSE (copy %CD%\LPC1768\main.bin %1:\\FIRMWARE.bin)
