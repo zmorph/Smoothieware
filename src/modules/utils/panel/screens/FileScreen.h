@@ -29,6 +29,7 @@ class FileScreen : public PanelScreen {
         uint16_t count_folder_content(std::string folder);
         void clicked_line(uint16_t line);
         void display_menu_line(uint16_t line);
+		bool is_a_gcode(string path);
         bool is_a_folder( string path );
         string file_at(uint16_t line);
 

@@ -107,10 +107,21 @@ void FileScreen::clicked_line(uint16_t line)
         }
 
         // start printing that file...
-        this->play_path = path;
-        this->start_play = true;
+		if(this->is_a_gcode(path))
+		{
+			this->play_path = path;
+			this->start_play = true;
+		}
     }
 
+}
+
+//check if a file has .g or .gcode extension
+bool FileScreen::is_a_gcode(string path)
+{
+	if(path.substr(path.find_last_of(".") + 1) == "g" || path.substr(path.find_last_of(".") + 1) == "gcode")
+    return true;
+	else return false;
 }
 
 // Check wether a line is a folder or a file
