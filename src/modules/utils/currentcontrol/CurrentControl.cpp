@@ -51,7 +51,7 @@ void CurrentControl::on_module_loaded(){
 
     // Get configuration
     this->alpha_current =           	
-    this->beta_current  =           THEKERNEL->config->value(beta_current_checksum   )->by_default(0.8f)->as_number();
+    this->beta_current  =           
     this->gamma_current =           THEKERNEL->config->value(gamma_current_checksum  )->by_default(0.8f)->as_number();
     this->delta_current =           THEKERNEL->config->value(delta_current_checksum  )->by_default(0.8f)->as_number();
     this->epsilon_current =         THEKERNEL->config->value(epsilon_current_checksum)->by_default(-1)->as_number();
