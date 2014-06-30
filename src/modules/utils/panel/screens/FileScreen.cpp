@@ -74,7 +74,7 @@ void FileScreen::display_menu_line(uint16_t line)
     if ( line == 0 ) {
         THEPANEL->lcd->printf("..");
     } else {
-        THEPANEL->lcd->printf("%s", (this->file_at(line - 1).substr(0, 18)).c_str());
+			THEPANEL->lcd->printf("%s", (this->file_at(line - 1).substr(0, 18)).c_str());
     }
 }
 
@@ -119,8 +119,9 @@ void FileScreen::clicked_line(uint16_t line)
 //check if a file has .g or .gcode extension
 bool FileScreen::is_a_gcode(string path)
 {
-	if(path.substr(path.find_last_of(".") + 1) == "g" || path.substr(path.find_last_of(".") + 1) == "gcode")
-    return true;
+	string extension = lc(path.substr(path.find_last_of(".") + 1));
+	if(extension == "g" || extension == "gcode")
+		return true;
 	else return false;
 }
 
@@ -151,19 +152,31 @@ string FileScreen::file_at(uint16_t line)
     d = opendir(this->current_folder.c_str());
     if (d != NULL) {
         while ((p = readdir(d)) != NULL) {
-            if ( count == line ) {
-                string to_return =  lc(string(p->d_name));
-                //printf("line: %u string:%s\r\n", line, to_return.c_str());
-                //if( to_return[to_return.length()-1] == '.' ){ to_return[to_return.length()-1] = 0x00; }
-                closedir(d);
-                return to_return;
-            }
+			if(is_acceptable(p->d_name))
+			{
+				if ( count == line ) {
+					string to_return =  lc(string(p->d_name));
+					//printf("line: %u string:%s\r\n", line, to_return.c_str());
+					//if( to_return[to_return.length()-1] == '.' ){ to_return[to_return.length()-1] = 0x00; }
+					closedir(d);
+					return to_return;
+				}
             count++;
+			}
         }
     }
 
     if (d != NULL) closedir(d);
     return "";
+}
+
+//compares string to banned file names
+bool FileScreen::is_acceptable(std::string name)
+{
+	if(name == "config") return false;
+	if(name == "FIRMWARE.CUR") return false;
+	if(name == "System Volume Information") return false;
+	return true;
 }
 
 // Count how many files there are in the current folder
@@ -175,7 +188,8 @@ uint16_t FileScreen::count_folder_content(std::string folder)
     d = opendir(folder.c_str());
     if (d != NULL) {
         while ((p = readdir(d)) != NULL) {
-            count++;
+			if(is_acceptable(p->d_name))
+				count++;
         }
         closedir(d);
         return count;
