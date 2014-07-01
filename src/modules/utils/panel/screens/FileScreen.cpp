@@ -128,6 +128,12 @@ bool FileScreen::is_a_gcode(string path)
 	else return false;
 }
 
+bool FileScreen::is_no_ext_file(string path)
+{
+	if (path.find_last_of(".") == string::npos) return true;
+	else return false;
+}
+
 // Check wether a line is a folder or a file
 bool FileScreen::is_a_folder( string path )
 {
@@ -156,10 +162,10 @@ string FileScreen::file_at(uint16_t line)
 //compares string to banned file names
 bool FileScreen::is_acceptable(std::string name)
 {
-	if(name == "config") return false;
-	if(name == "FIRMWARE.CUR") return false;
-	if(name == "System Volume Information") return false;
-	return true;
+	if(name == "config" || name == "System Volume Information") return false;
+	if(is_a_gcode(name) || is_no_ext_file(name))
+		return true;
+	else return false;
 }
 
 // Browse the current location and push files and folder to vector

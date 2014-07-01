@@ -34,6 +34,7 @@ class FileScreen : public PanelScreen {
 		bool is_acceptable(string name);
 		bool is_a_gcode(string path);
         bool is_a_folder( string path );
+		bool is_no_ext_file(string path);
         string file_at(uint16_t line);
 
 		vector<string> current_folder_content;
