@@ -58,7 +58,9 @@ void FileScreen::enter_folder(std::string folder)
     this->current_folder = folder;
 
     // We need the number of lines to setup the menu
-    uint16_t number_of_files_in_folder = this->count_folder_content(this->current_folder);
+	current_folder_content.clear();
+    this->browse_folder_content(this->current_folder);
+	uint16_t number_of_files_in_folder = current_folder_content.size();
 
     // Setup menu
     THEPANEL->setup_menu(number_of_files_in_folder + 1); // same number of files as menu items
@@ -84,6 +86,7 @@ void FileScreen::clicked_line(uint16_t line)
     if ( line == 0 ) {
         if ( this->current_folder.compare("/") == 0 ) {
             // Exit file navigation
+			current_folder_content.clear();
             THEPANEL->enter_screen(this->parent);
         } else {
             // Go up one folder
@@ -146,28 +149,8 @@ bool FileScreen::is_a_folder( string path )
 // Find the "line"th file in the current folder
 string FileScreen::file_at(uint16_t line)
 {
-    DIR *d;
-    struct dirent *p;
-    uint16_t count = 0;
-    d = opendir(this->current_folder.c_str());
-    if (d != NULL) {
-        while ((p = readdir(d)) != NULL) {
-			if(is_acceptable(p->d_name))
-			{
-				if ( count == line ) {
-					string to_return =  lc(string(p->d_name));
-					//printf("line: %u string:%s\r\n", line, to_return.c_str());
-					//if( to_return[to_return.length()-1] == '.' ){ to_return[to_return.length()-1] = 0x00; }
-					closedir(d);
-					return to_return;
-				}
-            count++;
-			}
-        }
-    }
-
-    if (d != NULL) closedir(d);
-    return "";
+	if(current_folder_content.size() > line) return current_folder_content[line];
+	else return "";
 }
 
 //compares string to banned file names
@@ -179,22 +162,18 @@ bool FileScreen::is_acceptable(std::string name)
 	return true;
 }
 
-// Count how many files there are in the current folder
-uint16_t FileScreen::count_folder_content(std::string folder)
+// Browse the current location and push files and folder to vector
+void FileScreen::browse_folder_content(std::string folder)
 {
     DIR *d;
     struct dirent *p;
-    uint16_t count = 0;
     d = opendir(folder.c_str());
     if (d != NULL) {
         while ((p = readdir(d)) != NULL) {
 			if(is_acceptable(p->d_name))
-				count++;
+				current_folder_content.push_back(p->d_name);
         }
         closedir(d);
-        return count;
-    } else {
-        return 0;
     }
 }
 void FileScreen::on_main_loop()
