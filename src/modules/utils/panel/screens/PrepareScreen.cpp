@@ -58,7 +58,7 @@ void PrepareScreen::display_menu_line(uint16_t line)
         //case 4: THEPANEL->lcd->printf("Pre Heat"       ); break;
         case 5: THEPANEL->lcd->printf("Motors OFF"     ); break;
         case 6: THEPANEL->lcd->printf("Set Temperature"); break;
-        case 7: THEPANEL->lcd->printf("Extrude"        ); break;
+        case 7: THEPANEL->lcd->printf("Extrude/Retract"); break;
         case 8: THEPANEL->lcd->printf("Cool Down"      ); break;
     }
 }
