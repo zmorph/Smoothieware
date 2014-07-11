@@ -17,9 +17,8 @@ planner_queue_size                           32               # Size of the plan
 acceleration                                 1500             # Acceleration in mm/second/second.
 acceleration_ticks_per_second                1000             # Number of times per second the speed is updated
 junction_deviation                           0.05             # Similar to the old "max_jerk", in millimeters, see : https://github.com/grbl/grbl/blob/master/planner.c#L409
+
                                                               # and https://github.com/grbl/grbl/wiki/Configuring-Grbl-v0.8 . Lower values mean being more careful, higher values means being faster and have more jerk
-
-
 # Stepper module configuration
 microseconds_per_step_pulse                  1                # Duration of step pulses to stepper drivers, in microseconds
 minimum_steps_per_minute                     1200             # Never step slower than this
@@ -53,7 +52,7 @@ second_usb_serial_enable                     false            # This enables a s
 
 # Extruder module configuration
 extruder.hotend.enable                          true          # Whether to activate the extruder module at all. All configuration is ignored if false
-extruder.hotend.steps_per_mm                    400          # Steps per mm for extruder stepper
+extruder.hotend.steps_per_mm                    400           # Steps per mm for extruder stepper
 extruder.hotend.default_feed_rate               600           # Default rate ( mm/minute ) for moves where only the extruder moves
 extruder.hotend.acceleration                    1000          # Acceleration for the stepper motor, as of 0.6, arbitrary ratio
 extruder.hotend.max_speed                       3000          # mm^3/s
@@ -81,13 +80,6 @@ extruder.hotend2.x_offset                        -11.25       # x offset from fi
 extruder.hotend2.y_offset                        0            # y offset from first tool in mm
 extruder.hotend2.z_offset                        0            # z offset from first tool in mm
 
-
-# Laser module configuration
-laser_module_enable                          false            # Whether to activate the laser module at all. All configuration is ignored if false.
-#laser_module_pin                             2.7             # this pin will be PWMed to control the laser
-#laser_module_max_power                       0.8             # this is the maximum duty cycle that will be applied to the laser
-#laser_module_tickle_power                    0.0             # this duty cycle will be used for travel moves to keep the laser active without actually burning
-#laser_module_pwm_period                      20              # this sets the pwm frequency, the value is the period in microseconds
 
 
 # Hotend temperature control configuration
@@ -217,7 +209,7 @@ play_led_pin                                 4.28!            #
 
 # Only needed on a smoothieboard
 currentcontrol_module_enable                 true             #
-digipotchip                                  ad5206           # for Sunbeama rev C  mcp4728, for Sunbeam rev A,B ad5206
+digipotchip                                  ad5206           # for Sunbeama rev C ma byc mcp4728, For Sunbeam rev A,B ad5206
 
 
 # Touch Probe
@@ -230,13 +222,21 @@ touchprobe_debounce_count                    100              # reports a touch 
 
 
 # Zprobe
-zprobe.enable                                true               # set to true to enable a zprobe
-zprobe.probe_pin                             1.24v              # pin probe is attached to if NC remove the !, Azteeg X5 this is 1.29
-zprobe.slow_feedrate                         1                  # mm/sec probe feed rate
-#zprobe.debounce_count                       100                # set if noisy
-zprobe.fast_feedrate                         4                  # move feedrate
-zprobe.probe_radius                          100                # where to probe, from center to probe points NB only needed for G32 on delta
-zprobe.probe_height                          5                  # how much above bed to start probe NB only needed for G32 on delta
+zprobe.enable                                true             # set to true to enable a zprobe
+zprobe.probe_pin                             1.24v            # pin probe is attached to if NC remove the !, Azteeg X5 this is 1.29
+zprobe.slow_feedrate                         1                # mm/sec probe feed rate
+#zprobe.debounce_count                       100              # set if noisy
+zprobe.fast_feedrate                         4                # move feedrate
+zprobe.probe_radius                          100              # where to probe, from center to probe points NB only needed for G32 on delta
+zprobe.probe_height                          5                # how much above bed to start probe NB only needed for G32 on delta
+
+
+# Laser module configuration
+laser_module_enable                          false             # Whether to activate the laser module at all. All configuration is ignored if false.
+#laser_module_pin                             2.4              # this pin will be PWMed to control the laser
+#laser_module_max_power                       0.6              # this is the maximum duty cycle that will be applied to the laser
+#laser_module_tickle_power                    0.0              # this duty cycle will be used for travel moves to keep the laser active without actually burning
+#laser_module_pwm_period                      100              # this sets the pwm frequency, the value is the period in microseconds
 
 
 # Network settings
@@ -279,4 +279,4 @@ custom_menu.CoolDown.command               M104_S0|M140_S0        #
 
 
 # Fan3 behavior
-leds_disable                                 true             # disable using leds after config loaded
+leds_disable                               true                   # disable using leds after config loade
