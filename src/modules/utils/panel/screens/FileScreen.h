@@ -31,13 +31,14 @@ class FileScreen : public PanelScreen {
         void browse_folder_content(std::string folder);
         void clicked_line(uint16_t line);
         void display_menu_line(uint16_t line);
-		bool is_acceptable(string name);
-		bool is_a_gcode(string path);
+        bool is_acceptable(string name);
+        bool is_a_gcode(string path);
         bool is_a_folder( string path );
-		bool is_no_ext_file(string path);
+        bool is_no_ext_file(string path);
         string file_at(uint16_t line);
+        int idle_timeout_secs() { return 60; }
 
-		vector<string> current_folder_content;
+        vector<string> current_folder_content;
         string current_folder;
 
     private:

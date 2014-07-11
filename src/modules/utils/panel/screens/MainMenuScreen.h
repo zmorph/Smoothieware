@@ -25,6 +25,7 @@ class MainMenuScreen : public PanelScreen {
         void on_enter();
         void display_menu_line(uint16_t line);
         void clicked_menu_entry(uint16_t line);
+        int idle_timeout_secs() { return 60; }
 
         PanelScreen* watch_screen;
         PanelScreen* file_screen;
