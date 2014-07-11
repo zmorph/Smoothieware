@@ -28,6 +28,10 @@ class ExtruderScreen : public PanelScreen {
         int idle_timeout_secs() { return 60; }
 
     private:
+      void get_temp_data();
+      int hotendtemp;
+      int hotend2temp;
+      int bedtemp;
       string command;
 };
 

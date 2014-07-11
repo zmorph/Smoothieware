@@ -17,6 +17,8 @@
 #include "PanelScreen.h"
 
 #include <string>
+#include <vector>
+
 using namespace std;
 
 class FileScreen : public PanelScreen {
@@ -26,13 +28,17 @@ class FileScreen : public PanelScreen {
         void on_refresh(); 
         void on_main_loop();
         void enter_folder(std::string folder);
-        uint16_t count_folder_content(std::string folder);
+        void browse_folder_content(std::string folder);
         void clicked_line(uint16_t line);
         void display_menu_line(uint16_t line);
+		bool is_acceptable(string name);
+		bool is_a_gcode(string path);
         bool is_a_folder( string path );
+		bool is_no_ext_file(string path);
         string file_at(uint16_t line);
 
-        std::string current_folder;
+		vector<string> current_folder_content;
+        string current_folder;
 
     private:
         void play(string path);

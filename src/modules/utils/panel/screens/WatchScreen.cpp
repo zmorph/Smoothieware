@@ -266,18 +266,33 @@ void WatchScreen::get_sd_play_info()
 
 void WatchScreen::display_menu_line(uint16_t line)
 {
+    // This solution didn't work when we have connected hotend and we don't have connected bed && pcb
+    if( this->hotendtemp == -2 && this->hotend2temp == -2) {
+        line++;
+    }
+    if( this->bedtemp == -2 && this->pcbtemp == -2) {
+        line++;
+    }
     // in menu mode
     switch ( line ) {
         case 0: {
             char hotendtemp_text[12]{};
             char hotend2temp_text[12]{};
-            if(hotendtemp != -2) { sprintf(hotendtemp_text, "H=%03d/%03dc ", this->hotendtemp,  this->hotendtarget); }
-            if(hotend2temp != -2) { sprintf(hotend2temp_text, "Q=%03d/%03dc", this->hotend2temp,  this->hotend2target); }
-                THEPANEL->lcd->printf("%s%s", hotendtemp_text, hotend2temp_text); break; }
-        case 1: THEPANEL->lcd->printf("B=%03d/%03dc P=%03d/%03dc", this->bedtemp,    this->bedtarget,    this->pcbtemp,      this->pcbtarget); break;
+            if ( this->hotendtemp != -2 ) { sprintf(hotendtemp_text, "H=%03d/%03dc ", this->hotendtemp,  this->hotendtarget); }
+            if ( this->hotend2temp != -2 ) { sprintf(hotend2temp_text, "Q=%03d/%03dc", this->hotend2temp,  this->hotend2target); }
+            THEPANEL->lcd->printf("%s%s", hotendtemp_text, hotend2temp_text);
+            break; }
+        case 1: {
+            char bedtemp_text[12]{};
+            char pcbtemp_text[12]{};
+            if ( this->bedtemp != -2 ) { sprintf(bedtemp_text, "B=%03d/%03dc ", this->bedtemp,  this->bedtarget); }
+            if ( this->pcbtemp != -2 ) { sprintf(pcbtemp_text, "PCB=%03d", this->pcbtemp); }
+            THEPANEL->lcd->printf("%s%s", bedtemp_text, pcbtemp_text);
+            break; }
         case 2: THEPANEL->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
         case 3: THEPANEL->lcd->printf("%3d%% %2lu:%02lu %3u%% sd", this->current_speed, this->elapsed_time / 60, this->elapsed_time % 60, this->sd_pcnt_played); break;
         case 4: THEPANEL->lcd->printf("%19s", this->get_status()); break;
+        default : break;
     }
 }
 
