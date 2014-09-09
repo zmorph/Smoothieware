@@ -173,16 +173,16 @@ void init() {
     u.init();
 
 //#ifdef DISABLEMSD
-//    if(sdok && msc != NULL){
-//        kernel->add_module( msc );
-//    }
+    if(sdok && msc != NULL){
+        kernel->add_module( msc );
+    }
 //#else
-    kernel->add_module( &msc );
+//    kernel->add_module( &msc );
 //#endif
 
-    //kernel->add_module( &usbserial );
     kernel->add_module( &usbmessagestream );
     //kernel->add_module( &mouse );
+    //kernel->add_module( &usbserial );
     //if( kernel->config->value( second_usb_serial_enable_checksum )->by_default(false)->as_bool() ){
     //    kernel->add_module( new USBSerial(&u) );
     //}
