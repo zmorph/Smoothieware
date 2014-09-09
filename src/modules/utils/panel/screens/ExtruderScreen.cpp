@@ -20,6 +20,7 @@
 #include "checksumm.h"
 #include <math.h>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 

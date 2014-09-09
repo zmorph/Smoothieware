@@ -173,12 +173,12 @@ void init() {
     u.init();
 
 //#ifdef DISABLEMSD
-    if(sdok && msc != NULL){
-        kernel->add_module( msc );
-    }
-#else
+//    if(sdok && msc != NULL){
+//        kernel->add_module( msc );
+//    }
+//#else
     kernel->add_module( &msc );
-#endif
+//#endif
 
     //kernel->add_module( &usbserial );
     kernel->add_module( &usbmessagestream );
