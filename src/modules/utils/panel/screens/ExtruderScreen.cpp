@@ -117,10 +117,10 @@ void ExtruderScreen::display_menu_line(uint16_t line)
         hotend2_enabled = false;
     }
 
-    if (!hotend_enabled && !hotend2_enabled && line > 0)
+    if (!hotend_enabled && !hotend2_enabled && line > 1)
         return;
 
-    if ((!hotend_enabled || !hotend2_enabled) && line > 2)
+    if ((!hotend_enabled || !hotend2_enabled) && line > 3)
         return;
 
     switch ( line ) {
