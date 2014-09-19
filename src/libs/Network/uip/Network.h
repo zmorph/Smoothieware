@@ -35,6 +35,7 @@ private:
     uint8_t ipaddr[4];
     uint8_t ipmask[4];
     uint8_t ipgw[4];
+    char *hostname;
     volatile uint32_t tickcnt;
 
 

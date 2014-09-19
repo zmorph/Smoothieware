@@ -8,14 +8,7 @@
 #ifndef EXTRUDERSCREEN_H
 #define EXTRUDERSCREEN_H
 
-#include "libs/Kernel.h"
-#include "libs/nuts_bolts.h"
-#include "libs/utils.h"
-#include "libs/Pin.h"
-#include "LcdBase.h"
-#include "Panel.h"
 #include "PanelScreen.h"
-
 
 class ExtruderScreen : public PanelScreen {
     public:
@@ -30,9 +23,10 @@ class ExtruderScreen : public PanelScreen {
     private:
       void get_temp_data();
       int hotendtemp;
+      void setupConfigSettings();
+      const char *command;
       int hotend2temp;
       int bedtemp;
-      string command;
 };
 
 #endif
