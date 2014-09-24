@@ -311,29 +311,17 @@ network.ip_address                           auto             # use dhcp to get 
 
 # Example of a custom menu entry, which will show up in the Custom entry.
 # NOTE _ gets converted to space in the menu and commands, | is used to separate multiple commands
-custom_menu.home_all.enable                true                   #
-custom_menu.home_all.name                  Home_All_Axis          #
-custom_menu.home_all.command               G28_X0_Y0|G28_Z0       #
+#custom_menu.preheatA.enable                true                   #
+#custom_menu.preheatA.name                  Preheat_ABS_250        #
+#custom_menu.preheatA.command               M104_S250|M140_S100    #
 
-custom_menu.home_xy.enable                 true                   #
-custom_menu.home_xy.name                   Home_XY                #
-custom_menu.home_xy.command                G28_X0_Y0              #
+#custom_menu.preheatP.enable                true                   #
+#custom_menu.preheatP.name                  Preheat_PLA_200        #
+#custom_menu.preheatP.command               M104_S200|M140_S60     #
 
-custom_menu.home_z.enable                  true                   #
-custom_menu.home_z.name                    Home_Z                 #
-custom_menu.home_z.command                 G28_Z0                 #
-
-custom_menu.preheatA.enable                true                   #
-custom_menu.preheatA.name                  Preheat_ABS_250        #
-custom_menu.preheatA.command               M104_S250|M140_S100    #
-
-custom_menu.preheatP.enable                true                   #
-custom_menu.preheatP.name                  Preheat_PLA_200        #
-custom_menu.preheatP.command               M104_S200|M140_S60     #
-
-custom_menu.CoolDown.enable                true                   #
-custom_menu.CoolDown.name                  Cool_Down              #
-custom_menu.CoolDown.command               M104_S0|M140_S0        #
+#custom_menu.CoolDown.enable                true                   #
+#custom_menu.CoolDown.name                  Cool_Down              #
+#custom_menu.CoolDown.command               M104_S0|M140_S0        #
 
 
 # Fan3 behavior
