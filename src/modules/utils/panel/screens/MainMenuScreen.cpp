@@ -93,7 +93,7 @@ void MainMenuScreen::setupConfigureScreen()
 void MainMenuScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(8);
+    THEPANEL->setup_menu(5);
     this->refresh_menu();
 }
 
@@ -115,9 +115,9 @@ void MainMenuScreen::display_menu_line(uint16_t line)
         case 2: THEPANEL->lcd->printf("Jog"); break;
         case 3: THEPANEL->lcd->printf("Prepare"); break;
         case 4: THEPANEL->lcd->printf("Custom"); break;
-        case 5: THEPANEL->lcd->printf("Configure"); break;
-        case 6: THEPANEL->lcd->printf("Probe"); break;
-        case 7: THEPANEL->lcd->printf("JogBasic"); break;
+        //case 5: THEPANEL->lcd->printf("Configure"); break;
+        //case 6: THEPANEL->lcd->printf("Probe"); break;
+        //case 7: THEPANEL->lcd->printf("JogBasic"); break;
     }
 }
 
@@ -129,9 +129,9 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
         case 2: THEPANEL->enter_screen(this->jog_screen     ); break;
         case 3: THEPANEL->enter_screen(this->prepare_screen ); break;
         case 4: THEPANEL->enter_screen(THEPANEL->custom_screen ); break;
-        case 5: setupConfigureScreen(); break;
-        case 6: THEPANEL->enter_screen((new ProbeScreen())->set_parent(this)); break;
-        case 8: THEPANEL->enter_screen(this->jog_screen_basic ); break;
+        //case 5: setupConfigureScreen(); break;
+        //case 6: THEPANEL->enter_screen((new ProbeScreen())->set_parent(this)); break;
+        //case 8: THEPANEL->enter_screen(this->jog_screen_basic ); break;
     }
 }
 
