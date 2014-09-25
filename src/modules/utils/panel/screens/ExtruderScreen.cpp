@@ -34,14 +34,14 @@ ExtruderScreen::ExtruderScreen()
 
 void ExtruderScreen::on_enter()
 {
-    int menu_line = 6;
+    int menu_line = 9;
     THEPANEL->enter_menu_mode();
     get_temp_data();
     if ( this->hotendtemp == -2 ) {
-        menu_line -= 2;
+        menu_line -= 4;
     }
     if ( this->hotend2temp == -2 ) {
-        menu_line -= 2;
+        menu_line -= 4;
     }
     THEPANEL->setup_menu(menu_line);
     this->refresh_menu();
@@ -100,36 +100,44 @@ void ExtruderScreen::get_temp_data()
 
 void ExtruderScreen::display_menu_line(uint16_t line)
 {
-    char extrude_H_text[19]{}, retract_H_text[19]{};
-    char extrude_Q_text[19]{}, retract_Q_text[19]{};
+    char extrude_H_text[19]{}, retract_H_text[19]{}, feed_H_text[19]{}, remove_H_text[19]{};
+    char extrude_Q_text[19]{}, retract_Q_text[19]{}, feed_Q_text[19]{}, remove_Q_text[19]{};
     bool hotend_enabled{true};
     bool hotend2_enabled{true};
     if ( this->hotendtemp != -2 ) {
         sprintf(extrude_H_text, "Extrude H 5mm      ");
         sprintf(retract_H_text, "Retract H 5mm      ");
+        sprintf(feed_H_text,    "Feed H             ");
+        sprintf(remove_H_text,  "Remove H           ");
     } else {
         hotend_enabled = false;
     }
     if ( this->hotend2temp != -2 ) {
         sprintf(extrude_Q_text, "Extrude Q 5mm      ");
         sprintf(retract_Q_text, "Retract Q 5mm      ");
+        sprintf(feed_Q_text,    "Feed Q             ");
+        sprintf(remove_Q_text,  "Remove Q           ");
     } else {
         hotend2_enabled = false;
     }
 
-    if (!hotend_enabled && !hotend2_enabled && line > 1)
+    if (!hotend_enabled && !hotend2_enabled && line > 0)
         return;
 
-    if ((!hotend_enabled || !hotend2_enabled) && line > 3)
+    if ((!hotend_enabled || !hotend2_enabled) && line > 4)
         return;
 
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Back", this->hotendtemp);  break;
-        case 1: THEPANEL->lcd->printf("Settings...");  break;
-        case 2: THEPANEL->lcd->printf("%19s", hotend_enabled?extrude_H_text:extrude_Q_text); break;
-        case 3: THEPANEL->lcd->printf("%19s", hotend_enabled?retract_H_text:retract_Q_text); break;
-        case 4: THEPANEL->lcd->printf("%19s", extrude_Q_text); break;
-        case 5: THEPANEL->lcd->printf("%19s", retract_Q_text); break;
+        case 1: THEPANEL->lcd->printf("%19s", hotend_enabled?extrude_H_text:extrude_Q_text); break;
+        case 2: THEPANEL->lcd->printf("%19s", hotend_enabled?retract_H_text:retract_Q_text); break;
+        case 3: THEPANEL->lcd->printf("%19s", hotend_enabled?feed_H_text:feed_Q_text); break;
+        case 4: THEPANEL->lcd->printf("%19s", hotend_enabled?remove_H_text:remove_Q_text); break;
+        case 5: THEPANEL->lcd->printf("%19s", extrude_Q_text); break;
+        case 6: THEPANEL->lcd->printf("%19s", retract_Q_text); break;
+        case 7: THEPANEL->lcd->printf("%19s", feed_Q_text); break;
+        case 8: THEPANEL->lcd->printf("%19s", remove_Q_text); break;
+        //case 9: THEPANEL->lcd->printf("Settings...");  break;
         default: break;
     }
 }
@@ -140,15 +148,19 @@ void ExtruderScreen::clicked_menu_entry(uint16_t line)
     bool hotend2_enabled{this->hotend2temp!=-2};
 
     if (!hotend_enabled && hotend2_enabled && line > 0)
-        line+=2;
+        line+=4;
 
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); return;
-        case 1: setupConfigSettings(); break; // lazy load
-        case 2: command = "T0\nG91\nG1 E5 F100\nG90"; break;
-        case 3: command = "T0\nG91\nG1 E-5 F100\nG90"; break;
-        case 4: command = "T1\nG91\nG1 E5 F100\nG90"; break;
-        case 5: command = "T1\nG91\nG1 E-5 F100\nG90"; break;
+        case 1: command = "T0\nG91\nG1 E5 F100\nG90"; break;
+        case 2: command = "T0\nG91\nG1 E-5 F100\nG90"; break;
+        case 3: command = "T0\nG91\nG1 E60 F200\nG1 E-10 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E10 F200\nG90"; break;
+        case 4: command = "T0\nG91\nG1 E-100 F500\nG90"; break;
+        case 5: command = "T1\nG91\nG1 E5 F100\nG90"; break;
+        case 6: command = "T1\nG91\nG1 E-5 F100\nG90"; break;
+        case 7: command = "T1\nG91\nG1 E60 F200\nG1 E-10 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E10 F200\nG90"; break;
+        case 8: command = "T1\nG91\nG1 E-100 F500\nG90"; break;
+        //case 9: setupConfigSettings(); break; // lazy load
         default : break;
     }
 }
