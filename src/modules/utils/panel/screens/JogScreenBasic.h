@@ -17,15 +17,32 @@ class JogScreen;
 class JogScreenBasic : public PanelScreen {
     public:
         JogScreenBasic();
+        void on_main_loop();
         void on_refresh();
         void on_enter();
         void display_menu_line(uint16_t line);
+        void set_jog_increment(float i) { jog_increment = i;}
         void clicked_menu_entry(uint16_t line);
         int idle_timeout_secs() { return 60; }
 
     private:
+        void display_axis_line(char axis);
+        void enter_axis_control(char axis);
+        void enter_menu_control();
+        void get_current_pos(float *p);
+        void set_current_pos(char axis, float p);
+        char control_mode;
+        char controlled_axis;
+        bool pos_changed;
+        float pos[3];
+        float jog_increment;
         ControlScreen *control_screen;
+        void preheat();
+        void cooldown();
+        void setup_temperature_screen();
+        PanelScreen *extruder_screen;
         JogScreen *jog_screen;
+        const char *command;
 };
 
 

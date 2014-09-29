@@ -9,31 +9,53 @@
 #include "libs/SerialMessage.h"
 #include "Panel.h"
 #include "PanelScreen.h"
-#include "LcdBase.h"
 #include "MainMenuScreen.h"
-#include "JogScreenBasic.h"
-#include "JogScreen.h"
 #include "ControlScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
 #include <string>
+#include "modules/robot/RobotPublicAccess.h"
+#include "PublicData.h"
+#include "checksumm.h"
+#include "LcdBase.h"
+#include "JogScreenBasic.h"
+#include "ExtruderScreen.h"
+#include "JogScreen.h"
+
+#include <math.h>
+#include <stdio.h>
 
 using namespace std;
 
+#define NULL_CONTROL_MODE        0
+#define AXIS_CONTROL_MODE        1
+#define INCREMENT_SELECTION_MODE 2
 
 JogScreenBasic::JogScreenBasic()
 {
+    this->command = nullptr;
+    this->control_mode = NULL_CONTROL_MODE;
+
     this->jog_screen     = new JogScreen();
     this->jog_screen->set_parent(this);
     this->control_screen = new ControlScreen();
     this->control_screen->set_parent(this);
+    // Children screens
+    if(THEPANEL->temperature_screen != nullptr) {
+        this->extruder_screen = (new ExtruderScreen())->set_parent(this);
+        THEPANEL->temperature_screen->set_parent(this);
+    }else{
+        this->extruder_screen= nullptr;
+    }
 }
 
 void JogScreenBasic::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(5);
+    THEPANEL->setup_menu(7);
+    get_current_pos(this->pos);
     this->refresh_menu();
+    this->pos_changed = false;
 }
 
 void JogScreenBasic::on_refresh()
@@ -41,30 +63,139 @@ void JogScreenBasic::on_refresh()
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
     }
+    uint16_t min_axis_value = 0;
+    uint16_t max_axis_value_table[] = { 230 , 240 , 165 }; // max_X, max_Y, max_Z
+
+
+    if (this->control_mode == AXIS_CONTROL_MODE) {
+
+        if ( THEPANEL->click() ) {
+            this->enter_menu_control();
+            this->refresh_menu();
+
+        } else if (THEPANEL->control_value_change()) {
+            if( (min_axis_value <= THEPANEL->get_control_value()) && 
+                (max_axis_value_table[this->controlled_axis - 'X'] >= THEPANEL->get_control_value())) {
+
+                this->pos[this->controlled_axis - 'X'] = THEPANEL->get_control_value();
+                THEPANEL->lcd->setCursor(0, 2);
+                this->display_axis_line(this->controlled_axis);
+                this->pos_changed = true; // make the gcode in main_loop
+            }
+        }
+
+    } else {
+        if ( THEPANEL->click() ) {
+            this->clicked_menu_entry(THEPANEL->get_menu_current_line());
+        }
+    }
+
     if ( THEPANEL->click() ) {
         this->clicked_menu_entry(THEPANEL->get_menu_current_line());
     }
+
+}
+
+// queuing commands needs to be done from main loop
+void JogScreenBasic::on_main_loop()
+{
+    // send gcode
+    if (this->command != nullptr) {
+        send_command(this->command);
+        this->command = nullptr;
+    } else if (this->pos_changed) {
+        this->pos_changed = false;
+        set_current_pos(this->controlled_axis, this->pos[this->controlled_axis - 'X']);
+    } else {
+        return;
+    }
+
+}
+
+void JogScreenBasic::display_axis_line(char axis)
+{
+    THEPANEL->lcd->printf("Move %c    %8.3f", axis, this->pos[axis - 'X']);
 }
 
 void JogScreenBasic::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Back");  break;
-        case 1: THEPANEL->lcd->printf("Move 10.0mm      \x7E"); break;
-        case 2: THEPANEL->lcd->printf("Move  1.0mm      \x7E");  break;
-        case 3: THEPANEL->lcd->printf("Move  0.1mm      \x7E");  break;
-        case 4: THEPANEL->lcd->printf("Advanced Jog     \x7E"); break;
+        case 1: THEPANEL->lcd->printf("Move X +/- 10mm  \x7E"); break;
+        case 2: THEPANEL->lcd->printf("Move Y +/- 10mm  \x7E"); break;
+        case 3: THEPANEL->lcd->printf("Move Z +/- 1mm   \x7E"); break;
+        case 4: THEPANEL->lcd->printf("Extrude/Retract  \x7E"); break;
+        case 5: THEPANEL->lcd->printf("Motors OFF       \x7E"); break;
+        case 6: THEPANEL->lcd->printf("Advanced Jog     \x7E"); break;
     }
 }
+
 
 void JogScreenBasic::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
-        case 0: THEPANEL->enter_screen(this->parent); return;
-        case 1: this->control_screen->set_jog_increment(10.0); break;
-        case 2: this->control_screen->set_jog_increment(1.0); break;
-        case 3: this->control_screen->set_jog_increment(0.1); break;
-        case 4: THEPANEL->enter_screen(this->jog_screen     ); break;
+        case 0: {
+            THEPANEL->enter_screen(this->parent);
+            return; }
+        case 1: {
+            this->set_jog_increment(10);
+            this->enter_axis_control('X');
+            return; }
+        case 2: {
+            this->set_jog_increment(10);
+            this->enter_axis_control('Y');
+            return; }
+        case 3: {
+            this->set_jog_increment(1);
+            this->enter_axis_control('Z');
+            return; }
+        case 4: {
+            THEPANEL->enter_screen(this->extruder_screen);
+            return; }
+        case 5: {
+            command = "M84";
+            return; }
+        case 6: {
+            THEPANEL->enter_screen(this->jog_screen);
+            return;}
     }
-    THEPANEL->enter_screen(this->control_screen);
+}
+
+void JogScreenBasic::enter_axis_control(char axis)
+{
+    this->control_mode = AXIS_CONTROL_MODE;
+    this->controlled_axis = axis;
+    THEPANEL->enter_control_mode(this->jog_increment, this->jog_increment / 10);
+    THEPANEL->set_control_value(this->pos[axis - 'X']);
+    THEPANEL->lcd->clear();
+    THEPANEL->lcd->setCursor(0, 2);
+    this->display_axis_line(this->controlled_axis);
+}
+
+void JogScreenBasic::enter_menu_control()
+{
+    this->control_mode = NULL_CONTROL_MODE;
+    THEPANEL->enter_menu_mode();
+}
+
+void JogScreenBasic::get_current_pos(float *cp)
+{
+    void *returned_data;
+
+    bool ok = PublicData::get_value( robot_checksum, current_position_checksum, &returned_data );
+    if (ok) {
+        float *p = static_cast<float *>(returned_data);
+        cp[0] = p[0];
+        cp[1] = p[1];
+        cp[2] = p[2];
+    }
+}
+
+void JogScreenBasic::set_current_pos(char axis, float p)
+{
+    // change pos by issuing a G0 Xnnn
+    char buf[32];
+    int n = snprintf(buf, sizeof(buf), "G0 %c%f F%d", axis, p, (int)round(THEPANEL->get_jogging_speed(axis)));
+    string g(buf, n);
+    send_gcode(g);
 }
