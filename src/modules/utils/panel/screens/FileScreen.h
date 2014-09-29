@@ -21,6 +21,8 @@ class FileScreen : public PanelScreen {
         void on_main_loop();
         void clicked_line(uint16_t line);
         void display_menu_line(uint16_t line);
+        int idle_timeout_secs() { return 60; };
+
 
     private:
         void enter_folder(const char *folder);
