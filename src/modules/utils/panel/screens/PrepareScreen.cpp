@@ -74,7 +74,7 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "G28 X0 Y0 G28 Z0"; break;
+        case 1: command = "G91 G1 Z1 G90 G28 X0 G28 Y0 G1 X115 Y125 G28 Z0"; break;
         case 2: command = "G28 X0"; break;
         //case 2: command = "G92 X0 Y0 Z0"; break;
         case 3: command = "G28 Y0"; break;
