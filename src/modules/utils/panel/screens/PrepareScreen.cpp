@@ -8,12 +8,12 @@
 #include "libs/Kernel.h"
 #include "Panel.h"
 #include "PanelScreen.h"
+#include "LcdBase.h"
 #include "PrepareScreen.h"
 #include "ExtruderScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
 #include "checksumm.h"
-#include "ModifyValuesScreen.h"
 #include "PublicDataRequest.h"
 #include "PublicData.h"
 #include "TemperatureControlPublicAccess.h"
@@ -23,15 +23,23 @@ using namespace std;
 
 PrepareScreen::PrepareScreen()
 {
+    this->command = nullptr;
+
     // Children screens
-    this->extruder_screen = (new ExtruderScreen()  )->set_parent(this);
-    THEPANEL->temperature_screen->set_parent(this);
+    if(THEPANEL->temperature_screen != nullptr) {
+        this->extruder_screen = (new ExtruderScreen())->set_parent(this);
+        THEPANEL->temperature_screen->set_parent(this);
+    }else{
+        this->extruder_screen= nullptr;
+    }
 }
 
 void PrepareScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(9);
+    // if no heaters or extruder then don't show related menu items
+    //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
+    THEPANEL->setup_menu(11);
     this->refresh_menu();
 }
 
@@ -51,15 +59,17 @@ void PrepareScreen::display_menu_line(uint16_t line)
         case 0: THEPANEL->lcd->printf("Back"           ); break;
         case 1: THEPANEL->lcd->printf("Home All Axis"  ); break;
         case 2: THEPANEL->lcd->printf("Home X"         ); break;
-        case 3: THEPANEL->lcd->printf("Home Y"         ); break;
-        case 4: THEPANEL->lcd->printf("Home Z"         ); break;
         //case 2: THEPANEL->lcd->printf("Set Home"       ); break;
+        case 3: THEPANEL->lcd->printf("Home Y"         ); break;
         //case 3: THEPANEL->lcd->printf("Set Z0"         ); break;
+        case 4: THEPANEL->lcd->printf("Home Z"         ); break;
         //case 4: THEPANEL->lcd->printf("Pre Heat"       ); break;
         case 5: THEPANEL->lcd->printf("Motors OFF"     ); break;
         case 6: THEPANEL->lcd->printf("Set Temperature"); break;
-        case 7: THEPANEL->lcd->printf("Extrude/Retract"); break;
-        case 8: THEPANEL->lcd->printf("Cool Down"      ); break;
+        case 7: THEPANEL->lcd->printf("Preheat PLA 200"); break;
+        case 8: THEPANEL->lcd->printf("Preheat ABS 245"); break;
+        case 9: THEPANEL->lcd->printf("Cool Down"      ); break;
+        case 10: THEPANEL->lcd->printf("Extrude/Retract"); break;
     }
 }
 
@@ -67,17 +77,19 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "G28 X0 Y0 G28 Z0"; break;
+        case 1: command = "G91\nG0 Z1 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
         case 2: command = "G28 X0"; break;
-        case 3: command = "G28 Y0"; break;
-        case 4: command = "G28 Z0"; break;
         //case 2: command = "G92 X0 Y0 Z0"; break;
+        case 3: command = "G28 Y0"; break;
         //case 3: command = "G92 Z0"; break;
+        case 4: command = "G28 Z0"; break;
         //case 4: this->preheat(); break;
         case 5: command = "M84"; break;
         case 6: THEPANEL->enter_screen(THEPANEL->temperature_screen); break;
-        case 7: THEPANEL->enter_screen(this->extruder_screen); break;
-        case 8: this->cooldown(); break;
+        case 7: command = "M104_S200\nM140_S60"; break;
+        case 8: command = "M104_S245\nM140_S100"; break;
+        case 9: this->cooldown(); break;
+        case 10: THEPANEL->enter_screen(this->extruder_screen); break;
     }
 }
 
@@ -102,8 +114,7 @@ void PrepareScreen::cooldown()
 void PrepareScreen::on_main_loop()
 {
     // change actual axis value
-    if (this->command.empty()) return;
-    send_command(this->command.c_str());
-    this->command.clear();
+    if (this->command == nullptr) return;
+    send_command(this->command);
+    this->command = nullptr;
 }
-

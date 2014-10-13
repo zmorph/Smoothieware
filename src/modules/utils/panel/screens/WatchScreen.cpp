@@ -6,6 +6,7 @@
 */
 
 #include "libs/Kernel.h"
+#include "LcdBase.h"
 #include "Panel.h"
 #include "PanelScreen.h"
 #include "MainMenuScreen.h"
@@ -25,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 static const uint8_t icons[] = { // 115x19 - 3 bytes each: he1, he2, he3, bed, fan
@@ -55,7 +57,12 @@ WatchScreen::WatchScreen()
 {
     speed_changed = false;
     issue_change_speed = false;
-    ipstr = NULL;
+    ipstr = nullptr;
+}
+
+WatchScreen::~WatchScreen()
+{
+    delete[] ipstr;
 }
 
 void WatchScreen::on_enter()
@@ -118,12 +125,13 @@ void WatchScreen::on_refresh()
         THEPANEL->lcd->setLed(LED_BED_ON, this->bedtarget > 0);
         THEPANEL->lcd->setLed(LED_HOTEND_ON, this->hotendtarget > 0);
         THEPANEL->lcd->setLed(LED_FAN_ON, this->fan_state);
+        THEPANEL->lcd->setLed(LED_HOT, this->hotendtemp > 50 || this->bedtemp > 40);
 
         if (THEPANEL->lcd->hasGraphics()) {
             // display the graphical icons below the status are
+            // this->panel->lcd->bltGlyph(0, 45, 115, 19, icons);
             int x_start = 0;
             int y_start = 45;
-            // this->panel->lcd->bltGlyph(0, 45, 115, 19, icons);
             //for (int i = 0; i < 5; ++i) {
             //     THEPANEL->lcd->bltGlyph(i*24, 38, 23, 19, icons, 15, i*24, 0);
             // }
@@ -190,7 +198,7 @@ void WatchScreen::get_temp_data()
         this->hotendtemp = round(temp.current_temperature);
         if (this->hotendtemp > 100000) this->hotendtemp = -2;
         this->hotendtarget = round(temp.target_temperature);
-        //this->pcbpwm= temp.pwm;
+        //this->hotendpwm= temp.pwm;
     } else {
         // temp probably disabled
         this->hotendtemp = -1;
@@ -293,7 +301,7 @@ void WatchScreen::display_menu_line(uint16_t line)
             THEPANEL->lcd->printf("%s%s", bedtemp_text, pcbtemp_text);
             break; }
         case 2: THEPANEL->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
-        case 3: THEPANEL->lcd->printf("%3d%% %2lu:%02lu %3u%% sd", this->current_speed, this->last_time / 60, this->last_time % 60, this->sd_pcnt_played); break;
+        case 3: THEPANEL->lcd->printf("%3d%% %2lu:%02lu:%02lu %3u%% sd", this->current_speed, this->last_time / 3600, this->last_time % 3600 / 60, this->last_time % 60, this->sd_pcnt_played); break;
         case 4: THEPANEL->lcd->printf("%19s", this->get_status()); break;
         default : break;
     }
@@ -338,8 +346,8 @@ const char *WatchScreen::get_network()
         char buf[20];
         int n = snprintf(buf, sizeof(buf), "IP %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
         buf[n] = 0;
-        if (this->ipstr == NULL) {
-            this->ipstr = (char *)malloc(n + 1);
+        if (this->ipstr == nullptr) {
+            this->ipstr = new char[n + 1];
         }
         strcpy(this->ipstr, buf);
 

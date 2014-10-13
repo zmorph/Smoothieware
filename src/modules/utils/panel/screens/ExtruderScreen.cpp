@@ -9,34 +9,39 @@
 #include "libs/SerialMessage.h"
 #include "Panel.h"
 #include "PanelScreen.h"
+#include "LcdBase.h"
 #include "ExtruderScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
 #include "modules/tools/temperaturecontrol/TemperatureControlPublicAccess.h"
+#include "ModifyValuesScreen.h"
 #include "PublicData.h"
 #include "SwitchPublicAccess.h"
 #include "checksumm.h"
 #include <math.h>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 
+#define extruder_checksum CHECKSUM("extruder")
 
 ExtruderScreen::ExtruderScreen()
 {
+    this->command= nullptr;
 }
 
 
 void ExtruderScreen::on_enter()
 {
-    int menu_line = 5;
+    int menu_line = 9;
     THEPANEL->enter_menu_mode();
     get_temp_data();
     if ( this->hotendtemp == -2 ) {
-        menu_line -= 2;
+        menu_line -= 4;
     }
     if ( this->hotend2temp == -2 ) {
-        menu_line -= 2;
+        menu_line -= 4;
     }
     THEPANEL->setup_menu(menu_line);
     this->refresh_menu();
@@ -95,19 +100,23 @@ void ExtruderScreen::get_temp_data()
 
 void ExtruderScreen::display_menu_line(uint16_t line)
 {
-    char extrude_H_text[19]{}, retract_H_text[19]{};
-    char extrude_Q_text[19]{}, retract_Q_text[19]{};
+    char extrude_H_text[19]{}, retract_H_text[19]{}, feed_H_text[19]{}, remove_H_text[19]{};
+    char extrude_Q_text[19]{}, retract_Q_text[19]{}, feed_Q_text[19]{}, remove_Q_text[19]{};
     bool hotend_enabled{true};
     bool hotend2_enabled{true};
     if ( this->hotendtemp != -2 ) {
         sprintf(extrude_H_text, "Extrude H 5mm      ");
         sprintf(retract_H_text, "Retract H 5mm      ");
+        sprintf(feed_H_text,    "Feed H             ");
+        sprintf(remove_H_text,  "Remove H           ");
     } else {
         hotend_enabled = false;
     }
     if ( this->hotend2temp != -2 ) {
         sprintf(extrude_Q_text, "Extrude Q 5mm      ");
         sprintf(retract_Q_text, "Retract Q 5mm      ");
+        sprintf(feed_Q_text,    "Feed Q             ");
+        sprintf(remove_Q_text,  "Remove Q           ");
     } else {
         hotend2_enabled = false;
     }
@@ -115,15 +124,20 @@ void ExtruderScreen::display_menu_line(uint16_t line)
     if (!hotend_enabled && !hotend2_enabled && line > 0)
         return;
 
-    if ((!hotend_enabled || !hotend2_enabled) && line > 2)
+    if ((!hotend_enabled || !hotend2_enabled) && line > 4)
         return;
 
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Back", this->hotendtemp);  break;
         case 1: THEPANEL->lcd->printf("%19s", hotend_enabled?extrude_H_text:extrude_Q_text); break;
         case 2: THEPANEL->lcd->printf("%19s", hotend_enabled?retract_H_text:retract_Q_text); break;
-        case 3: THEPANEL->lcd->printf("%19s", extrude_Q_text); break;
-        case 4: THEPANEL->lcd->printf("%19s", retract_Q_text); break;
+        case 3: THEPANEL->lcd->printf("%19s", hotend_enabled?feed_H_text:feed_Q_text); break;
+        case 4: THEPANEL->lcd->printf("%19s", hotend_enabled?remove_H_text:remove_Q_text); break;
+        case 5: THEPANEL->lcd->printf("%19s", extrude_Q_text); break;
+        case 6: THEPANEL->lcd->printf("%19s", retract_Q_text); break;
+        case 7: THEPANEL->lcd->printf("%19s", feed_Q_text); break;
+        case 8: THEPANEL->lcd->printf("%19s", remove_Q_text); break;
+        //case 9: THEPANEL->lcd->printf("Settings...");  break;
         default: break;
     }
 }
@@ -134,14 +148,19 @@ void ExtruderScreen::clicked_menu_entry(uint16_t line)
     bool hotend2_enabled{this->hotend2temp!=-2};
 
     if (!hotend_enabled && hotend2_enabled && line > 0)
-        line+=2;
+        line+=4;
 
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); return;
         case 1: command = "T0\nG91\nG1 E5 F100\nG90"; break;
         case 2: command = "T0\nG91\nG1 E-5 F100\nG90"; break;
-        case 3: command = "T1\nG91\nG1 E5 F100\nG90"; break;
-        case 4: command = "T1\nG91\nG1 E-5 F100\nG90"; break;
+        case 3: command = "T0\nG91\nG1 E60 F200\nG1 E-10 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E10 F200\nG90"; break;
+        case 4: command = "T0\nG91\nG1 E-100 F500\nG90"; break;
+        case 5: command = "T1\nG91\nG1 E5 F100\nG90"; break;
+        case 6: command = "T1\nG91\nG1 E-5 F100\nG90"; break;
+        case 7: command = "T1\nG91\nG1 E60 F200\nG1 E-10 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E20 F200\nG1 E-5 F200\nG1 E10 F200\nG90"; break;
+        case 8: command = "T1\nG91\nG1 E-100 F500\nG90"; break;
+        //case 9: setupConfigSettings(); break; // lazy load
         default : break;
     }
 }
@@ -149,7 +168,54 @@ void ExtruderScreen::clicked_menu_entry(uint16_t line)
 // queuing commands needs to be done from main loop
 void ExtruderScreen::on_main_loop()
 {
-    if (this->command.empty()) return;
-    send_command(this->command.c_str());
-    this->command.clear();
+    if (this->command == nullptr) return;
+    send_command(this->command);
+    this->command= nullptr;
+}
+
+void ExtruderScreen::setupConfigSettings()
+{
+    auto mvs= new ModifyValuesScreen(true);  // self delete on exit
+    mvs->set_parent(this);
+
+    mvs->addMenuItem("E steps/mm",
+        // gets steps/mm for currently active extruder
+        []() -> float { float *rd; if(PublicData::get_value( extruder_checksum, (void **)&rd )) return *rd; else return 0.0F; },
+        [this](float v) { send_gcode("M92", 'E', v); },
+        0.1F,
+        1.0F
+        );
+
+    mvs->addMenuItem("Filament diameter",
+        // gets filament diameter for currently active extruder
+        []() -> float { float *rd; if(PublicData::get_value( extruder_checksum, (void **)&rd )) return *(rd+1); else return 0.0F; },
+        [this](float v) { send_gcode("M200", 'D', v); },
+        0.01F,
+        0.0F,
+        4.0F
+        );
+
+    // flow rate
+    mvs->addMenuItem("Flow rate", // menu name
+        []() -> float { float *rd; if(PublicData::get_value( extruder_checksum, (void **)&rd )) return *(rd+2)*100.0F; else return 100.0F; }, // getter as fraction
+        [this](float fr) { send_gcode("M221", 'S', fr); }, // setter in percent
+        1.0F, // increment
+        1.0F  // Min
+        );
+
+    mvs->addMenuItem("Accel", // menu name
+        []() -> float { float *rd; if(PublicData::get_value( extruder_checksum, (void **)&rd )) return *(rd+3); else return 0; }, // getter
+        [this](float acc) { send_gcode("M204", 'E', acc); }, // setter
+        10.0F, // increment
+        1.0F   // Min
+        );
+
+    mvs->addMenuItem("Retract len", // menu name
+        []() -> float { float *rd; if(PublicData::get_value( extruder_checksum, (void **)&rd )) return *(rd+4); else return 0; }, // getter
+        [this](float l) { send_gcode("M207", 'S', l); }, // setter
+        0.1F, // increment
+        0.0F  // Min
+        );
+
+    THEPANEL->enter_screen(mvs);
 }
