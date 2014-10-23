@@ -9,7 +9,7 @@ mm_per_arc_segment                           0.5              # Arcs are cut int
 #arm_solution                                hbot             # selects the rostock arm solution
 alpha_steps_per_mm                           76.19            # Steps per mm for alpha stepper
 beta_steps_per_mm                            76.19            # Steps per mm for beta stepper
-gamma_steps_per_mm                           2134             # Steps per mm for gamma stepper
+gamma_steps_per_mm                           1600             # Steps per mm for gamma stepper
 
 
 # Planner module configuration : Look-ahead and acceleration configuration
@@ -48,9 +48,9 @@ beta_current                                 1.5              # Y stepper motor 
 beta_max_rate                                20000.0          # mm/min
 
 gamma_step_pin                               2.2              # Pin for gamma stepper step signal
-gamma_dir_pin                                0.20             # Pin for gamma stepper direction
+gamma_dir_pin                                0.20!            # Pin for gamma stepper direction
 gamma_en_pin                                 0.19             # Pin for gamma enable
-gamma_current                                1.5              # Z stepper motor current
+gamma_current                                0.5              # Z stepper motor current
 gamma_max_rate                               200.0            # mm/min
 
 
@@ -191,7 +191,7 @@ alpha_homing_direction                       home_to_min      #
 alpha_min                                    0                #
 alpha_max                                    230              #
 
-beta_min_endstop                             1.28^            # ^ - pull up, v - pull down
+beta_min_endstop                             1.28^            # ^ - pull up, v - pull down
 beta_max_endstop                             nc               #
 beta_homing_direction                        home_to_min      #
 beta_min                                     0                #
@@ -290,11 +290,11 @@ zprobe.probe_height                          5                # how much above b
 
 
 # Laser module configuration
-laser_module_enable                          true             # Whether to activate the laser module at all. All configuration is ignored if false.
-laser_module_pin                             2.5              # P2.0 - P2.6 this pin will be PWMed to control the laser
+laser_module_enable                          false            # Whether to activate the laser module at all. All configuration is ignored if false.
+laser_module_pin                             2.5              # this pin will be PWMed to control the laser
 laser_module_max_power                       0.5              # this is the maximum duty cycle that will be applied to the laser
 laser_module_tickle_power                    0.0              # this duty cycle will be used for travel moves to keep the laser active without actually burning
-laser_module_pwm_period                      200              # 100 = 10kHz, 200 = 5kHz this sets the pwm frequency, the value is the period in microseconds
+laser_module_pwm_period                      200              # 100 = 10kHz this sets the pwm frequency, the value is the period in microseconds
 
 
 # Network settings
