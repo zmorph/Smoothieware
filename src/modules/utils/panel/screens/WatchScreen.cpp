@@ -183,7 +183,7 @@ void WatchScreen::get_temp_data()
     if (ok) {
         struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
         this->pcbtemp = round(temp.current_temperature);
-        if (this->pcbtemp > 100000) this->hotendtemp = -2;
+        if (this->pcbtemp > 100000) this->pcbtemp = -2;
         this->pcbtarget = round(temp.target_temperature);
         //this->hotendpwm= temp.pwm;
     } else {
