@@ -126,7 +126,8 @@ void JogScreenBasic::display_menu_line(uint16_t line)
         case 3: THEPANEL->lcd->printf("Move Z +/- 1mm   \x7E"); break;
         case 4: THEPANEL->lcd->printf("Extrude/Retract  \x7E"); break;
         case 5: THEPANEL->lcd->printf("Motors OFF       \x7E"); break;
-        case 6: THEPANEL->lcd->printf("Advanced Jog     \x7E"); break;
+        case 6: THEPANEL->lcd->printf("Set Z0           \x7E"); break;
+        case 7: THEPANEL->lcd->printf("Advanced Jog     \x7E"); break;
     }
 }
 
@@ -156,6 +157,9 @@ void JogScreenBasic::clicked_menu_entry(uint16_t line)
             command = "M84";
             return; }
         case 6: {
+            command = "G92 Z0";
+            return; }
+        case 7: {
             THEPANEL->enter_screen(this->jog_screen);
             return;}
     }
