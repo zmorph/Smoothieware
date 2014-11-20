@@ -115,7 +115,7 @@ void OptionsScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 3: {
-            command = "T1\nM92 E1150\nM907 E0.5\nT0\nM92 E1150\nM907 E0.5";
+            command = "T1\nM92 E1150\nM907 A0.5\nT0\nM92 E1150\nM907 E0.5";
             toolhead_number = 3;
             this->refresh_menu();
             break; }
@@ -130,7 +130,7 @@ void OptionsScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 6: {
-            command = "T1\nM92 E3200\nM907 E1.0";
+            command = "T1\nM92 E3200\nM907 A1.0";
             toolhead_number = 6;
             this->refresh_menu();
             break; }
