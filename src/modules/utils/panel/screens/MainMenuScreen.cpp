@@ -124,7 +124,7 @@ void MainMenuScreen::display_menu_line(uint16_t line)
         case 0: THEPANEL->lcd->printf("Watch"); break;
         case 1: THEPANEL->lcd->printf("Prepare"); break;
         case 2: THEPANEL->lcd->printf(THEPANEL->is_playing() ? "Abort" : "Play"); break;
-        case 3: THEPANEL->lcd->printf("Configure"); break;
+        case 3: THEPANEL->lcd->printf("Choose Toolhead"); break;
         case 4: THEPANEL->lcd->printf("Basic Jog"); break;
         case 5: THEPANEL->lcd->printf("Custom"); break;
         //case 2: THEPANEL->lcd->printf("Jog"); break;
