@@ -25,6 +25,7 @@ class MainMenuScreen : public PanelScreen {
         PanelScreen* file_screen;
         PanelScreen* jog_screen;
         PanelScreen* jog_screen_basic;
+        PanelScreen* choose_toolhead_screen;
         PanelScreen* prepare_screen;
 
         void abort_playing();

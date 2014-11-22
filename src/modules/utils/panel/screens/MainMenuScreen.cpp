@@ -14,6 +14,7 @@
 #include "FileScreen.h"
 #include "JogScreen.h"
 #include "JogScreenBasic.h"
+#include "ChooseToolheadScreen.h"
 #include "ControlScreen.h"
 #include "PrepareScreen.h"
 #include "ProbeScreen.h"
@@ -38,6 +39,7 @@ MainMenuScreen::MainMenuScreen()
     // Children screens
     this->jog_screen     = (new JogScreen()     )->set_parent(this);
     this->jog_screen_basic = (new JogScreenBasic())->set_parent(this);
+    this->choose_toolhead_screen = (new ChooseToolheadScreen() )->set_parent(this);
     this->watch_screen   = (new WatchScreen()   )->set_parent(this);
     this->file_screen    = (new FileScreen()    )->set_parent(this);
     this->prepare_screen = (new PrepareScreen() )->set_parent(this);
@@ -102,7 +104,7 @@ void MainMenuScreen::setupConfigureScreen()
 void MainMenuScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(5);
+    THEPANEL->setup_menu(6);
     this->refresh_menu();
 }
 
@@ -120,11 +122,12 @@ void MainMenuScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Watch"); break;
-        case 1: THEPANEL->lcd->printf(THEPANEL->is_playing() ? "Abort" : "Play"); break;
-        case 2: THEPANEL->lcd->printf("Basic Jog"); break;
+        case 1: THEPANEL->lcd->printf("Prepare"); break;
+        case 2: THEPANEL->lcd->printf(THEPANEL->is_playing() ? "Abort" : "Play"); break;
+        case 3: THEPANEL->lcd->printf("Configure"); break;
+        case 4: THEPANEL->lcd->printf("Basic Jog"); break;
+        case 5: THEPANEL->lcd->printf("Custom"); break;
         //case 2: THEPANEL->lcd->printf("Jog"); break;
-        case 3: THEPANEL->lcd->printf("Prepare"); break;
-        case 4: THEPANEL->lcd->printf("Custom"); break;
         //case 5: THEPANEL->lcd->printf("Configure"); break;
         //case 6: THEPANEL->lcd->printf("Probe"); break;
     }
@@ -134,11 +137,12 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->watch_screen   ); break;
-        case 1: THEPANEL->is_playing() ? abort_playing() : THEPANEL->enter_screen(this->file_screen); break;
-        case 2: THEPANEL->enter_screen(this->jog_screen_basic ); break;
+        case 1: THEPANEL->enter_screen(this->prepare_screen ); break;
+        case 2: THEPANEL->is_playing() ? abort_playing() : THEPANEL->enter_screen(this->file_screen); break;
+        case 3: THEPANEL->enter_screen(this->choose_toolhead_screen ); break;
+        case 4: THEPANEL->enter_screen(this->jog_screen_basic ); break;
+        case 5: THEPANEL->enter_screen(THEPANEL->custom_screen ); break;
         //case 2: THEPANEL->enter_screen(this->jog_screen     ); break;
-        case 3: THEPANEL->enter_screen(this->prepare_screen ); break;
-        case 4: THEPANEL->enter_screen(THEPANEL->custom_screen ); break;
         //case 5: setupConfigureScreen(); break;
         //case 6: THEPANEL->enter_screen((new ProbeScreen())->set_parent(this)); break;
     }
