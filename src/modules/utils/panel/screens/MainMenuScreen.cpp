@@ -14,7 +14,7 @@
 #include "FileScreen.h"
 #include "JogScreen.h"
 #include "JogScreenBasic.h"
-#include "OptionsScreen.h"
+#include "ChooseToolheadScreen.h"
 #include "ControlScreen.h"
 #include "PrepareScreen.h"
 #include "ProbeScreen.h"
@@ -39,7 +39,7 @@ MainMenuScreen::MainMenuScreen()
     // Children screens
     this->jog_screen     = (new JogScreen()     )->set_parent(this);
     this->jog_screen_basic = (new JogScreenBasic())->set_parent(this);
-    this->options_screen = (new OptionsScreen() )->set_parent(this);
+    this->choose_toolhead_screen = (new ChooseToolheadScreen() )->set_parent(this);
     this->watch_screen   = (new WatchScreen()   )->set_parent(this);
     this->file_screen    = (new FileScreen()    )->set_parent(this);
     this->prepare_screen = (new PrepareScreen() )->set_parent(this);
@@ -139,7 +139,7 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
         case 0: THEPANEL->enter_screen(this->watch_screen   ); break;
         case 1: THEPANEL->enter_screen(this->prepare_screen ); break;
         case 2: THEPANEL->is_playing() ? abort_playing() : THEPANEL->enter_screen(this->file_screen); break;
-        case 3: THEPANEL->enter_screen(this->options_screen ); break;
+        case 3: THEPANEL->enter_screen(this->choose_toolhead_screen ); break;
         case 4: THEPANEL->enter_screen(this->jog_screen_basic ); break;
         case 5: THEPANEL->enter_screen(THEPANEL->custom_screen ); break;
         //case 2: THEPANEL->enter_screen(this->jog_screen     ); break;

@@ -9,7 +9,7 @@
 #include "Panel.h"
 #include "PanelScreen.h"
 #include "LcdBase.h"
-#include "OptionsScreen.h"
+#include "ChooseToolheadScreen.h"
 #include "ExtruderScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
@@ -22,12 +22,12 @@
 using namespace std;
 
 //OprionsScreen because ConfigureScreen is already used in Smoothie.
-OptionsScreen::OptionsScreen()
+ChooseToolheadScreen::ChooseToolheadScreen()
 {
     this->command = nullptr;
 }
 
-void OptionsScreen::on_enter()
+void ChooseToolheadScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
@@ -36,7 +36,7 @@ void OptionsScreen::on_enter()
     this->refresh_menu();
 }
 
-void OptionsScreen::on_refresh()
+void ChooseToolheadScreen::on_refresh()
 {
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
@@ -46,7 +46,7 @@ void OptionsScreen::on_refresh()
     }
 }
 
-void OptionsScreen::display_menu_line(uint16_t line)
+void ChooseToolheadScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: {
@@ -100,7 +100,7 @@ void OptionsScreen::display_menu_line(uint16_t line)
     }
 }
 
-void OptionsScreen::clicked_menu_entry(uint16_t line)
+void ChooseToolheadScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
@@ -138,7 +138,7 @@ void OptionsScreen::clicked_menu_entry(uint16_t line)
 }
 
 // queuing commands needs to be done from main loop
-void OptionsScreen::on_main_loop()
+void ChooseToolheadScreen::on_main_loop()
 {
     // change actual axis value
     if (this->command == nullptr) return;

@@ -52,7 +52,7 @@ JogScreenBasic::JogScreenBasic()
 void JogScreenBasic::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(7);
+    THEPANEL->setup_menu(8);
     get_current_pos(this->pos);
     this->refresh_menu();
     this->pos_changed = false;

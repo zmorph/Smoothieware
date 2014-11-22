@@ -5,14 +5,14 @@
       You should have received a copy of the GNU General Public License along with Smoothie. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef OPTIONSSCREEN_H
-#define OPTIONSSCREEN_H
+#ifndef CHOOSETOOLHEADSCREEN_H
+#define CHOOSETOOLHEADSCREEN_H
 
 #include "PanelScreen.h"
 
-class OptionsScreen : public PanelScreen {
+class ChooseToolheadScreen : public PanelScreen {
 public:
-    OptionsScreen();
+    ChooseToolheadScreen();
 
     void on_refresh();
     void on_enter();
