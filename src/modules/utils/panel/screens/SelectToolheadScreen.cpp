@@ -9,7 +9,7 @@
 #include "Panel.h"
 #include "PanelScreen.h"
 #include "LcdBase.h"
-#include "ChooseToolheadScreen.h"
+#include "SelectToolheadScreen.h"
 #include "ExtruderScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
@@ -22,12 +22,12 @@
 using namespace std;
 
 //OprionsScreen because ConfigureScreen is already used in Smoothie.
-ChooseToolheadScreen::ChooseToolheadScreen()
+SelectToolheadScreen::SelectToolheadScreen()
 {
     this->command = nullptr;
 }
 
-void ChooseToolheadScreen::on_enter()
+void SelectToolheadScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
@@ -36,7 +36,7 @@ void ChooseToolheadScreen::on_enter()
     this->refresh_menu();
 }
 
-void ChooseToolheadScreen::on_refresh()
+void SelectToolheadScreen::on_refresh()
 {
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
@@ -46,7 +46,7 @@ void ChooseToolheadScreen::on_refresh()
     }
 }
 
-void ChooseToolheadScreen::display_menu_line(uint16_t line)
+void SelectToolheadScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: {
@@ -100,7 +100,7 @@ void ChooseToolheadScreen::display_menu_line(uint16_t line)
     }
 }
 
-void ChooseToolheadScreen::clicked_menu_entry(uint16_t line)
+void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
@@ -110,7 +110,7 @@ void ChooseToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 2: {
-            command = "T0\nM92 E400\nM907 E1.0";
+            command = "T0\nM92 E400\nM907 E1.5";
             toolhead_number = 2;
             this->refresh_menu();
             break; }
@@ -130,7 +130,7 @@ void ChooseToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 6: {
-            command = "T1\nM92 E3200\nM907 A1.0";
+            command = "T1\nM92 E3200\nM907 A1.0\nT0";
             toolhead_number = 6;
             this->refresh_menu();
             break; }
@@ -138,7 +138,7 @@ void ChooseToolheadScreen::clicked_menu_entry(uint16_t line)
 }
 
 // queuing commands needs to be done from main loop
-void ChooseToolheadScreen::on_main_loop()
+void SelectToolheadScreen::on_main_loop()
 {
     // change actual axis value
     if (this->command == nullptr) return;
