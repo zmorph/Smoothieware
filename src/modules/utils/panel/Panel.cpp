@@ -9,8 +9,8 @@
 #include "ui/Cell.h"
 #include "ui/Item.h"
 #include "ui/Widget.h"
-#include "I18n.h"
 #include "ui/Event.h"
+#include "I18n.h"
 #include "modules/robot/RobotPublicAccess.h"
 #include "PlayerPublicAccess.h"
 #include "PublicDataRequest.h"
@@ -21,6 +21,7 @@
 #include <functional>
 #include <tuple>
 #include "Kernel.h"
+#include "detail/CommandQueue.h"
 
 #include "mri.h"
 //FOR SENDING GCODES
@@ -34,11 +35,12 @@
 #define hotend_temp_PLA_checksum CHECKSUM("hotend_temperature_PLA")
 #define bed_temp_PLA_checksum    CHECKSUM("bed_temperature_PLA")
 
+CommandQueue<5> command_buffer;
 
 void send_gcode(std::string g)
 {
     Gcode gcode(g, &(StreamOutput::NullStream));
-    THEKERNEL->call_event(ON_GCODE_RECEIVED, &gcode );
+    THEKERNEL->call_event(ON_GCODE_RECEIVED, &gcode);
 }
 
 template <size_t i>
@@ -62,21 +64,24 @@ void set_x_position(float position)
 {
 	char buffer[32];
 	snprintf(buffer, sizeof(buffer), "G0 X%f", position);
-	send_gcode(buffer);
+	//send_gcode(buffer);
+	command_buffer.push(std::bind(send_gcode, buffer));
 }
 
 void set_y_position(float position)
 {
 	char buffer[32];
 	snprintf(buffer, sizeof(buffer), "G0 Y%f", position);
-	send_gcode(buffer);
+	//send_gcode(buffer);
+	command_buffer.push(std::bind(send_gcode, buffer));
 }
 
 void set_z_position(float position)
 {
 	char buffer[32];
 	snprintf(buffer, sizeof(buffer), "G0 Z%f", position);
-	send_gcode(buffer);
+	//send_gcode(buffer);
+	command_buffer.push(std::bind(send_gcode, buffer));
 }
 
 void set_hotend_temperature(float temperature)
@@ -267,9 +272,18 @@ CompositeItem manual_heat_menu_items[] =
 CompositeItem home_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
-	ui::Command(i18n::home_z_caption, std::bind(send_gcode, "G28 Z")),
-	ui::Command(i18n::home_xy_caption, std::bind(send_gcode, "G28 XY")),
-	ui::Command(i18n::home_xyz_caption, std::bind(send_gcode, "G28 XYZ"))
+	ui::Command(i18n::home_z_caption, []{
+		command_buffer.push( std::bind(send_gcode, "G28 Z") );
+	}
+	),
+	ui::Command(i18n::home_xy_caption, []{
+		command_buffer.push( std::bind(send_gcode, "G28 XY") );
+	}
+	),
+	ui::Command(i18n::home_xyz_caption, []{
+		command_buffer.push( std::bind(send_gcode, "G28 XYZ") );
+	}
+	)
 };
 
 CompositeItem move_menu_items[] = 
@@ -312,8 +326,14 @@ CompositeItem maintenance_menu_items[] =
 CompositeItem extrude_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
-	ui::Command(i18n::extrude_caption, []{send_gcode("G91");send_gcode("G1 E5 F100");send_gcode("G90");}),
-	ui::Command(i18n::retract_caption, []{send_gcode("G91");send_gcode("G1 E-5 F100");send_gcode("G90");})
+	ui::Command(i18n::extrude_caption, []{ 
+		command_buffer.push([]{send_gcode("G91");send_gcode("G1 E5 F100");send_gcode("G90");});
+	}
+	),
+	ui::Command(i18n::retract_caption, []{ 
+		command_buffer.push([]{send_gcode("G91");send_gcode("G1 E5 F100");send_gcode("G90");});
+	}
+	)
 };
 
 ui::Widget main_menu_widget(&default_layout);
@@ -389,8 +409,8 @@ void Panel::on_module_loaded()
 	this->register_for_event(ON_IDLE);
     this->register_for_event(ON_MAIN_LOOP);
 
-    THEKERNEL->slow_ticker->attach( 23U,  this, &Panel::button_tick );
-    THEKERNEL->slow_ticker->attach( 20, this,  &Panel::refresh_tick );
+    THEKERNEL->slow_ticker->attach( 23U,  this,  &Panel::button_tick );
+    THEKERNEL->slow_ticker->attach( 50,   this,  &Panel::refresh_tick );
 }
 
 uint32_t Panel::button_tick(uint32_t dummy)
@@ -431,6 +451,17 @@ uint32_t Panel::refresh_tick(uint32_t dummy)
 
 void Panel::on_main_loop(void* argument)
 {
+	while(execute_next(command_buffer)){};
+	if(refresh_flag)
+	{
+		refresh_flag = false;
+		user_interface.render();
+		user_interface.refresh();
+	}
+}
+
+void Panel::on_idle(void* argument)
+{
 	if(up_button.read())
 	{
 		user_interface.dispatch(ui::UpEvent());
@@ -444,10 +475,6 @@ void Panel::on_main_loop(void* argument)
 		screen.clear();
 		user_interface.dispatch(ui::OkEvent());
 	}
-}
-
-void Panel::on_idle(void* argument)
-{
 	if(refresh_flag)
 	{
 		refresh_flag = false;
