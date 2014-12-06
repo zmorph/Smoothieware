@@ -27,8 +27,6 @@
 #include "PublicDataRequest.h"
 #include "PublicData.h"
 
-#include "libs/StreamOutputPool.h"
-
 #include <mri.h>
 
 // OLD config names for backwards compatibility, NOTE new configs will not be added here
@@ -371,8 +369,6 @@ bool Extruder::min_temperature_reached()
     if(PublicData::get_value(temperature_control_checksum, this->identifier, current_temperature_checksum, &returned_data))
     {
         struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
-        THEKERNEL->streams->printf("current_temp: %f, min_temp: %f \r\n", round(temp.current_temperature), round(this->min_temperature));
-
         return round(temp.current_temperature) >= this->min_temperature && round(temp.current_temperature) < this->max_temperature;
     }
     else if(single_config)

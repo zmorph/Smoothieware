@@ -38,13 +38,18 @@ USBSerial::USBSerial(USB *u): USBCDC(u), rxbuf(256 + 8), txbuf(128 + 8)
     flush_to_nl = false;
 }
 
-void USBSerial::ensure_tx_space(int space)
+bool USBSerial::ensure_tx_space(size_t space, uint8_t max_number_of_retries = 100)
 {
-    while (txbuf.free() < space)
+    for (uint8_t i = 0; i < max_number_of_retries ; ++i)
     {
+        if(txbuf.free() >= space)
+        {
+            return true;
+        }
         usb->endpointSetInterrupt(CDC_BulkIn.bEndpointAddress, true);
         usb->usbisr();
     }
+    return false;
 }
 
 int USBSerial::_putc(int c)
@@ -89,11 +94,12 @@ int USBSerial::_getc()
 int USBSerial::puts(const char *str)
 {
     if (!attached)
-        return strlen(str);
-    int i = 0;
-    while (*str)
     {
-        ensure_tx_space(1);
+        return strlen(str);
+    }
+    int i = 0;
+    while (*str && ensure_tx_space(1))
+    {
         txbuf.queue(*str);
         if ((txbuf.available() % 64) == 0)
             usb->endpointSetInterrupt(CDC_BulkIn.bEndpointAddress, true);

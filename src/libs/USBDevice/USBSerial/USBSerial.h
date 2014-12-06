@@ -60,7 +60,7 @@ protected:
     virtual void on_attach(void);
     virtual void on_detach(void);
 
-    void ensure_tx_space(int);
+    bool ensure_tx_space(size_t space, uint8_t max_number_of_retries);
 
     volatile bool attach;
     bool attached;
