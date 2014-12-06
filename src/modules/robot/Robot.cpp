@@ -90,6 +90,14 @@ using std::string;
 #define  beta_checksum                       CHECKSUM("beta")
 #define  gamma_checksum                      CHECKSUM("gamma")
 
+#define alpha_min_checksum                   CHECKSUM("alpha_min")
+#define beta_min_checksum                    CHECKSUM("beta_min")
+#define gamma_min_checksum                   CHECKSUM("gamma_min")
+
+
+#define alpha_max_checksum                   CHECKSUM("alpha_max")
+#define beta_max_checksum                    CHECKSUM("beta_max")
+#define gamma_max_checksum                   CHECKSUM("gamma_max")
 
 #define NEXT_ACTION_DEFAULT 0
 #define NEXT_ACTION_DWELL 1
@@ -117,6 +125,7 @@ using std::string;
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
 Robot::Robot()
+:min_positions{0}, max_positions{0}
 {
     this->inch_mode = false;
     this->absolute_mode = true;
@@ -230,6 +239,12 @@ void Robot::on_config_reload(void *argument)
     actuators.push_back(beta_stepper_motor);
     actuators.push_back(gamma_stepper_motor);
 
+    min_positions[0]        =  THEKERNEL->config->value(alpha_min_checksum)->by_default(0)->as_number();
+    min_positions[1]        =  THEKERNEL->config->value(beta_min_checksum )->by_default(0)->as_number();
+    min_positions[2]        =  THEKERNEL->config->value(gamma_min_checksum)->by_default(0)->as_number();
+    max_positions[0]        =  THEKERNEL->config->value(alpha_max_checksum)->by_default(200)->as_number();
+    max_positions[1]        =  THEKERNEL->config->value(beta_max_checksum )->by_default(200)->as_number();
+    max_positions[2]        =  THEKERNEL->config->value(gamma_max_checksum)->by_default(200)->as_number();
 
     // initialise actuator positions to current cartesian position (X0 Y0 Z0)
     // so the first move can be correct if homing is not performed
@@ -319,6 +334,11 @@ void Robot::on_set_public_data(void *argument)
 
         pdr->set_taken();
     }
+}
+
+constexpr bool is_in_range(float number, float min, float max)
+{
+    return (number <= max) && (number >= min);
 }
 
 //A GCode has been received
@@ -549,7 +569,12 @@ void Robot::on_gcode_received(void *argument)
     }
     for(char letter = 'X'; letter <= 'Z'; letter++) {
         if( gcode->has_letter(letter) ) {
-            target[letter - 'X'] = this->to_millimeters(gcode->get_value(letter)) + (this->absolute_mode ? this->toolOffset[letter - 'X'] : target[letter - 'X']);
+            uint8_t axis = letter -'X';
+            float new_target = this->to_millimeters(gcode->get_value(letter)) + (this->absolute_mode ? this->toolOffset[axis] : target[axis]);
+            if(is_in_range(new_target, min_positions[axis], max_positions[axis]))
+            {
+                target[axis] = new_target;
+            }
         }
     }
 

@@ -91,6 +91,9 @@ class Robot : public Module {
         StepperMotor* alpha_stepper_motor;
         StepperMotor* beta_stepper_motor;
         StepperMotor* gamma_stepper_motor;
+        
+        float min_positions[3]; 
+        float max_positions[3];
 
         struct {
             bool halted:1;

@@ -35,6 +35,7 @@ class Extruder : public Tool {
         uint32_t acceleration_tick(uint32_t dummy);
         uint32_t stepper_motor_finished_move(uint32_t dummy);
         Block*   append_empty_block();
+        bool     min_temperature_reached();
 
     private:
         void on_get_public_data(void* argument);
@@ -71,6 +72,9 @@ class Extruder : public Tool {
         float          retract_recover_length;
         float          retract_zlift_length;
         float          retract_zlift_feedrate;
+
+        float          min_temperature;
+        float          max_temperature;
 
         struct {
             char mode:3;        // extruder motion mode,  OFF, SOLO, or FOLLOW

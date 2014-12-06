@@ -23,7 +23,11 @@
 #include "ConfigValue.h"
 #include "Gcode.h"
 #include "libs/StreamOutput.h"
+#include "TemperatureControlPublicAccess.h"
 #include "PublicDataRequest.h"
+#include "PublicData.h"
+
+#include "libs/StreamOutputPool.h"
 
 #include <mri.h>
 
@@ -52,6 +56,9 @@
 #define y_offset_checksum                    CHECKSUM("y_offset")
 #define z_offset_checksum                    CHECKSUM("z_offset")
 
+#define min_temp_checksum                    CHECKSUM("min_temperature")
+#define max_temp_checksum                    CHECKSUM("max_temperature")
+
 #define retract_length_checksum              CHECKSUM("retract_length")
 #define retract_feedrate_checksum            CHECKSUM("retract_feedrate")
 #define retract_recover_length_checksum      CHECKSUM("retract_recover_length")
@@ -77,6 +84,7 @@
 */
 
 Extruder::Extruder( uint16_t config_identifier, bool single )
+:min_temperature(0), max_temperature(300)
 {
     this->absolute_mode = true;
     this->enabled = false;
@@ -155,7 +163,6 @@ void Extruder::on_config_reload(void *argument)
         }
 
         this->enabled = true;
-
     } else {
         // If this module was created with the new multi extruder configuration style
 
@@ -173,6 +180,8 @@ void Extruder::on_config_reload(void *argument)
         this->offset[Y_AXIS] = THEKERNEL->config->value(extruder_checksum, this->identifier, y_offset_checksum          )->by_default(0)->as_number();
         this->offset[Z_AXIS] = THEKERNEL->config->value(extruder_checksum, this->identifier, z_offset_checksum          )->by_default(0)->as_number();
 
+        this->min_temperature = THEKERNEL->config->value(extruder_checksum, this->identifier, min_temp_checksum )->by_default(170)->as_number();
+        this->max_temperature = THEKERNEL->config->value(extruder_checksum, this->identifier, max_temp_checksum )->by_default(300)->as_number();
     }
 
     // these are only supported in the new syntax, no need to be backward compatible as they did not exist before the change
@@ -356,6 +365,26 @@ void Extruder::on_gcode_received(void *argument)
     }
 }
 
+bool Extruder::min_temperature_reached()
+{
+    void * returned_data;
+    if(PublicData::get_value(temperature_control_checksum, this->identifier, current_temperature_checksum, &returned_data))
+    {
+        struct pad_temperature temp =  *static_cast<struct pad_temperature *>(returned_data);
+        THEKERNEL->streams->printf("current_temp: %f, min_temp: %f \r\n", round(temp.current_temperature), round(this->min_temperature));
+
+        return round(temp.current_temperature) >= this->min_temperature && round(temp.current_temperature) < this->max_temperature;
+    }
+    else if(single_config)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 // Compute extrusion speed based on parameters and gcode distance of travel
 void Extruder::on_gcode_execute(void *argument)
 {
@@ -422,7 +451,7 @@ void Extruder::on_gcode_execute(void *argument)
 
         } else if (gcode->g == 0 || gcode->g == 1) {
             // Extrusion length from 'G' Gcode
-            if( gcode->has_letter('E' )) {
+            if( gcode->has_letter('E' ) && min_temperature_reached()) {
                 // Get relative extrusion distance depending on mode ( in absolute mode we must substract target_position )
                 float extrusion_distance = gcode->get_value('E');
                 float relative_extrusion_distance = extrusion_distance;
