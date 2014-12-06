@@ -6,9 +6,6 @@
 #include "Link.h"
 #include "File.h"
 
-#include "libs/Kernel.h"		// !!!
-#include "StreamOutputPool.h"   // !!!
-
 namespace ui
 {
 
@@ -74,7 +71,6 @@ struct OkEvent: public Event
 	template <typename ItemType>
 	Link operator()(ItemType& active_item)
 	{
-		THEKERNEL->streams->printf("default ok");
 		return linked();
 	}
 };
