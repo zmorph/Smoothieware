@@ -1,6 +1,9 @@
 #ifndef __LINKBASE_H__
 #define __LINKBASE_H__
 
+#include <cstddef>
+#include <functional>
+
 namespace ui
 {
 
@@ -8,31 +11,37 @@ template <typename ContainerType>
 struct LinkBase
 {
 	LinkBase(size_t index = 0, ContainerType* group = nullptr)
-	:index(index), group(group)
+	:condition([]{return true;}), index(index), group(group), index_false(index), group_false(group)
 	{}
 
-	// RAII
-	LinkBase<ContainerType>& set_index(size_t index)
+	LinkBase(std::function<bool()> condition, size_t index = 0, ContainerType* group = nullptr, size_t index_false = 0, ContainerType* group_false = nullptr)
+	:condition(condition), index(index), group(group), index_false(index_false), group_false(group_false)
+	{}
+
+	size_t get_index() const
 	{
-		this->index = index;
-		return *this;
+		if(condition())
+		{
+			return index;
+		}
+		else
+		{
+			
+			return index_false;
+		}
 	}
 
-	size_t get_index()
+	ContainerType* get_group() const
 	{
-		return index;
-	}
-
-	// RAII
-	LinkBase<ContainerType>& set_group(ContainerType* group)
-	{
-		this->group = group;
-		return *this;
-	}
-
-	ContainerType* get_group()
-	{
-		return group;
+		if(condition())
+		{
+			return group;
+		}
+		else
+		{
+			
+			return group_false;
+		}
 	}
 
 	typename ContainerType::ElementType& operator*()
@@ -43,7 +52,14 @@ struct LinkBase
 	// CBFF
 	typename ContainerType::ElementType* get()
 	{
-		return &(*group)[index];
+		if(condition())
+		{
+			return &(*group)[index];
+		}
+		else
+		{
+			return &(*group_false)[index];
+		}
 	}
 
 	// CBFF
@@ -51,9 +67,13 @@ struct LinkBase
 	{
 		return get();
 	}
-private:
+
+protected:
+	std::function<bool()> condition;
 	size_t index;
 	ContainerType* group;
+	size_t index_false;
+	ContainerType* group_false;
 };
 
 } // namespace ui

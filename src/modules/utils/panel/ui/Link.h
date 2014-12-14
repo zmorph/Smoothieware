@@ -6,9 +6,7 @@
 
 namespace ui
 {
-	class Group;
-	typedef LinkBase<Group> Link;
-	
+	typedef LinkBase<Group> Link;	
 } // namespace ui
 
 #endif // __LINK_H__
