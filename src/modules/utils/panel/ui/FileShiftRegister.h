@@ -5,10 +5,6 @@
 #include "ff.h"
 #include <string>
 
-#include "libs/Kernel.h"		// !!!
-#include "StreamOutputPool.h"   // !!!
-#include "mri.h"
-
 /*
 
 CLOSE THE DIRECTORY!!!!
