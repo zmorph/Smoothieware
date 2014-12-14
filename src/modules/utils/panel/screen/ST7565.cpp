@@ -80,9 +80,7 @@ ST7565::ST7565() {
     this->contrast= THEKERNEL->config->value(panel_checksum, contrast_checksum)->by_default(9)->as_number();
     // reverse display
     this->reversed= THEKERNEL->config->value(panel_checksum, reverse_checksum)->by_default(false)->as_bool();
-    THEKERNEL->streams->printf("Dupa\r\n");
     framebuffer= (uint8_t *)AHB0.alloc(FB_SIZE); // grab some memoery from USB_RAM new uint8_t[FB_SIZE];//
-    THEKERNEL->streams->printf("Dupa address 0x%x \r\n", (uint32_t) framebuffer);
     if(framebuffer == NULL) {
         THEKERNEL->streams->printf("Not enough memory available for frame buffer");
     }
@@ -290,6 +288,19 @@ void ST7565::renderGlyph(int x, int y, const uint8_t *g, int w, int h) {
     }
 }
 
+void ST7565::renderInvertedGlyph(int x, int y, const uint8_t *g, int w, int h) {
+    CLAMP(x, 0, LCDWIDTH-1);
+    CLAMP(y, 0, LCDHEIGHT-1);
+    CLAMP(w, 0, LCDWIDTH - x);
+    CLAMP(h, 0, LCDHEIGHT - y);
+
+    for(int i=0; i<w; i++){
+        for(int j=0; j<h; j++){
+         pixel(x+i,y+j,  (g[(i/8)+ j*((w-1)/8 +1)] & (1<<(7-i%8))) == 0 );
+        }
+    }
+}
+
 void ST7565::pixel(int x, int y, int colour)
 {
     int page = y / 8;
@@ -299,4 +310,11 @@ void ST7565::pixel(int x, int y, int colour)
         *byte &= ~mask; // clear pixel
     else
         *byte |= mask; // set pixel
+}
+void ST7565::xor_pixel(int x, int y)
+{
+    int page = y / 8;
+    unsigned char mask = 1<<(y%8);
+    unsigned char *byte = &framebuffer[page*LCDWIDTH + x];
+    *byte ^= (mask); // clear pixel
 }
