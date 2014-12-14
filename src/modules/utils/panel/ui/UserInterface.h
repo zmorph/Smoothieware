@@ -8,8 +8,6 @@
 #include "RenderBlockQueue.h"
 #include "CompositeItem.h"
 #include "Link.h"
-#include "libs/Kernel.h"		// !!!
-#include "StreamOutputPool.h"   // !!!
 
 namespace ui
 {
@@ -26,15 +24,15 @@ class UserInterface
 public:
 	UserInterface(ui::Link active, ui::Screen& screen)
 	:active(active), screen(screen)
-	{
-    	THEKERNEL->streams->printf("UI initialized\r\n");
-	}
+	{}
 
 	template <typename EventType>
 	void dispatch(EventType event)
 	{
 		event.set_active_link(active);
+		Link former_active = active;
 		active = boost::apply_visitor(event, *active.fetch());
+		active.get_group()->set_former_active(former_active);
 	}
 
 	void render();
