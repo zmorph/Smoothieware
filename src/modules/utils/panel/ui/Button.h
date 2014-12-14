@@ -1,54 +1,54 @@
 #ifndef __BUTTON_H__
 #define __BUTTON_H__
 
+#include "libs/Kernel.h"        // !!!
+#include "StreamOutputPool.h"   // !!!
+
 namespace ui
 {
 
 class Button
 {
-	uint16_t idle_time;
+	uint16_t pressed_ticks;
 	const uint16_t dead_time;
+	const uint16_t delay;
+	bool long_pressed;
 	bool pressed;
-	bool dead;
 
 public:
-	Button(uint16_t dead_time = 5)
-	:idle_time(0), dead_time(dead_time), 
-		pressed(false), dead(false)
+	Button(uint16_t dead_time = 20, uint16_t delay = 10)
+	:pressed_ticks(0), dead_time(dead_time), delay(delay),
+		long_pressed(false), pressed(false)
 	{}
 
 	void tick() volatile
 	{
-		if(!pressed)
-		{
-			dead = false;
-		}
-
-		if(dead)
-		{
-			++idle_time;
-			dead = idle_time < dead_time;
-		}
-		else
-		{
-			idle_time = 0;
-		}	
+		long_pressed = false;
+		pressed_ticks = 0;
 	}
 
 	void press() volatile
 	{
-		if(dead)
+		pressed = (pressed_ticks == 0) || pressed;
+		
+		++pressed_ticks;
+		
+		if(pressed_ticks == dead_time)
 		{
-			return;
+			long_pressed = true;
+			pressed_ticks = 0;
 		}
-		pressed = true;
-		dead = true;
+		if(long_pressed && pressed_ticks == delay)
+		{
+			pressed_ticks = 0;
+		}
+		
 	}
 
 	bool read() volatile
 	{
 		bool result = pressed;
-		pressed = false;
+		pressed      = false;
 		return result;
 	}
 };
