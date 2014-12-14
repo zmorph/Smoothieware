@@ -13,7 +13,6 @@ public:
 	Screen()
 	:width(128), height(64), screen(new ST7565())
 	{
-		THEKERNEL->streams->printf("Screen initialized\r\n");
 		screen->init();
 		screen->clear();
 	}
@@ -34,6 +33,37 @@ public:
 			{
 				screen->pixel(xi, yi, color);
 			}
+		}
+	}
+
+	void xor_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+	{
+		if(w+x > width)
+		{
+			return;
+		}
+		if(h+y > height)
+		{
+			return;
+		}
+		for(size_t xi = x; xi < x+w; ++xi)
+		{
+			for(size_t yi = y; yi < y+h; ++yi)
+			{
+				screen->xor_pixel(xi, yi);
+			}
+		}
+	}
+
+	void draw_picture(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t const * glyph, bool inverted = false)
+	{
+		if(inverted)
+		{
+			screen->renderInvertedGlyph(x, y, glyph, w, h);
+		}
+		else
+		{
+			screen->renderGlyph(x, y, glyph, w, h);
 		}
 	}
 
