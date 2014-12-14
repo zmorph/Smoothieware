@@ -26,22 +26,11 @@ struct Group
 		size_t index = 0;
 		for(auto& link: links)
 		{
-			link.set_group(this).set_index(index);
+			link = Link(index, this);
 			++index;
 		}
 		widget.set_group(this);
 	}
-
-	// Group& init_links()
-	// {
-	// 	size_t index = 0;
-	// 	for(auto& link: links)
-	// 	{
-	// 		link.set_group(this).set_index(index);
-	// 		++index;
-	// 	}
-	// 	return *this;
-	// }
 
 	Widget& get_widget()
 	{
@@ -79,6 +68,11 @@ struct Group
 		return &(items[_size]);
 	}
 
+	void set_former_active(Link const link)
+	{
+		former = link;
+	}
+
 	Link get_former_active()
 	{
 		return former;
@@ -93,9 +87,10 @@ struct Group
 	{
 		return _size;
 	}
+
 private:
 	Widget& widget; // :(
-		
+	
 	size_t _size;
 	CompositeItem* items;
 	Link* links;

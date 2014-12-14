@@ -14,6 +14,7 @@ public:
 	void on_idle(void* argument);
 	void on_main_loop(void* argument);
 	void on_gcode_received(void* argument){};
+	void on_second_tick(void* argument);
 	uint32_t button_tick(uint32_t dummy);
 	uint32_t refresh_tick(uint32_t dummy);
 
@@ -22,8 +23,10 @@ private:
 	volatile ui::Button down_button;
 	volatile ui::Button select_button;
 
+	volatile bool tick_flag;
 	volatile bool refresh_flag;
 	volatile uint8_t button_state;
+	
 	ui::Screen screen;
 	ui::UserInterface user_interface;
 };

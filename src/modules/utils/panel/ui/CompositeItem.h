@@ -5,6 +5,6 @@
 #include "Item.h"
 #include "File.h"
 
-typedef boost::variant<ui::Item, ui::Command, ui::PositionControl, ui::File, ui::HeatControl, ui::FloatInfo, ui::FloatFloatInfo, ui::PlayInfo> CompositeItem; 
+typedef boost::variant<ui::Item, ui::GraphicalItem, ui::LogoItem, ui::Command, ui::PositionControl, ui::File, ui::HeatControl, ui::FloatFloatInfo, ui::TimeInfo, ui::ProgressInfo, ui::CharInfo> CompositeItem; 
 
 #endif // __COMPOSITEITEM_H__

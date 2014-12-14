@@ -21,6 +21,28 @@ public:
 	char const * const caption;
 };
 
+
+class GraphicalItem : public Item
+{
+public:
+	GraphicalItem(char const * const caption, uint8_t const * const icon)
+	:Item(caption), icon(icon)
+	{}
+
+	uint8_t const * const icon;
+};
+
+class LogoItem : public GraphicalItem
+{
+public:
+	LogoItem(char const * const caption, uint8_t const * const picture, uint8_t duration)
+	:GraphicalItem(caption, picture), duration(duration), elapsed(0)
+	{}
+
+	uint8_t duration;
+	uint8_t elapsed;
+};
+
 /*
 	Control item should be able to present and manipulate some state property.
 */
@@ -58,12 +80,13 @@ public:
 class Command : public Item
 {
 public:
-	Command(char const * const caption, CommandSender sender)
-	: Item(caption), send_command(sender)
+	Command(char const * const caption, CommandSender sender, bool return_after_action = false)
+	: Item(caption), send_command(sender), return_after_action(return_after_action)
 	{
 
 	}
 	CommandSender send_command;
+	bool return_after_action;
 };
 
 /*
@@ -112,9 +135,10 @@ public:
 	DataGetter<DataType> get_data;
 };
 
-using FloatInfo = InfoBase<float>;
+using CharInfo = InfoBase<std::string>;
 using FloatFloatInfo = InfoBase<std::tuple<float, float> >;
-using PlayInfo = InfoBase<std::tuple<uint32_t, uint32_t, std::string> >;
+using ProgressInfo = InfoBase<std::tuple<uint32_t, std::string> >;
+using TimeInfo = InfoBase<std::tuple<uint32_t, uint32_t> >;
 
 template <typename DataType>
 class HeatControlBase : public Item

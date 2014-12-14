@@ -46,8 +46,9 @@ public:
     // The glyph bytes will be 8 bits of X pixels, msbit->lsbit from top left to bottom right
     void bltGlyph(int x, int y, int w, int h, const uint8_t *glyph, int span= 0, int x_offset=0, int y_offset=0);
     void renderGlyph(int x, int y, const uint8_t *g, int pixelWidth, int pixelHeight);
+    void renderInvertedGlyph(int x, int y, const uint8_t *g, int pixelWidth, int pixelHeight);
     void pixel(int x, int y, int colour);
-
+    void xor_pixel(int x, int y);
 private:
     //buffer
 	unsigned char *framebuffer;

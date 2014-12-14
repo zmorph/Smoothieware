@@ -75,6 +75,15 @@ struct OkEvent: public Event
 	}
 };
 
+struct TickEvent: public Event
+{
+	template <typename ItemType>
+	Link operator()(ItemType& active_item)
+	{
+		return same();
+	}
+};
+
 void play_file(std::string const & path);
 
 template <>
@@ -106,6 +115,9 @@ Link DownEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item);
 
 template <>
 Link UpEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item);
+
+template <>
+Link TickEvent::operator()<ui::LogoItem >(ui::LogoItem&  active_item);
 
 } // namespace ui
 
