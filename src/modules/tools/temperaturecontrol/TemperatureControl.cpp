@@ -42,6 +42,7 @@
 #define pwm_frequency_checksum             CHECKSUM("pwm_frequency")
 #define bang_bang_checksum                 CHECKSUM("bang_bang")
 #define hysteresis_checksum                CHECKSUM("hysteresis")
+#define initial_hysteresis_checksum        CHECKSUM("initial_hysteresis")
 #define heater_pin_checksum                CHECKSUM("heater_pin")
 #define max_temp_checksum                  CHECKSUM("max_temp")
 
@@ -126,10 +127,9 @@ void TemperatureControl::load_config()
     this->readings_per_second = THEKERNEL->config->value(temperature_control_checksum, this->name_checksum, readings_per_second_checksum)->by_default(20)->as_number();
 
     this->designator          = THEKERNEL->config->value(temperature_control_checksum, this->name_checksum, designator_checksum)->by_default(string("T"))->as_string();
-
     // Max temperature we are not allowed to get over
     this->max_temp = THEKERNEL->config->value(temperature_control_checksum, this->name_checksum, max_temp_checksum)->by_default(1000)->as_number();
-
+    this->initial_hysteresis = THEKERNEL->config->value(temperature_control_checksum, this->name_checksum, initial_hysteresis_checksum)->by_default(1)->as_number();
     // Heater pin
     this->heater_pin.from_string( THEKERNEL->config->value(temperature_control_checksum, this->name_checksum, heater_pin_checksum)->by_default("nc")->as_string());
     if(this->heater_pin.connected()){
@@ -359,7 +359,7 @@ uint32_t TemperatureControl::thermistor_read_tick(uint32_t dummy)
             heater_pin.set((this->o = 0));
         } else {
             pid_process(temperature);
-            if ((temperature > target_temperature) && waiting) {
+            if ((temperature > (target_temperature - initial_hysteresis) ) && waiting) {
                 THEKERNEL->pauser->release();
                 waiting = false;
             }

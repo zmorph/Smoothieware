@@ -82,6 +82,7 @@ class TemperatureControl : public Module {
         void setPIDi(float i);
         void setPIDd(float d);
 
+        float initial_hysteresis;
         float hysteresis;
         float iTerm;
         float lastInput;
