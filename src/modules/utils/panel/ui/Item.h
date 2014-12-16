@@ -43,6 +43,17 @@ public:
 	uint8_t elapsed;
 };
 
+class TimedItem : public Item
+{
+public:
+	TimedItem(char const * const caption, uint8_t duration)
+	:Item(caption), duration(duration), elapsed(0)
+	{}
+
+	uint8_t duration;
+	uint8_t elapsed;
+};
+
 /*
 	Control item should be able to present and manipulate some state property.
 */
@@ -86,6 +97,21 @@ public:
 
 	}
 	CommandSender send_command;
+	bool return_after_action;
+};
+
+
+class ConditionalCommand : public Item
+{
+public:
+	using Condition = DataGetter<bool>;
+	ConditionalCommand(char const * const caption, Condition condition, CommandSender sender, bool return_after_action = false)
+	: Item(caption), send_command(sender), condition(condition), return_after_action(return_after_action)
+	{
+	}
+
+	CommandSender send_command;
+	Condition condition;
 	bool return_after_action;
 };
 

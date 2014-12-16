@@ -234,6 +234,7 @@ Cell ActiveRenderer::operator()<ui::ProgressInfo >(ui::ProgressInfo&  item) cons
 	bar_width *= percent;
 	bar_width /= 100;
 	screen.xor_rectangle(cell.x+margin, cell.y+margin, bar_width, cell.h-2*margin);
+	return cell;
 }
 
 template <> 
@@ -249,6 +250,7 @@ Cell DefaultRenderer::operator()<ui::ProgressInfo >(ui::ProgressInfo&  item) con
 	bar_width *= percent;
 	bar_width /= 100;
 	screen.xor_rectangle(cell.x+margin, cell.y+margin, bar_width, cell.h-2*margin);
+	return cell;
 }
 
 template <> 
@@ -287,12 +289,14 @@ template <>
 Cell ActiveRenderer::operator()<ui::LogoItem >(ui::LogoItem&  item) const
 {
 	screen.draw_picture(cell.x + 12, cell.y, 104, 64, item.icon, false);
+	return cell;
 }
 
 template <> 
 Cell DefaultRenderer::operator()<ui::LogoItem >(ui::LogoItem&  item) const
 {
 	screen.draw_picture(cell.x + 12, cell.y, 104, 64, item.icon, false);
+	return cell;
 }
 
 } // namespace ui

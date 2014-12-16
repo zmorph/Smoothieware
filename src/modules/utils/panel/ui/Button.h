@@ -1,9 +1,6 @@
 #ifndef __BUTTON_H__
 #define __BUTTON_H__
 
-#include "libs/Kernel.h"        // !!!
-#include "StreamOutputPool.h"   // !!!
-
 namespace ui
 {
 

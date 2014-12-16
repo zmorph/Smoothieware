@@ -24,6 +24,21 @@ Link OkEvent::operator()<ui::Command>(ui::Command& active_item)
 }
 
 template <>
+Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_item)
+{
+	if(active_item.condition())
+	{
+		active_item.send_command();
+		return same();		
+	}
+	else
+	{
+		return linked();
+	}
+}
+
+
+template <>
 Link OkEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item)
 {
 	active_item.mode = !active_item.mode;

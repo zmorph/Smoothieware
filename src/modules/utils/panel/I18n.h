@@ -24,14 +24,14 @@ char const * const home_z_caption        		= "Zeruj Z";
 char const * const home_xy_caption       		= "Zeruj XY";
 char const * const home_xyz_caption      		= "Zeruj XYZ";
 char const * const hotend_temperature_caption 	= "Glowica";
-char const * const hotbed_temperature_caption 	= "Stol";
+char const * const hotbed_temperature_caption 	= "Platforma";
 char const * const progress_caption 	 		= "Postep";
 char const * const manual_extrusion_caption 	= "Manualna ekstruzja";
 char const * const prime_printhead_caption 	 	= "Wstepna ekstruzja";
 char const * const filament_change_caption 	 	= "Zmien filament";
 char const * const level_bed_caption 	 		= "Poziomuj stol";
 char const * const extrude_caption				= "Ekstruduj 5mm";
-char const * const retract_caption				= "Wsun 5mm";
+char const * const retract_caption				= "Cofnij 5mm";
 char const * const menu_caption  				= "Menu";
 char const * const no_file_caption				= "HBot gotowy";
 char const * const abort_print_caption			= "Przerwij druk";
@@ -40,6 +40,11 @@ char const * const version_caption				= "Wersja programu";
 char const * const ip_caption					= "Adres IP";
 char const * const init_home					= "Zeruj osie";
 char const * const dont_home					= "Pomin zerowanie (!)";
+char const * const turn_motors_off_caption      = "Wylacz silniki";
+char const * const turn_motors_on_caption       = "Wlacz silniki";
+char const * const motors_caption               = "Silniki";
+char const * const leds_caption					= "Oswietlenie";
+char const * const cold_extrusion_prevented_caption	= "Rozgrzej glowice!";
 } // namespace i18n
 
 #else
@@ -74,14 +79,18 @@ char const * const level_bed_caption 	 		= "Level Bed";
 char const * const extrude_caption				= "Extrude 5mm";
 char const * const retract_caption				= "Retract 5mm";
 char const * const menu_caption  				= "Menu";
-char const * const no_file_caption				= "No file";
+char const * const no_file_caption				= "HBot ready";
 char const * const abort_print_caption			= "Abort print";
 char const * const not_abort_print_caption		= "Back";
 char const * const version_caption				= "Firmware version";
 char const * const ip_caption					= "IP address";
 char const * const init_home					= "Home axes";
 char const * const dont_home					= "Ignore homing (!)";
-
+char const * const turn_motors_off_caption      = "Turn motors off";
+char const * const turn_motors_on_caption       = "Turn motors on";
+char const * const motors_caption               = "Motors";
+char const * const leds_caption					= "Lights";
+char const * const cold_extrusion_prevented_caption = "Heat up hotend first!";
 } // namespace i18n
 #endif // LANG
 

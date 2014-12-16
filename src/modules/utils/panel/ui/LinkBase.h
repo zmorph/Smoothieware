@@ -7,11 +7,13 @@
 namespace ui
 {
 
+bool always();
+
 template <typename ContainerType>
 struct LinkBase
 {
 	LinkBase(size_t index = 0, ContainerType* group = nullptr)
-	:condition([]{return true;}), index(index), group(group), index_false(index), group_false(group)
+	:condition(always), index(index), group(group), index_false(index), group_false(group)
 	{}
 
 	LinkBase(std::function<bool()> condition, size_t index = 0, ContainerType* group = nullptr, size_t index_false = 0, ContainerType* group_false = nullptr)

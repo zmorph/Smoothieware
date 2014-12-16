@@ -99,6 +99,9 @@ template <>
 Link OkEvent::operator()<ui::Command>(ui::Command& active_item);
 
 template <>
+Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_item);
+
+template <>
 Link OkEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item);
 
 template <>

@@ -85,21 +85,21 @@ float get_current_pos_()
 
 void set_x_position(float position)
 {
-	char buffer[12];
+	char buffer[9];
 	snprintf(buffer, sizeof(buffer), "G0 X%4.0f", position);
 	command_buffer.push(std::bind(send_gcode, std::string(buffer)));
 }
 
 void set_y_position(float position)
 {
-	char buffer[12];
+	char buffer[9];
 	snprintf(buffer, sizeof(buffer), "G0 Y%4.0f", position);
 	command_buffer.push(std::bind(send_gcode, std::string(buffer)));
 }
 
 void set_z_position(float position)
 {
-	char buffer[12];
+	char buffer[9];
 	snprintf(buffer, sizeof(buffer), "G0 Z%4.0f", position);
 	command_buffer.push(std::bind(send_gcode, std::string(buffer)));
 }
@@ -144,6 +144,11 @@ std::tuple<float, float> get_hotbed_temperature()
 	{
 		return std::make_tuple(0, 0);
 	}
+}
+
+bool is_hotend_hot()
+{
+	return std::get<1>(get_hotend_temperature()) > 170;
 }
 
 bool is_file_being_played()
@@ -204,12 +209,12 @@ std::tuple<uint32_t, uint32_t> get_time_progress()
 
 ui::Cell const main_menu_cells[] = 
 {
-	ui::Cell{/*x*/  0,  /*y*/   1, /*w*/ 43, /*h*/ 30},
-	ui::Cell{/*x*/  0,  /*y*/  33, /*w*/ 43, /*h*/ 30},
-	ui::Cell{/*x*/ 43,  /*y*/   1, /*w*/ 43, /*h*/ 30},
-	ui::Cell{/*x*/ 43,  /*y*/  33, /*w*/ 43, /*h*/ 30},
-	ui::Cell{/*x*/ 86,  /*y*/   1, /*w*/ 42, /*h*/ 30},
-	ui::Cell{/*x*/ 86,  /*y*/  33, /*w*/ 42, /*h*/ 30}
+	ui::Cell{/*x*/  0,  /*y*/   0, /*w*/ 43, /*h*/ 32},
+	ui::Cell{/*x*/  0,  /*y*/  32, /*w*/ 43, /*h*/ 32},
+	ui::Cell{/*x*/ 43,  /*y*/   0, /*w*/ 43, /*h*/ 32},
+	ui::Cell{/*x*/ 43,  /*y*/  32, /*w*/ 43, /*h*/ 32},
+	ui::Cell{/*x*/ 86,  /*y*/   0, /*w*/ 42, /*h*/ 32},
+	ui::Cell{/*x*/ 86,  /*y*/  32, /*w*/ 42, /*h*/ 32}
 };
 
 ui::Cell const status_menu_cells[] = 
@@ -313,8 +318,9 @@ enum class MaintenanceMenu : size_t
 	Back,
 	ManualExtrusion,
 	PrimePrinthead,
-	FilamentChange,
-	LevelBed
+	Motors
+	//FilamentChange,
+	//LevelBed
 };
 
 enum class ExtrudeMenu : size_t
@@ -421,7 +427,9 @@ CompositeItem LOCATION maintenance_menu_items[] =
 {
 	ui::Item(i18n::back_caption),
 	ui::Item(i18n::manual_extrusion_caption),
-	ui::Command(i18n::prime_printhead_caption, []{send_gcode("G91");send_gcode("G1 E100 F100");send_gcode("G90");}),
+	ui::ConditionalCommand(i18n::prime_printhead_caption, is_hotend_hot, []{send_gcode("G91");send_gcode("G1 E60 F100");send_gcode("G90");}),
+	ui::Item(i18n::motors_caption),
+//	ui::Item(i18n::leds_caption)
 //	ui::Item(i18n::filament_change_caption),
 //	ui::Item(i18n::level_bed_caption)
 };
@@ -455,6 +463,24 @@ CompositeItem LOCATION init_menu_items[] =
 	ui::Item(i18n::dont_home),
 };
 
+CompositeItem LOCATION motors_menu_items[] = 
+{
+	ui::Item(i18n::back_caption),
+	ui::Command(i18n::turn_motors_on_caption, []{
+		command_buffer.push( std::bind(send_gcode, "M17") );
+	}
+	),
+	ui::Command(i18n::turn_motors_off_caption, []{
+		command_buffer.push( std::bind(send_gcode, "M18") );
+	}
+	)
+};
+
+CompositeItem LOCATION cold_extrusion_splash_items[] = 
+{
+	ui::Item(i18n::cold_extrusion_prevented_caption)
+};
+
 ui::Widget logo_menu_widget(&splash_layout);
 ui::Widget init_menu_widget(&modal_layout);
 ui::Widget main_menu_widget(&default_layout);
@@ -468,34 +494,40 @@ ui::Widget status_menu_widget(&status_layout);
 ui::Widget maintenance_menu_widget(&stacked_layout);
 ui::Widget extrude_menu_widget(&stacked_layout);
 ui::Widget options_menu_widget(&stacked_layout);
+ui::Widget motors_menu_widget(&stacked_layout);
+ui::Widget cold_extrusion_splash_widget(&splash_layout);
 
-ui::Link logo_menu_links[1];
-ui::Link init_menu_links[2];
-ui::Link main_menu_links[6];
-ui::Link move_menu_links[5];
-ui::Link file_menu_links[3];
-ui::Link heat_menu_links[5];
-ui::Link home_menu_links[4];
-ui::Link abort_menu_links[2];
-ui::Link manual_heat_menu_links[3];
-ui::Link status_menu_links[4];
-ui::Link maintenance_menu_links[3];
-ui::Link extrude_menu_links[3];
-ui::Link options_menu_links[3];
+ui::Link LOCATION logo_menu_links[1];
+ui::Link LOCATION init_menu_links[2];
+ui::Link LOCATION main_menu_links[6];
+ui::Link LOCATION move_menu_links[5];
+ui::Link LOCATION file_menu_links[3];
+ui::Link LOCATION heat_menu_links[5];
+ui::Link LOCATION home_menu_links[4];
+ui::Link LOCATION abort_menu_links[2];
+ui::Link LOCATION manual_heat_menu_links[3];
+ui::Link LOCATION status_menu_links[4];
+ui::Link LOCATION maintenance_menu_links[4];
+ui::Link LOCATION extrude_menu_links[3];
+ui::Link LOCATION options_menu_links[3];
+ui::Link LOCATION motors_menu_links[3];
+ui::Link LOCATION cold_extrusion_splash_links[1];
 
-ui::Group logo(logo_menu_items, logo_menu_links, logo_menu_widget);
-ui::Group init_menu(init_menu_items, init_menu_links, init_menu_widget);
-ui::Group main_menu(main_menu_items, main_menu_links, main_menu_widget);
-ui::Group move_menu(move_menu_items, move_menu_links, move_menu_widget);
-ui::Group file_menu(file_menu_items, file_menu_links, file_menu_widget);
-ui::Group abort_menu(abort_menu_items, abort_menu_links, abort_menu_widget);
-ui::Group heat_menu(heat_menu_items, heat_menu_links, heat_menu_widget);
-ui::Group home_menu(home_menu_items, home_menu_links, home_menu_widget);
-ui::Group manual_heat_menu(manual_heat_menu_items, manual_heat_menu_links, manual_heat_menu_widget);
-ui::Group status_menu(status_menu_items, status_menu_links, status_menu_widget);
-ui::Group maintenance_menu(maintenance_menu_items, maintenance_menu_links, maintenance_menu_widget);
-ui::Group extrude_menu(extrude_menu_items, extrude_menu_links, extrude_menu_widget);
-ui::Group options_menu(options_menu_items, options_menu_links, options_menu_widget);
+ui::Group LOCATION logo(logo_menu_items, logo_menu_links, logo_menu_widget);
+ui::Group LOCATION init_menu(init_menu_items, init_menu_links, init_menu_widget);
+ui::Group LOCATION main_menu(main_menu_items, main_menu_links, main_menu_widget);
+ui::Group LOCATION move_menu(move_menu_items, move_menu_links, move_menu_widget);
+ui::Group LOCATION file_menu(file_menu_items, file_menu_links, file_menu_widget);
+ui::Group LOCATION abort_menu(abort_menu_items, abort_menu_links, abort_menu_widget);
+ui::Group LOCATION heat_menu(heat_menu_items, heat_menu_links, heat_menu_widget);
+ui::Group LOCATION home_menu(home_menu_items, home_menu_links, home_menu_widget);
+ui::Group LOCATION manual_heat_menu(manual_heat_menu_items, manual_heat_menu_links, manual_heat_menu_widget);
+ui::Group LOCATION status_menu(status_menu_items, status_menu_links, status_menu_widget);
+ui::Group LOCATION maintenance_menu(maintenance_menu_items, maintenance_menu_links, maintenance_menu_widget);
+ui::Group LOCATION extrude_menu(extrude_menu_items, extrude_menu_links, extrude_menu_widget);
+ui::Group LOCATION options_menu(options_menu_items, options_menu_links, options_menu_widget);
+ui::Group LOCATION motors_menu(motors_menu_items, motors_menu_links, motors_menu_widget);
+ui::Group LOCATION cold_extrusion_splash(cold_extrusion_splash_items, cold_extrusion_splash_links, cold_extrusion_splash_widget);
 
 Panel::Panel()
 :up_button(10, 5), down_button(10, 5), select_button(10, 5), user_interface(logo.get_link_to(0), screen)
@@ -524,9 +556,12 @@ Panel::Panel()
 	
 	manual_heat_menu.set_link_for(index(ManualHeatMenu::Back), heat_menu.get_link_to(index(HeatMenu::Back) ));
 	maintenance_menu.set_link_for(index(MaintenanceMenu::Back), main_menu.get_link_to(index(MainMenu::Maintenance)) );
-	maintenance_menu.set_link_for(index(MaintenanceMenu::ManualExtrusion), extrude_menu.get_link_to(index(ExtrudeMenu::Back)) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::ManualExtrusion), ui::Link( is_hotend_hot, index(ExtrudeMenu::Back), &extrude_menu, 0, &cold_extrusion_splash) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::PrimePrinthead), cold_extrusion_splash.get_link_to(0) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::Motors), motors_menu.get_link_to(0) );
 	extrude_menu.set_link_for(index(ExtrudeMenu::Back), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)));
 	
+	motors_menu.set_link_for(0, maintenance_menu.get_link_to(index(MaintenanceMenu::Back) ));
 	status_menu.set_link_for(0, main_menu.get_link_to(index(MainMenu::Status)));
 	status_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Status)));
 	status_menu.set_link_for(2, main_menu.get_link_to(index(MainMenu::Status)));
@@ -537,7 +572,10 @@ Panel::Panel()
 
 	options_menu.set_link_for(index(OptionsMenu::Back), main_menu.get_link_to(index(MainMenu::Options)));
 
-	logo.set_link_for(0, init_menu.get_link_to(0));
+	cold_extrusion_splash.set_link_for(0, heat_menu.get_link_to(index(HeatMenu::Back)));
+	logo.set_link_for(0, main_menu.get_link_to(0));
+	//min_extrusion_temperature = THEKERNEL->config->value(extruder_checksum, this->identifier, min_temp_checksum )->by_default(170)->as_number(); // REMOVE REDUNTANT DATA IN THE FUTURE
+    //max_temperature = THEKERNEL->config->value(extruder_checksum, this->identifier, max_temp_checksum )->by_default(300)->as_number(); // REMOVE REDUNTANT DATA IN THE FUTURE
  //    default_hotend_temperature 	   = THEKERNEL->config->value( panel_checksum, hotend_temp_checksum )->by_default(185.0f )->as_number();
  //    default_bed_temperature    	   = THEKERNEL->config->value( panel_checksum, bed_temp_checksum    )->by_default(60.0f  )->as_number();
 	// default_hotend_temperature_ABS = THEKERNEL->config->value( panel_checksum, hotend_temp_ABS_checksum )->by_default(235.0f )->as_number();
