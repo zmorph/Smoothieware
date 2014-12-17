@@ -53,8 +53,11 @@ endif
 # use c++11 features for the checksums and set default baud rate for serial uart
 DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_RATE)
 
+# set language
+DEFINES += -D__LANG_$(LANG)__
+
 # add any modules that you do not want included in the build
-export EXCLUDED_MODULES = tools/touchprobe
+export EXCLUDED_MODULES = tools/touchprobe tools/laser
 # e.g for a CNC machine
 #export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder
 

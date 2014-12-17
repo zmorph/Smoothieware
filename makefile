@@ -2,11 +2,18 @@
 
 DIRS = mbed src
 DIRSCLEAN = $(addsuffix .clean,$(DIRS))
+LANG = EN
+
+pl:	LANG = PL
+pl: all
+
+en:	LANG = EN
+en: all
 
 all:
 	@ $(MAKE) -C mbed
 	@echo Building Smoothie
-	@ $(MAKE) -C src
+	@ $(MAKE) -C src LANG=$(LANG)
 
 clean: $(DIRSCLEAN)
 
@@ -32,4 +39,6 @@ debug:
 console:
 	@ $(MAKE) -C src console
 
-.PHONY: all $(DIRS) $(DIRSCLEAN) debug-store flash upload debug console dfu
+.FORCE:
+
+.PHONY: all $(DIRS) $(DIRSCLEAN) debug-store flash upload debug console dfu .FORCE
