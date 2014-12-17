@@ -109,7 +109,7 @@ Cell ActiveRenderer::operator()<ui::PositionControl >(ui::PositionControl&  item
 		print_white_left(screen, cell, item.caption);
 	}
 	char buffer[10];
-	sprintf(buffer, "%.1f", item.get_data());
+	snprintf(buffer, sizeof(buffer), "%.1f", item.get_data());
 	//print_white_right();
 	print_caption(screen, buffer, cell.w - 40, cell.y + cell.h/2, cell.w - 4, 0);
 	return cell;
@@ -121,7 +121,7 @@ Cell DefaultRenderer::operator()<ui::PositionControl >(ui::PositionControl&  ite
 	screen.draw_rectangle(cell.x, cell.y, cell.w, cell.h, 0);
 	print_caption(screen, item.caption, cell.x + 4, cell.y + cell.h/2, cell.w - 4, 1);
 	char buffer[10];
-	sprintf(buffer, "%.1f", item.get_data());
+	snprintf(buffer, sizeof(buffer), "%.1f", item.get_data());
 	print_caption(screen, buffer, cell.w - 40, cell.y + cell.h/2, cell.w - 4, 1);
 	
 	return cell;
@@ -143,7 +143,7 @@ Cell ActiveRenderer::operator()<ui::HeatControl >(ui::HeatControl&  item) const
 	char buffer[16];
 	float target, current;
 	std::tie(target, current) = item.get_data();
-	sprintf(buffer, "%.0f/%.0f%cC", current, target, 248);
+	snprintf(buffer, sizeof(buffer), "%.0f/%.0f%cC", current, target, 248);
 	print_caption(screen, buffer, cell.x, y_center(cell), cell.w-4, 0, false, true);
 	return cell;
 }
@@ -156,7 +156,7 @@ Cell DefaultRenderer::operator()<ui::HeatControl >(ui::HeatControl&  item) const
 	char buffer[16];
 	float target, current;
 	std::tie(target, current) = item.get_data();
-	sprintf(buffer, "%.0f/%.0f%cC", current, target, 248);
+	snprintf(buffer, sizeof(buffer), "%.0f/%.0f%cC", current, target, 248);
 	print_caption(screen, buffer, cell.x, y_center(cell), cell.w-4, 1, false, true);
 	
 	return cell;
@@ -186,7 +186,7 @@ Cell ActiveRenderer::operator()<ui::FloatFloatInfo >(ui::FloatFloatInfo&  item) 
 	char buffer[16];
 	float target, current;
 	std::tie(target, current) = item.get_data();
-	sprintf(buffer, "%.0f/%.0f%cC", current, target, 248);
+	snprintf(buffer, sizeof(buffer), "%.0f/%.0f%cC", current, target, 248);
 	print_caption(screen, item.caption, cell.x + margin, y_center(cell), cell.w-margin, 1);
 	print_caption(screen, buffer, cell.x+ margin, y_center(cell), cell.w - margin, 1, false, true);
 	
@@ -201,7 +201,7 @@ Cell DefaultRenderer::operator()<ui::FloatFloatInfo >(ui::FloatFloatInfo&  item)
 	char buffer[16];
 	float target, current;
 	std::tie(target, current) = item.get_data();
-	sprintf(buffer, "%.0f/%.0f%cC", current, target, 248);
+	snprintf(buffer, sizeof(buffer), "%.0f/%.0f%cC", current, target, 248);
 	print_caption(screen, item.caption, cell.x + margin, y_center(cell), cell.w-margin, 1);
 	print_caption(screen, buffer, cell.x+ margin, y_center(cell), cell.w - margin, 1, false, true);
 	
