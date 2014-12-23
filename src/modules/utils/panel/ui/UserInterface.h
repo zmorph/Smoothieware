@@ -38,9 +38,9 @@ public:
 	void render();
 	void refresh();
 private:
-	Cell render_active(CompositeItem &item, const Cell& cell, Screen& screen);
-	Cell render(CompositeItem &item, const Cell& cell, Screen& screen);
-	Cell clear(const Cell& cell, Screen& screen);
+	Dimensions render_active(CompositeItem const & item, const Cell& cell, Screen& screen);
+	Dimensions render(CompositeItem const & item, const Cell& cell, Screen& screen);
+	Dimensions clear(const Dimensions& cell, Screen& screen);
 	
 };
 

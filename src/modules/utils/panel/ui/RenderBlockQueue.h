@@ -7,7 +7,7 @@
 namespace ui
 {
 
-typedef RenderBlockQueueBase<10, Cell> RenderBlockQueue;
+typedef RenderBlockQueueBase<10, Dimensions> RenderBlockQueue;
 
 } // namespace ui
 

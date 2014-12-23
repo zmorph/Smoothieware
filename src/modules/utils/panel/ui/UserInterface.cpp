@@ -47,7 +47,7 @@ namespace ui
 				}
 				else
 				{
-					render_blocks.push_back(clear(cell, screen));
+					render_blocks.push_back(clear(cell.dimensions, screen));
 				}
 				++index;
 			}
@@ -72,17 +72,17 @@ namespace ui
 		// }
 	}
 
-	Cell UserInterface::render_active(CompositeItem &item, const Cell& cell, Screen& screen)
+	Dimensions UserInterface::render_active(CompositeItem const & item, const Cell& cell, Screen& screen)
 	{
-		return boost::apply_visitor(ActiveRenderer(cell, screen), item);
+		return boost::apply_visitor(Renderer(cell.dimensions, screen), item, cell.active_render_policy);
 	}
 
-	Cell UserInterface::render(CompositeItem &item, const Cell& cell, Screen& screen)
+	Dimensions UserInterface::render(CompositeItem const & item, const Cell& cell, Screen& screen)
 	{
-		return boost::apply_visitor(DefaultRenderer(cell, screen), item);
+		return boost::apply_visitor(Renderer(cell.dimensions, screen), item, cell.default_render_policy);
 	}
 
-	Cell UserInterface::clear(const Cell& cell, Screen& screen)
+	Dimensions UserInterface::clear(const Dimensions& cell, Screen& screen)
 	{
 		screen.clear(cell.x, cell.y, cell.w, cell.h);
 		return cell;

@@ -87,7 +87,7 @@ static uint32_t heapWalk(StreamOutput *stream, bool verbose)
     uint32_t freeSize = 0;
     uint32_t usedSize = 0;
 
-    stream->printf("Used Heap Size: %lu\n", heapEnd - chunkCurr);
+    stream->printf("Used Heap Size: %lu\r\n", heapEnd - chunkCurr);
 
     // Walk through the chunks until we hit the end of the heap.
     while (chunkCurr < heapEnd) {
@@ -459,12 +459,53 @@ void SimpleShell::save_command( string parameters, StreamOutput *stream )
     stream->printf("Settings Stored to %s\r\n", filename.c_str());
 }
 
+extern int __data_start__;
+extern int __data_end__;
+extern int __StackTop;
+extern int __StackLimit;
+extern int __HeapLimit;
+
 // show free memory
 void SimpleShell::mem_command( string parameters, StreamOutput *stream)
 {
     bool verbose = shift_parameter( parameters ).find_first_of("Vv") != string::npos ;
+    uint32_t stack_size = STACK_SIZE;
+    struct mallinfo heap_info = mallinfo();
+    uint32_t total_heap = heap_info.arena;
+    uint32_t allocated_heap = heap_info.uordblks;
+    uint32_t free_heap = heap_info.fordblks;
     unsigned long heap = (unsigned long)_sbrk(0);
     unsigned long m = g_maximumHeapAddress - heap;
+    uint32_t stack_head  = __get_MSP();
+    uint32_t stack_start = (uint32_t)(&__StackTop);
+    uint32_t heap_limit  = (uint32_t)&__HeapLimit;
+    uint32_t heap_start  = (uint32_t)&__end__;
+    uint32_t stack_max   = (uint32_t)&__StackLimit;
+    stream->printf("Data start address: 0x%x \r\n", &__data_start__);
+    stream->printf("Data end address: 0x%x \r\n", &__data_end__);
+    stream->printf("Bytes before heap: %lu \r\n", heap_start - 0x10000000);
+    stream->printf("Heap start address: 0x%x \r\n", heap_start);
+    stream->printf("Heap limit address (unused?): 0x%x \r\n", heap_limit);
+    stream->printf("First free address above heap: 0x%x \r\n", heap);
+    stream->printf("Heap max size: %lu bytes\r\n", heap_limit - heap_start);
+    stream->printf("Heap actual size: %lu bytes\r\n", heap - heap_start);
+
+    stream->printf("Stack size: %lu bytes\r\n", stack_size);
+    stream->printf("Stack address: 0x%x \r\n", stack_start);
+    stream->printf("Stack head address: 0x%x \r\n", stack_head);
+    stream->printf("Stack limit address: 0x%x \r\n", stack_max);
+    stream->printf("Stack in use: %lu bytes\r\n", stack_start - stack_head);
+    stream->printf("There is 32 bytes of memory barier.\r\n");
+    stream->printf("Space between stack head and heap end: %lu \r\n", stack_head - heap);
+    stream->printf("Space between stack max and heap end: %lu \r\n", stack_max - heap);
+
+    //stream->printf("Data size: %lu bytes\r\n", &__data_end__ - &__data_start__);
+    stream->printf("Newlib total Heap: %lu bytes\r\n", total_heap);
+    stream->printf("Newlib allocated Heap: %lu bytes\r\n", allocated_heap);
+    stream->printf("Newlib free Heap: %lu bytes\r\n", free_heap);
+    stream->printf("Total  free RAM: %lu bytes\r\n", free_heap + - heap - 32 + stack_max);
+
+
     stream->printf("Unused Heap: %lu bytes\r\n", m);
 
     uint32_t f = heapWalk(stream, verbose);

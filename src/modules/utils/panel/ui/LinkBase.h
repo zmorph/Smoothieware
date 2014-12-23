@@ -7,6 +7,12 @@
 namespace ui
 {
 
+struct DupaLink
+{
+	void* dupa;
+	size_t index;
+};
+
 bool always();
 
 template <typename ContainerType>
@@ -33,7 +39,7 @@ struct LinkBase
 		}
 	}
 
-	ContainerType* get_group() const
+	ContainerType * get_group() const
 	{
 		if(condition())
 		{
@@ -46,13 +52,13 @@ struct LinkBase
 		}
 	}
 
-	typename ContainerType::ElementType& operator*()
+	typename ContainerType::ElementType const & operator*()
 	{
 		return &(this->get());
 	}
 
 	// CBFF
-	typename ContainerType::ElementType* get()
+	typename ContainerType::ElementType const * get()
 	{
 		if(condition())
 		{
@@ -65,7 +71,7 @@ struct LinkBase
 	}
 
 	// CBFF
-	typename ContainerType::ElementType* fetch()
+	typename ContainerType::ElementType const * fetch()
 	{
 		return get();
 	}
