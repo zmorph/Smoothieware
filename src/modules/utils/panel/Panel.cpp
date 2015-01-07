@@ -28,10 +28,17 @@
 #include "version.h"
 #include "StreamOutputPool.h"
 #include "mri.h"
+
+#include "Config.h"
+#include "ConfigValue.h"
+
 //FOR SENDING GCODES
 #include "Gcode.h"
 
 #include <type_traits>
+//#include "ttl/var/variant.hpp"
+
+#include "detail/Zip.h"
 
 #define LOCATION __attribute__ ((section ("AHBSRAM0")))
 #define hotend_temp_checksum 	 CHECKSUM("hotend_temperature")
@@ -40,10 +47,26 @@
 #define bed_temp_ABS_checksum    CHECKSUM("bed_temperature_ABS")
 #define hotend_temp_PLA_checksum CHECKSUM("hotend_temperature_PLA")
 #define bed_temp_PLA_checksum    CHECKSUM("bed_temperature_PLA")
+#define panel_checksum           CHECKSUM("panel")
 
 namespace info
 {
 	static Version version; 
+	static struct
+	{
+		void init(Kernel* kernel)
+		{
+			default_hotend_temperature_PLA = kernel->config->value( panel_checksum, hotend_temp_PLA_checksum )->by_default(185.0f )->as_number();
+			default_bed_temperature_PLA    = kernel->config->value( panel_checksum, bed_temp_PLA_checksum    )->by_default(60.0f  )->as_number();
+			default_hotend_temperature_ABS = kernel->config->value( panel_checksum, hotend_temp_ABS_checksum )->by_default(235.0f )->as_number();
+			default_bed_temperature_ABS    = kernel->config->value( panel_checksum, bed_temp_ABS_checksum    )->by_default(100.0f  )->as_number();	
+		}
+
+		float default_bed_temperature_ABS;
+		float default_hotend_temperature_ABS;
+		float default_bed_temperature_PLA;
+		float default_hotend_temperature_PLA;
+	} settings = {0};
 }
 
 CommandQueue<1> command_buffer;
@@ -108,15 +131,11 @@ void set_z_position(float position)
 
 void set_hotend_temperature(float temperature)
 {
-	// THEKERNEL->config->value( panel_checksum, hotend_temp_ABS_checksum )->by_default(235.0f)->as_number();
-	// THEKERNEL->config->value( panel_checksum, bed_temp_ABS_checksum    )->by_default(100.0f)->as_number();
 	PublicData::set_value( temperature_control_checksum, hotend_checksum, &temperature );
 }
 
 void set_hotbed_temperature(float temperature)
 {
-	// default_hotend_temperature_PLA = THEKERNEL->config->value( panel_checksum, hotend_temp_PLA_checksum )->by_default(185.0f )->as_number();
-	// default_bed_temperature_PLA    = THEKERNEL->config->value( panel_checksum, bed_temp_PLA_checksum    )->by_default(60.0f  )->as_number();
 	PublicData::set_value( temperature_control_checksum, bed_checksum, &temperature );
 }
 
@@ -209,40 +228,45 @@ std::tuple<uint32_t, uint32_t> get_time_progress()
     }
 }
 
+ui::GlobalCell const scroll_bar_cells[] = 
+{
+	ui::GlobalCell({/*x*/  120,  /*y*/ 0, /*w*/ 8, /*h*/ 64}, ui::DefaultGlobalRenderPolicy())
+};
+
 ui::Cell const main_menu_cells[] = 
 {
-	ui::Cell({/*x*/  0,  /*y*/   0, /*w*/ 43, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/  0,  /*y*/  32, /*w*/ 43, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 43,  /*y*/   0, /*w*/ 43, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 43,  /*y*/  32, /*w*/ 43, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 86,  /*y*/   0, /*w*/ 42, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 86,  /*y*/  32, /*w*/ 42, /*h*/ 32}, ui::RenderPolicyBase())
+	ui::Cell({/*x*/  0,  /*y*/   0, /*w*/ 43, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/  0,  /*y*/  32, /*w*/ 43, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 43,  /*y*/   0, /*w*/ 43, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 43,  /*y*/  32, /*w*/ 43, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 86,  /*y*/   0, /*w*/ 42, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 86,  /*y*/  32, /*w*/ 42, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
 ui::Cell const status_menu_cells[] = 
 {
-	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 16}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 0,  /*y*/  16, /*w*/ 128, /*h*/ 16}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 0,  /*y*/  32, /*w*/ 128, /*h*/ 16}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 0,  /*y*/  48, /*w*/ 128, /*h*/ 16}, ui::RenderPolicyBase())
+	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 16}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 0,  /*y*/  16, /*w*/ 128, /*h*/ 16}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 0,  /*y*/  32, /*w*/ 128, /*h*/ 16}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 0,  /*y*/  48, /*w*/ 128, /*h*/ 16}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
 ui::Cell const stacked_menu_cells[] = 
 {
-	ui::Cell({/*x*/ 2,  /*y*/   0, /*w*/ 124, /*h*/ 21}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 2,  /*y*/  21, /*w*/ 124, /*h*/ 22}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 2,  /*y*/  42, /*w*/ 124, /*h*/ 22}, ui::RenderPolicyBase())
+	ui::Cell({/*x*/ 2,  /*y*/   0, /*w*/ 124, /*h*/ 21}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 2,  /*y*/  21, /*w*/ 124, /*h*/ 22}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 2,  /*y*/  42, /*w*/ 124, /*h*/ 22}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
 ui::Cell const modal_menu_cells[] = 
 {
-	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 32}, ui::RenderPolicyBase()),
-	ui::Cell({/*x*/ 0,  /*y*/  32, /*w*/ 128, /*h*/ 32}, ui::RenderPolicyBase())
+	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy()),
+	ui::Cell({/*x*/ 0,  /*y*/  32, /*w*/ 128, /*h*/ 32}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
 ui::Cell const splash_cell[] = 
 {
-	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 64}, ui::RenderPolicyBase())
+	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 64}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
 ui::Layout default_layout(main_menu_cells);
@@ -250,10 +274,6 @@ ui::Layout stacked_layout(stacked_menu_cells);
 ui::Layout status_layout(status_menu_cells);
 ui::Layout splash_layout(splash_cell);
 ui::Layout modal_layout(modal_menu_cells);
-
-/*
-	
-*/
 
 enum class MainMenu : size_t
 {
@@ -288,7 +308,6 @@ enum class SetupMenu : size_t
 	ZPosition,
 	PlayerStatus
 };
-
 
 enum class HeatMenu : size_t
 {
@@ -339,12 +358,12 @@ enum class OptionsMenu : size_t
 	Version
 };
 
-CompositeItem /*LOCATION*/ logo_menu_items[] = 
+CompositeItem LOCATION logo_menu_items[] = 
 {
 	ui::LogoItem(i18n::back_caption, picture::logo, 18)
 };
 
-CompositeItem /*LOCATION*/ status_menu_items[] = 
+CompositeItem LOCATION status_menu_items[] = 
 {
 	ui::ProgressInfo(i18n::progress_caption, get_progress),
 	ui::TimeInfo(i18n::progress_caption, get_time_progress),
@@ -354,15 +373,17 @@ CompositeItem /*LOCATION*/ status_menu_items[] =
 
 void preheat_abs()
 {
-	set_hotend_temperature(245); 
-	set_hotbed_temperature(100);
+	set_hotend_temperature(info::settings.default_hotend_temperature_ABS); 
+	set_hotbed_temperature(info::settings.default_bed_temperature_ABS);
 }
+
 
 void preheat_pla()
 {
-	set_hotend_temperature(220); 
-	set_hotbed_temperature(60);
+	set_hotend_temperature(info::settings.default_hotend_temperature_PLA); 
+	set_hotbed_temperature(info::settings.default_bed_temperature_PLA);
 }
+
 
 void cool_down()
 {
@@ -370,7 +391,7 @@ void cool_down()
 	set_hotbed_temperature(0);
 }
 
-CompositeItem /*LOCATION*/ heat_menu_items[] = 
+CompositeItem LOCATION heat_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Command(i18n::preheat_abs_caption, preheat_abs),
@@ -379,7 +400,7 @@ CompositeItem /*LOCATION*/ heat_menu_items[] =
 	ui::Command(i18n::cool_down_caption, cool_down)
 };
 
-CompositeItem /*LOCATION*/ manual_heat_menu_items[] = 
+CompositeItem LOCATION manual_heat_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::HeatControl(i18n::hotend_temperature_caption, get_hotend_temperature, set_hotend_temperature, 150),
@@ -420,7 +441,7 @@ void buffered_home_xyz()
 	[CompI, CompI, CompI]
 */
 
-CompositeItem /*LOCATION*/ home_menu_items[] = 
+CompositeItem LOCATION home_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Command(i18n::home_z_caption, buffered_home_z),
@@ -428,7 +449,7 @@ CompositeItem /*LOCATION*/ home_menu_items[] =
 	ui::Command(i18n::home_xyz_caption, buffered_home_xyz)
 };
 
-CompositeItem /*LOCATION*/ move_menu_items[] = 
+CompositeItem LOCATION move_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Item(i18n::home_caption),
@@ -437,7 +458,7 @@ CompositeItem /*LOCATION*/ move_menu_items[] =
 	ui::PositionControl(i18n::y_caption, get_current_pos_<1>, set_y_position)
 };
 
-CompositeItem /*LOCATION*/ main_menu_items[] = 
+CompositeItem LOCATION main_menu_items[] = 
 {
 	ui::GraphicalItem(i18n::move_caption, icon::move),
 	ui::GraphicalItem(i18n::heat_caption, icon::heat),
@@ -452,7 +473,7 @@ void buffered_avoid_playing_file()
 	command_buffer.push(abort_playing_file);
 }
 
-CompositeItem /*LOCATION*/ abort_menu_items[] = 
+CompositeItem LOCATION abort_menu_items[] = 
 {
 	ui::Command(i18n::abort_print_caption, buffered_avoid_playing_file),
 	ui::Item(i18n::not_abort_print_caption)
@@ -460,7 +481,7 @@ CompositeItem /*LOCATION*/ abort_menu_items[] =
 
 ui::FileShiftRegister file_browser;
 
-CompositeItem /*LOCATION*/ file_menu_items[] = 
+CompositeItem LOCATION file_menu_items[] = 
 {
 	ui::File(file_browser, 0),
 	ui::File(file_browser, 1),
@@ -470,7 +491,7 @@ CompositeItem /*LOCATION*/ file_menu_items[] =
 void prime_printhead()
 {
 	send_gcode("G91");
-	send_gcode("G1 E60 F100");
+	send_gcode("G1 E60 F100"); //change to 100 for material change
 	send_gcode("G90");
 }
 
@@ -479,7 +500,7 @@ void buffered_prime_printhead()
 	command_buffer.push(prime_printhead);
 }
 
-CompositeItem /*LOCATION*/ maintenance_menu_items[] = 
+CompositeItem LOCATION maintenance_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Item(i18n::manual_extrusion_caption),
@@ -493,12 +514,16 @@ CompositeItem /*LOCATION*/ maintenance_menu_items[] =
 
 void extrude()
 {
-	send_gcode("G91");send_gcode("G1 E5 F100");send_gcode("G90");
+	send_gcode("G91");
+	send_gcode("G1 E5 F100");
+	send_gcode("G90");
 }
 
 void retract()
 {
-	send_gcode("G91");send_gcode("G1 E-5 F100");send_gcode("G90");
+	send_gcode("G91");
+	send_gcode("G1 E-5 F100");
+	send_gcode("G90");
 }
 
 void buffered_extrude()
@@ -511,23 +536,21 @@ void buffered_retract()
 	command_buffer.push(retract);
 }
 
-CompositeItem /*LOCATION*/ extrude_menu_items[] = 
+CompositeItem LOCATION extrude_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Command(i18n::extrude_caption, buffered_extrude),
 	ui::Command(i18n::retract_caption, buffered_retract)
 };
 
-
-
-CompositeItem /*LOCATION*/ options_menu_items[] = 
+CompositeItem LOCATION options_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::CharInfo(i18n::ip_caption, get_network),
 	//ui::CharInfo(i18n::version_caption, []{return info::version.get_build();})
 };
 
-CompositeItem /*LOCATION*/ init_menu_items[] = 
+CompositeItem LOCATION init_menu_items[] = 
 {
 	ui::Command(i18n::init_home, buffered_home_xyz),
 	ui::Item(i18n::dont_home),
@@ -553,22 +576,17 @@ void buffered_turn_motors_off()
 	command_buffer.push(turn_motors_off);
 }
 
-CompositeItem /*LOCATION*/ motors_menu_items[] = 
+CompositeItem LOCATION motors_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
 	ui::Command(i18n::turn_motors_on_caption, buffered_turn_motors_on),
 	ui::Command(i18n::turn_motors_off_caption, buffered_turn_motors_off)
 };
 
-CompositeItem /*LOCATION*/ cold_extrusion_splash_items[] = 
+CompositeItem LOCATION cold_extrusion_splash_items[] = 
 {
 	ui::Item(i18n::cold_extrusion_prevented_caption)
 };
-
-// ui::Widget get_main_menu()
-// {
-
-// }
 
 ui::Widget logo_menu_widget(&splash_layout);
 ui::Widget init_menu_widget(&modal_layout);
@@ -585,8 +603,6 @@ ui::Widget extrude_menu_widget(&stacked_layout);
 ui::Widget options_menu_widget(&stacked_layout);
 ui::Widget motors_menu_widget(&stacked_layout);
 ui::Widget cold_extrusion_splash_widget(&splash_layout);
-
-// constexpr ui::DupaLink;
 
 ui::Link LOCATION logo_menu_links[1];
 ui::Link LOCATION init_menu_links[2];
@@ -620,61 +636,61 @@ ui::Group LOCATION options_menu(options_menu_items, options_menu_links, options_
 ui::Group LOCATION motors_menu(motors_menu_items, motors_menu_links, motors_menu_widget);
 ui::Group LOCATION cold_extrusion_splash(cold_extrusion_splash_items, cold_extrusion_splash_links, cold_extrusion_splash_widget);
 
-// item.link_to().when().else_to();
-// item.always().link_to();
-	
 Panel::Panel()
 :up_button(10, 5), down_button(10, 5), select_button(10, 5), user_interface(logo.get_link_to(0), screen)
 {
-	THEKERNEL->streams->printf("\r\n");
-	THEKERNEL->streams->printf("%s\r\n", std::is_literal_type<ui::Item>::value ? "true" : "false");
-	THEKERNEL->streams->printf("%s\r\n", std::is_literal_type<ui::Control<uint8_t>>::value ? "true" : "false");
-	THEKERNEL->streams->printf("Sizeof HeatItem: %ld.\r\n", sizeof(ui::HeatControl));
-	THEKERNEL->streams->printf("Sizeof Link: %ld.\r\n", sizeof(ui::Link));
-	THEKERNEL->streams->printf("Sizeof Dupa Link: %ld.\r\n", sizeof(ui::DupaLink));
-	THEKERNEL->streams->printf("Sizeof Cell: %ld.\r\n", sizeof(ui::Cell));
-	THEKERNEL->streams->printf("Sizeof Composite: %ld.\r\n", sizeof(CompositeItem));
-	// init_menu.set_link_for(index(0), status_menu.get_link_to(0));
-	// init_menu.set_link_for(index(1), status_menu.get_link_to(0));
-	// file_browser.open_directory("/");
-	// main_menu.set_link_for(index(MainMenu::Move), move_menu.get_link_to(index(MoveMenu::Back)));
-	// main_menu.set_link_for(index(MainMenu::Heat), heat_menu.get_link_to(index(HeatMenu::Back)));
-	// main_menu.set_link_for(index(MainMenu::Print), ui::Link(is_file_being_played, 0, &abort_menu, 0, &file_menu) );
-	// main_menu.set_link_for(index(MainMenu::Status), status_menu.get_link_to(0));
-	// main_menu.set_link_for(index(MainMenu::Maintenance), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)) );
-	// main_menu.set_link_for(index(MainMenu::Options), options_menu.get_link_to(index(OptionsMenu::Back)) );
+	// THEKERNEL->streams->printf("\r\n");
+	// THEKERNEL->streams->printf("%s\r\n", std::is_literal_type<ui::Item>::value ? "true" : "false");
+	// THEKERNEL->streams->printf("%s\r\n", std::is_literal_type<ui::Control<uint8_t>>::value ? "true" : "false");
+	// THEKERNEL->streams->printf("%s\r\n", std::is_literal_type<ttl::var::variant<uint32_t, char[20]>>::value ? "true" : "false");
+	// THEKERNEL->streams->printf("Sizeof HeatItem: %u.\r\n", sizeof(ui::HeatControl));
+	// THEKERNEL->streams->printf("Sizeof Link: %u.\r\n", sizeof(ui::Link));
+	// THEKERNEL->streams->printf("Sizeof Dupa Link: %u.\r\n", sizeof(ui::DupaLink));
+	// THEKERNEL->streams->printf("Sizeof Cell: %u.\r\n", sizeof(ui::Cell));
+	// THEKERNEL->streams->printf("Sizeof Composite: %u.\r\n", sizeof(CompositeItem));
+	info::settings.init(THEKERNEL);
 
-	// move_menu.set_link_for(index(MoveMenu::Back), main_menu.get_link_to(index(MainMenu::Move)));
-	// move_menu.set_link_for(index(MoveMenu::Home), home_menu.get_link_to(index(HomeMenu::Back)));
-	// home_menu.set_link_for(index(HomeMenu::Back), move_menu.get_link_to(index(MoveMenu::Back)));
+	init_menu.set_link_for(index(0), status_menu.get_link_to(0));
+	init_menu.set_link_for(index(1), status_menu.get_link_to(0));
+	file_browser.open_directory("/");
+	main_menu.set_link_for(index(MainMenu::Move), move_menu.get_link_to(index(MoveMenu::Back)));
+	main_menu.set_link_for(index(MainMenu::Heat), heat_menu.get_link_to(index(HeatMenu::Back)));
+	main_menu.set_link_for(index(MainMenu::Print), ui::Link(is_file_being_played, 0, &abort_menu, 0, &file_menu) );
+	main_menu.set_link_for(index(MainMenu::Status), status_menu.get_link_to(0));
+	main_menu.set_link_for(index(MainMenu::Maintenance), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)) );
+	main_menu.set_link_for(index(MainMenu::Options), options_menu.get_link_to(index(OptionsMenu::Back)) );
+
+	move_menu.set_link_for(index(MoveMenu::Back), main_menu.get_link_to(index(MainMenu::Move)));
+	move_menu.set_link_for(index(MoveMenu::Home), home_menu.get_link_to(index(HomeMenu::Back)));
+	home_menu.set_link_for(index(HomeMenu::Back), move_menu.get_link_to(index(MoveMenu::Back)));
 	
-	// file_menu.set_link_for(0, status_menu.get_link_to(0));
-	// file_menu.set_link_for(1, status_menu.get_link_to(0));
-	// file_menu.set_link_for(2, status_menu.get_link_to(0));
+	file_menu.set_link_for(0, status_menu.get_link_to(0));
+	file_menu.set_link_for(1, status_menu.get_link_to(0));
+	file_menu.set_link_for(2, status_menu.get_link_to(0));
 
-	// heat_menu.set_link_for(index(HeatMenu::Back), main_menu.get_link_to(index(MainMenu::Heat)));
-	// heat_menu.set_link_for(index(HeatMenu::ManualPreheat), manual_heat_menu.get_link_to(index(ManualHeatMenu::Hotend)));
+	heat_menu.set_link_for(index(HeatMenu::Back), main_menu.get_link_to(index(MainMenu::Heat)));
+	heat_menu.set_link_for(index(HeatMenu::ManualPreheat), manual_heat_menu.get_link_to(index(ManualHeatMenu::Hotend)));
 	
-	// manual_heat_menu.set_link_for(index(ManualHeatMenu::Back), heat_menu.get_link_to(index(HeatMenu::Back) ));
-	// maintenance_menu.set_link_for(index(MaintenanceMenu::Back), main_menu.get_link_to(index(MainMenu::Maintenance)) );
-	// maintenance_menu.set_link_for(index(MaintenanceMenu::ManualExtrusion), ui::Link( is_hotend_hot, index(ExtrudeMenu::Back), &extrude_menu, 0, &cold_extrusion_splash) );
-	// maintenance_menu.set_link_for(index(MaintenanceMenu::PrimePrinthead), cold_extrusion_splash.get_link_to(0) );
-	// maintenance_menu.set_link_for(index(MaintenanceMenu::Motors), motors_menu.get_link_to(0) );
-	// extrude_menu.set_link_for(index(ExtrudeMenu::Back), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)));
+	manual_heat_menu.set_link_for(index(ManualHeatMenu::Back), heat_menu.get_link_to(index(HeatMenu::Back) ));
+	maintenance_menu.set_link_for(index(MaintenanceMenu::Back), main_menu.get_link_to(index(MainMenu::Maintenance)) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::ManualExtrusion), ui::Link( is_hotend_hot, index(ExtrudeMenu::Back), &extrude_menu, 0, &cold_extrusion_splash) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::PrimePrinthead), cold_extrusion_splash.get_link_to(0) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::Motors), motors_menu.get_link_to(0) );
+	extrude_menu.set_link_for(index(ExtrudeMenu::Back), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)));
 	
-	// motors_menu.set_link_for(0, maintenance_menu.get_link_to(index(MaintenanceMenu::Back) ));
-	// status_menu.set_link_for(0, main_menu.get_link_to(index(MainMenu::Status)));
-	// status_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Status)));
-	// status_menu.set_link_for(2, main_menu.get_link_to(index(MainMenu::Status)));
-	// status_menu.set_link_for(3, main_menu.get_link_to(index(MainMenu::Status)));
+	motors_menu.set_link_for(0, maintenance_menu.get_link_to(index(MaintenanceMenu::Back) ));
+	status_menu.set_link_for(0, main_menu.get_link_to(index(MainMenu::Status)));
+	status_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Status)));
+	status_menu.set_link_for(2, main_menu.get_link_to(index(MainMenu::Status)));
+	status_menu.set_link_for(3, main_menu.get_link_to(index(MainMenu::Status)));
 
-	// abort_menu.set_link_for(0, status_menu.get_link_to(0) );
-	// abort_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Print)) );
+	abort_menu.set_link_for(0, status_menu.get_link_to(0) );
+	abort_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Print)) );
 
-	// options_menu.set_link_for(index(OptionsMenu::Back), main_menu.get_link_to(index(MainMenu::Options)));
+	options_menu.set_link_for(index(OptionsMenu::Back), main_menu.get_link_to(index(MainMenu::Options)));
 
-	// cold_extrusion_splash.set_link_for(0, heat_menu.get_link_to(index(HeatMenu::Back)));
-	// logo.set_link_for(0, main_menu.get_link_to(0));
+	cold_extrusion_splash.set_link_for(0, heat_menu.get_link_to(index(HeatMenu::Back)));
+	logo.set_link_for(0, main_menu.get_link_to(0));
 
 
 	//min_extrusion_temperature = THEKERNEL->config->value(extruder_checksum, this->identifier, min_temp_checksum )->by_default(170)->as_number(); // REMOVE REDUNTANT DATA IN THE FUTURE

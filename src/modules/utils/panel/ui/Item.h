@@ -7,12 +7,9 @@
 namespace ui
 {
 
-// template <class DataType> using DataGetter = std::function<DataType(void)>;
-// template <class DataType> using DataSetter = std::function<void(DataType)>;
 template <class DataType> using DataGetter = DataType(*)(void);
 template <class DataType> using DataSetter = void(*)(DataType);
 using CommandSender = void(*)(void);
-//typedef std::function<void(void)> CommandSender;
 
 class Item
 {

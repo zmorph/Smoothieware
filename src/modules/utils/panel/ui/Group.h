@@ -20,7 +20,7 @@ struct Group
 	typedef CompositeItem ElementType;
 
 	template<size_t i>
-	Group(const CompositeItem(&items)[i], Link(&links)[i], Widget& widget)
+	Group(CompositeItem(&items)[i], Link(&links)[i], Widget& widget)
 	:widget(widget), _size(i), items(items), links(links), former(Link(0, this))
 	{
 		size_t index = 0;
@@ -58,12 +58,12 @@ struct Group
 		return links[index];
 	}
 	
-	CompositeItem const * begin()
+	CompositeItem * begin()
 	{
 		return &(items[0]);
 	}
 
-	CompositeItem const * end()
+	CompositeItem * end()
 	{
 		return &(items[_size]);
 	}
@@ -78,7 +78,7 @@ struct Group
 		return former;
 	}
 
-	CompositeItem const & operator[](size_t i)
+	CompositeItem & operator[](size_t i)
 	{
 		return items[i%_size];
 	}
@@ -92,7 +92,7 @@ private:
 	Widget& widget; // :(
 	
 	size_t _size;
-	CompositeItem const * items;
+	CompositeItem * items;
 	Link* links;
 	Link former;
 	

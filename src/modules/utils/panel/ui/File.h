@@ -14,7 +14,7 @@ public:
 	File(FileShiftRegister& file_shift_register, size_t index);
 
 	size_t get_index();
-	std::string get_name();
+	std::string get_name() const;
 	FileShiftRegister & get_file_register();
 };
 

@@ -3,10 +3,11 @@
 
 #include "Group.h"
 #include "LinkBase.h"
+#include "boost/variant/variant.hpp"
 
 namespace ui
 {
-	typedef LinkBase<Group> Link;	
+	typedef LinkBase<Group> Link;
 } // namespace ui
 
 #endif // __LINK_H__

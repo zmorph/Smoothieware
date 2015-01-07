@@ -14,8 +14,6 @@ void play_file(std::string const & path)
     THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message);
 }
 
-
-
 template <>
 Link OkEvent::operator()<ui::Command>(ui::Command& active_item)
 {

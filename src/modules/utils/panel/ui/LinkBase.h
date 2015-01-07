@@ -7,22 +7,17 @@
 namespace ui
 {
 
-struct DupaLink
-{
-	void* dupa;
-	size_t index;
-};
-
 bool always();
+using Condition = bool(*)(void);
 
 template <typename ContainerType>
 struct LinkBase
 {
-	LinkBase(size_t index = 0, ContainerType* group = nullptr)
+	constexpr LinkBase(size_t index = 0, ContainerType* group = nullptr)
 	:condition(always), index(index), group(group), index_false(index), group_false(group)
 	{}
 
-	LinkBase(std::function<bool()> condition, size_t index = 0, ContainerType* group = nullptr, size_t index_false = 0, ContainerType* group_false = nullptr)
+	constexpr LinkBase(Condition condition, size_t index = 0, ContainerType* group = nullptr, size_t index_false = 0, ContainerType* group_false = nullptr)
 	:condition(condition), index(index), group(group), index_false(index_false), group_false(group_false)
 	{}
 
@@ -52,13 +47,13 @@ struct LinkBase
 		}
 	}
 
-	typename ContainerType::ElementType const & operator*()
+	typename ContainerType::ElementType & operator*() const
 	{
 		return &(this->get());
 	}
 
 	// CBFF
-	typename ContainerType::ElementType const * get()
+	typename ContainerType::ElementType * get() const
 	{
 		if(condition())
 		{
@@ -71,13 +66,13 @@ struct LinkBase
 	}
 
 	// CBFF
-	typename ContainerType::ElementType const * fetch()
+	typename ContainerType::ElementType * fetch() const
 	{
 		return get();
 	}
 
 protected:
-	std::function<bool()> condition;
+	Condition condition;
 	size_t index;
 	ContainerType* group;
 	size_t index_false;

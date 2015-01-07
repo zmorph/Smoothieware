@@ -481,6 +481,7 @@ void SimpleShell::mem_command( string parameters, StreamOutput *stream)
     uint32_t heap_limit  = (uint32_t)&__HeapLimit;
     uint32_t heap_start  = (uint32_t)&__end__;
     uint32_t stack_max   = (uint32_t)&__StackLimit;
+
     stream->printf("Data start address: 0x%x \r\n", &__data_start__);
     stream->printf("Data end address: 0x%x \r\n", &__data_end__);
     stream->printf("Bytes before heap: %lu \r\n", heap_start - 0x10000000);
@@ -499,17 +500,10 @@ void SimpleShell::mem_command( string parameters, StreamOutput *stream)
     stream->printf("Space between stack head and heap end: %lu \r\n", stack_head - heap);
     stream->printf("Space between stack max and heap end: %lu \r\n", stack_max - heap);
 
-    //stream->printf("Data size: %lu bytes\r\n", &__data_end__ - &__data_start__);
     stream->printf("Newlib total Heap: %lu bytes\r\n", total_heap);
     stream->printf("Newlib allocated Heap: %lu bytes\r\n", allocated_heap);
     stream->printf("Newlib free Heap: %lu bytes\r\n", free_heap);
     stream->printf("Total  free RAM: %lu bytes\r\n", free_heap + - heap - 32 + stack_max);
-
-
-    stream->printf("Unused Heap: %lu bytes\r\n", m);
-
-    uint32_t f = heapWalk(stream, verbose);
-    stream->printf("Total Free RAM: %lu bytes\r\n", m + f);
 
     stream->printf("Free AHB0: %lu, AHB1: %lu\r\n", AHB0.free(), AHB1.free());
     if (verbose) {
