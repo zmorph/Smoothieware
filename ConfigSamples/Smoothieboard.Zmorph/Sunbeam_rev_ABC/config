@@ -97,7 +97,7 @@ temperature_control.hotend.thermistor_pin    0.23             # Pin for the ther
 temperature_control.hotend.heater_pin        2.5              # Pin that controls the heater
 #temperature_control.hotend.thermistor        EPCOS100K        # see src/modules/tools/temperaturecontrol/TemperatureControl.cpp:64
                                                               # for a list of valid thermistor names
-temperature_control.hotend.beta              4425             # RRRF100K see src/modules/tools/temperturecontrol/TemperatureControl.cpp:64 for a list of valid thermistor names
+temperature_control.hotend.beta              4375             # RRRF100K see src/modules/tools/temperturecontrol/TemperatureControl.cpp:64 for a list of valid thermistor names
 temperature_control.hotend.set_m_code        104              #
 temperature_control.hotend.set_and_wait_m_code 109            #
 temperature_control.hotend.designator        T                #
@@ -114,7 +114,7 @@ temperature_control.hotend2.thermistor_pin   0.24             # Pin for the ther
 temperature_control.hotend2.heater_pin       2.6              # Pin that controls the heater
 #temperature_control.hotend2.thermistor        EPCOS100K        # see src/modules/tools/temperaturecontrol/TemperatureControl.cpp:64
                                                               # for a list of valid thermistor names
-temperature_control.hotend2.beta             4425             # RRRF100K see src/modules/tools/temperturecontrol/TemperatureControl.cpp:64 for a list of valid thermistor names
+temperature_control.hotend2.beta             4375             # RRRF100K see src/modules/tools/temperturecontrol/TemperatureControl.cpp:64 for a list of valid thermistor names
 temperature_control.hotend2.set_m_code       104              #
 temperature_control.hotend2.set_and_wait_m_code 109           #
 temperature_control.hotend2.designator       Q                #
@@ -257,7 +257,7 @@ panel.hotbed_temperature                     60               #
 
 # Only needed on a smoothieboard
 currentcontrol_module_enable                 true             #
-digipotchip                                  ad5206           # for Sunbeama rev C mcp4728, for Sunbeam rev A,B ad5206
+digipotchip                                  mcp4728          # for Sunbeama rev C mcp4728, for Sunbeam rev A,B ad5206
 
 
 # Touch Probe
@@ -292,7 +292,7 @@ zprobe.probe_height                          5                # how much above b
 # Laser module configuration
 laser_module_enable                          false            # Whether to activate the laser module at all. All configuration is ignored if false.
 laser_module_pin                             2.5              # this pin will be PWMed to control the laser
-laser_module_max_power                       0.5              # this is the maximum duty cycle that will be applied to the laser
+laser_module_max_power                       0.1              # this is the maximum duty cycle that will be applied to the laser
 laser_module_tickle_power                    0.0              # this duty cycle will be used for travel moves to keep the laser active without actually burning
 laser_module_pwm_period                      200              # 100 = 10kHz this sets the pwm frequency, the value is the period in microseconds
 
