@@ -1,0 +1,1 @@
+IF X%1==X (..\gcc-arm-none-eabi\bin\arm-none-eabi-gdb ..\LPC1768\main.elf --baud 115200 -ex "set target-charset ASCII" -ex "set remotelogfile mri.log" -ex "target remote \\.\com38") ELSE (..\gcc-arm-none-eabi\bin\arm-none-eabi-gdb ..\LPC1768\main.elf --baud 115200 -ex "set target-charset ASCII" -ex "set remotelogfile mri.log" -ex "target remote \\.\com%1")
