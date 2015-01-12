@@ -48,9 +48,15 @@ void SelectToolheadScreen::on_refresh()
 
 void SelectToolheadScreen::display_menu_line(uint16_t line)
 {
+    // TODO change this crappy solution...
+    // char panel_text[20]{};
+    // ...
+    // sprintf(panel_text, "Back");
+    // ...
+    // THEPANEL->lcd->printf(panel_text);
     switch ( line ) {
         case 0: {
-            THEPANEL->lcd->printf("Back"           );
+            THEPANEL->lcd->printf("Back");
             break; }
         case 1: {
             if(toolhead_number != 1) {
