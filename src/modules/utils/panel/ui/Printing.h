@@ -53,6 +53,8 @@ void print_left_base(Screen& screen, Dimensions const & cell, std::string const 
 	}
 }
 
+
+
 template <size_t margin, size_t letter_width, size_t letter_height, size_t letter_offset, bool color>
 void print_center_base(Screen& screen, Dimensions const & cell, std::string const & sequence)
 {
@@ -111,6 +113,8 @@ void print_black_center(Screen& screen, Dimensions const & cell, std::string con
 void print_white_center(Screen& screen, Dimensions const & cell, std::string const & sequence);
 void print_black_right(Screen& screen, Dimensions const & cell, std::string const & sequence);
 void print_white_right(Screen& screen, Dimensions const & cell, std::string const & sequence);
+void print_multiline_black_center(Screen& screen, Dimensions const & cell, std::string const & sequence);
+void print_multiline_white_center(Screen& screen, Dimensions const & cell, std::string const & sequence);
 
 } // namespace ui
 

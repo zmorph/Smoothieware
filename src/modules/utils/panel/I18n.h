@@ -16,7 +16,7 @@ char const * const home_caption          		= "Zeruj osie";
 char const * const z_caption             		= "Ruch Z";
 char const * const x_caption             		= "Ruch X";
 char const * const y_caption             		= "Ruch Y";
-char const * const preheat_abs_caption   		= "Ogrzej dla ABS";	
+char const * const preheat_abs_caption   		= "Ogrzej dla ABS";
 char const * const preheat_pla_caption   		= "Ogrzej dla PLA";
 char const * const manual_preheat_caption		= "Ustaw manualnie";
 char const * const cool_down_caption     		= "Wychlodz";
@@ -44,7 +44,28 @@ char const * const turn_motors_off_caption      = "Wylacz silniki";
 char const * const turn_motors_on_caption       = "Wlacz silniki";
 char const * const motors_caption               = "Silniki";
 char const * const leds_caption					= "Oswietlenie";
+char const * const fans_caption                 = "Wentylacja";
+char const * const turn_leds_on_caption			= "Wlacz oswietlenie";
+char const * const turn_leds_off_caption		= "Wylacz oswietlenie";
+char const * const turn_extruder_fans_on_caption = "Wlacz went. ekstrudera";
+char const * const turn_extruder_fans_off_caption = "Wylacz went. ekstrudera";
+char const * const turn_enclosure_fans_on_caption = "Wlacz went. obudowy";
+char const * const turn_enclosure_fans_off_caption = "Wylacz went. obudowy";
 char const * const cold_extrusion_prevented_caption	= "Rozgrzej glowice!";
+char const * const scroll_bar_caption			= "";
+char const * const bed_leveling_caption 		= "Czy stol jest pusty?";
+
+char const * const front_left_corner_caption 	= "Ustaw i wcisnij OK";
+char const * const front_right_corner_caption 	= "Ustaw i wcisnij OK";
+char const * const back_right_corner_caption 	= "Ustaw i wcisnij OK";
+char const * const back_left_corner_caption 	= "Ustaw i wcisnij OK";
+
+char const * const front_left_corner_again_caption 	= "Potwierdz i wcisnij OK";
+char const * const front_right_corner_again_caption	= "Potwierdz i wcisnij OK";
+char const * const back_right_corner_again_caption 	= "Potwierdz i wcisnij OK";
+char const * const back_left_corner_again_caption 	= "Potwierdz i wcisnij OK";
+
+char const * const finish_bed_leveling_caption 	= "Czy powtorzyc operacje?";
 } // namespace i18n
 
 #else
@@ -90,7 +111,28 @@ char const * const turn_motors_off_caption      = "Turn motors off";
 char const * const turn_motors_on_caption       = "Turn motors on";
 char const * const motors_caption               = "Motors";
 char const * const leds_caption					= "Lights";
+char const * const fans_caption                 = "Fans";
+char const * const turn_leds_on_caption			= "Turn lights on";
+char const * const turn_leds_off_caption		= "Turn lights off";
+char const * const turn_extruder_fans_on_caption = "Turn extruder fans on";
+char const * const turn_extruder_fans_off_caption = "Turn extruder fans off";
+char const * const turn_enclosure_fans_on_caption = "Turn enclosure fans on";
+char const * const turn_enclosure_fans_off_caption = "Turn enclosure fans off";
 char const * const cold_extrusion_prevented_caption = "Heat up hotend first!";
+char const * const scroll_bar_caption			= "";
+char const * const bed_leveling_caption 		= "";
+
+char const * const front_left_corner_caption 	= "";
+char const * const front_right_corner_caption 	= "";
+char const * const back_right_corner_caption 	= "";
+char const * const back_left_corner_caption 	= "";
+
+char const * const front_left_corner_again_caption 	= "";
+char const * const front_right_corner_again_caption	= "";
+char const * const back_right_corner_again_caption 	= "";
+char const * const back_left_corner_again_caption 	= "";
+
+char const * const finish_bed_leveling_caption 	= "";
 } // namespace i18n
 #endif // LANG
 

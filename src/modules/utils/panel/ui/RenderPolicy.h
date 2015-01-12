@@ -39,7 +39,11 @@ struct DefaultGlobalRenderPolicy
 	template <typename ItemType>
 	Dimensions apply_to(ItemType const & item, Dimensions const & dimensions, Screen &screen, size_t number_of_items, size_t active_item_index) const
 	{
-		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 1);
+		size_t bar_height 	= dimensions.h/number_of_items; //number_of_items should never be 0
+		size_t remainder	= dimensions.h%number_of_items;
+		size_t bar_y		= bar_height*active_item_index + ((active_item_index+1)*remainder)/number_of_items;
+		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 0);
+		screen.draw_rectangle(dimensions.x+1, bar_y, dimensions.w-1, bar_height, 1);
 		return dimensions;
 	}
 };
