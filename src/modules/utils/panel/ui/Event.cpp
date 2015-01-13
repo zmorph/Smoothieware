@@ -15,14 +15,14 @@ void play_file(std::string const & path)
 }
 
 template <>
-Link OkEvent::operator()<ui::Command>(ui::Command& active_item)
+Link OkEvent::operator()<ui::Command>(ui::Command& active_item) const
 {
 	active_item.send_command();
 	return linked();
 }
 
 template <>
-Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_item)
+Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_item) const
 {
 	if(active_item.condition())
 	{
@@ -37,14 +37,14 @@ Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_
 
 
 template <>
-Link OkEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item)
+Link OkEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item) const
 {
 	active_item.mode = !active_item.mode;
 	return same();
 }
 
 template <>
-Link DownEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item)
+Link DownEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item) const
 {
 	if(active_item.mode)
 	{
@@ -58,7 +58,7 @@ Link DownEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_it
 }
 
 template <>
-Link UpEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item)
+Link UpEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item) const
 {
 	if(active_item.mode)
 	{
@@ -73,14 +73,14 @@ Link UpEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item
 
 
 template <>
-Link OkEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item)
+Link OkEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item) const
 {
 	active_item.mode = !active_item.mode;
 	return same();
 }
 
 template <>
-Link DownEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item)
+Link DownEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item) const
 {
 	float target, current;
 	std::tie(target, current) = active_item.get_data();
@@ -103,7 +103,7 @@ Link DownEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item)
 }
 
 template <>
-Link UpEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item)
+Link UpEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item) const
 {
 	float target, current;
 	std::tie(target, current) = active_item.get_data();
@@ -126,7 +126,7 @@ Link UpEvent::operator()<ui::HeatControl >(ui::HeatControl&  active_item)
 }
 
 template <>
-Link OkEvent::operator()<ui::File>(ui::File& active_item)
+Link OkEvent::operator()<ui::File>(ui::File& active_item) const
 {
 	FileShiftRegister& file_register = active_item.get_file_register();
 	std::string cwd = file_register.get_current_directory();
@@ -177,21 +177,21 @@ Link OkEvent::operator()<ui::File>(ui::File& active_item)
 }
 
 template <>
-Link DownEvent::operator()<ui::File>(ui::File& active_item)
+Link DownEvent::operator()<ui::File>(ui::File& active_item) const
 {
 	size_t index = active_item.get_file_register().shift_forward(same().get_index());
 	return Link( index,	same().get_group());
 }
 
 template <>
-Link UpEvent::operator()<ui::File>(ui::File& active_item)
+Link UpEvent::operator()<ui::File>(ui::File& active_item) const
 {	
 	size_t index = active_item.get_file_register().shift_backward(same().get_index());	
     return Link( index,	same().get_group());
 }
 
 template <>
-Link TickEvent::operator()<ui::LogoItem >(ui::LogoItem&  active_item)
+Link TickEvent::operator()<ui::LogoItem >(ui::LogoItem&  active_item) const
 {
 	active_item.elapsed = (active_item.elapsed + 1) % active_item.duration;
 	if(active_item.elapsed == 0)
