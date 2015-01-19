@@ -57,7 +57,7 @@ DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_R
 DEFINES += -D__LANG_$(LANG)__
 
 # add any modules that you do not want included in the build
-export EXCLUDED_MODULES = tools/touchprobe tools/laser
+export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/zprobe tools/scaracal
 # e.g for a CNC machine
 #export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder
 
