@@ -41,6 +41,7 @@ class Endstops : public Module{
         uint8_t homing_order;
         std::bitset<3> home_direction;
         std::bitset<3> limit_enable;
+        char homed_axes;
 
         unsigned int  debounce_count;
         float  retract_mm[3];
@@ -49,6 +50,7 @@ class Endstops : public Module{
         float  slow_rates[3];
         Pin    pins[6];
         volatile float feed_rate[3];
+
         struct {
             bool is_corexy:1;
             bool is_delta:1;

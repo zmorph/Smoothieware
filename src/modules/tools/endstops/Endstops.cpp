@@ -195,7 +195,7 @@ void Endstops::on_config_reload(void *argument)
     this->is_corexy                 =  THEKERNEL->config->value(corexy_homing_checksum)->by_default(false)->as_bool();
     this->is_delta                  =  THEKERNEL->config->value(delta_homing_checksum)->by_default(false)->as_bool();
     this->is_scara                  =  THEKERNEL->config->value(scara_homing_checksum)->by_default(false)->as_bool();
-
+    this->homed_axes                = 0;
     // see if an order has been specified, must be three characters, XYZ or YXZ etc
     string order= THEKERNEL->config->value(homing_order_checksum)->by_default("")->as_string();
     this->homing_order= 0;
@@ -575,6 +575,7 @@ void Endstops::home(char axes_to_move)
         // cartesian/delta homing
         do_homing_cartesian(axes_to_move);
     }
+    this->homed_axes |= axes_to_move;
 }
 
 // Start homing sequences by response to GCode commands
@@ -784,6 +785,9 @@ void Endstops::on_get_public_data(void* argument){
 
     }else if(pdr->second_element_is(home_offset_checksum)) {
         pdr->set_data_ptr(&this->home_offset);
+        pdr->set_taken();
+    }else if(pdr->second_element_is(homed_axes_checksum)) {
+        pdr->set_data_ptr(&this->homed_axes);
         pdr->set_taken();
     }
 }
