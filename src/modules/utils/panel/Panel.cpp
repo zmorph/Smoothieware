@@ -18,6 +18,7 @@
 #include "PublicDataRequest.h"
 #include "PublicData.h"
 #include "TemperatureControlPublicAccess.h"
+#include "EndstopsPublicAccess.h"
 #include "NetworkPublicAccess.h"
 #include "PublicData.h"
 #include "checksumm.h"
@@ -36,7 +37,6 @@
 #include "Gcode.h"
 
 #include <type_traits>
-//#include "ttl/var/variant.hpp"
 
 #define LOCATION __attribute__ ((section ("AHBSRAM0")))
 #define hotend_temp_checksum 	 CHECKSUM("hotend_temperature")
@@ -46,6 +46,9 @@
 #define hotend_temp_PLA_checksum CHECKSUM("hotend_temperature_PLA")
 #define bed_temp_PLA_checksum    CHECKSUM("bed_temperature_PLA")
 #define panel_checksum           CHECKSUM("panel")
+#define alpha_max_checksum                   CHECKSUM("alpha_max")
+#define beta_max_checksum                    CHECKSUM("beta_max")
+#define gamma_max_checksum                   CHECKSUM("gamma_max")
 
 namespace info
 {
@@ -63,13 +66,17 @@ namespace info
 			default_hotend_temperature_PLA = kernel->config->value( panel_checksum, hotend_temp_PLA_checksum )->by_default(185.0f )->as_number();
 			default_bed_temperature_PLA    = kernel->config->value( panel_checksum, bed_temp_PLA_checksum    )->by_default(60.0f  )->as_number();
 			default_hotend_temperature_ABS = kernel->config->value( panel_checksum, hotend_temp_ABS_checksum )->by_default(235.0f )->as_number();
-			default_bed_temperature_ABS    = kernel->config->value( panel_checksum, bed_temp_ABS_checksum    )->by_default(100.0f  )->as_number();	
+			default_bed_temperature_ABS    = kernel->config->value( panel_checksum, bed_temp_ABS_checksum    )->by_default(100.0f  )->as_number();
+			x_max = kernel->config->value(alpha_max_checksum)->by_default(250.0f)->as_number();								
+			y_max = kernel->config->value(beta_max_checksum)->by_default(250.0f)->as_number();
 		}
 
 		float default_bed_temperature_ABS;
 		float default_hotend_temperature_ABS;
 		float default_bed_temperature_PLA;
 		float default_hotend_temperature_PLA;
+		float x_max;
+		float y_max;
 	} settings = {0};
 }
 
@@ -90,7 +97,7 @@ std::string get_network()
         char buf[20];
         int n = snprintf(buf, sizeof(buf), "%d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
         buf[n] = 0;
-        return buf;
+        return std::string(buf);
     }
     return "No network";
 }
@@ -195,6 +202,20 @@ bool is_file_being_played()
 	}
 }
 
+bool are_axes_homed()
+{
+	void *returned_data;
+	if(PublicData::get_value( endstops_checksum, homed_axes_checksum, 0, &returned_data ))
+	{
+		char homed_axes =  *static_cast<char *>(returned_data);
+		return (homed_axes & 1) && (homed_axes & 2) && (homed_axes & 4);
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void abort_playing_file()
 {
 	PublicData::set_value(player_checksum, abort_play_checksum, 0);
@@ -281,10 +302,21 @@ ui::Cell const splash_cell[] =
 	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 64}, ui::DefaultRenderPolicy(), ui::ActiveRenderPolicy())
 };
 
+ui::Cell const splash_text_cell[] = 
+{
+	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, /*h*/ 64}, ui::DefaultMultilineRenderPolicy(), ui::ActiveMultilineRenderPolicy())
+};
+
+// ui::Cell const splash_info_cell[] = 
+// {
+// 	ui::Cell({/*x*/ 0,  /*y*/   0, /*w*/ 128, h 64}, ui::DefaultMultilineRenderPolicy(), ui::ActiveMultilineRenderPolicy())
+// };
+
 ui::Layout default_layout(main_menu_cells);
 ui::Layout stacked_layout(stacked_menu_cells);
 ui::Layout status_layout(status_menu_cells);
 ui::Layout splash_layout(splash_cell);
+ui::Layout splash_text_layout(splash_text_cell);
 ui::Layout modal_layout(modal_menu_cells);
 
 enum class MainMenu : size_t
@@ -371,6 +403,8 @@ enum class OptionsMenu : size_t
 	Ip,
 	Version
 };
+
+#include "menu/BedLeveling.h"
 
 CompositeItem LOCATION logo_menu_items[] = 
 {
@@ -539,73 +573,6 @@ CompositeItem LOCATION maintenance_menu_items[] =
 	go to corner
 */
 
-void go_to_front_left_corner()
-{
-	send_gcode("G0 Z5");
-	send_gcode("G0 X10 Y10");
-	send_gcode("G0 Z0");
-}
-
-void go_to_front_right_corner()
-{
-	send_gcode("G0 Z5");
-	send_gcode("G0 X290 Y10");
-	send_gcode("G0 Z0");
-}
-
-void go_to_back_right_corner()
-{
-	send_gcode("G0 Z5");
-	send_gcode("G0 X290 Y290");
-	send_gcode("G0 Z0");
-}
-
-void go_to_back_left_corner()
-{
-	send_gcode("G0 Z5");
-	send_gcode("G0 X10 Y290");
-	send_gcode("G0 Z0");
-}
-
-CompositeItem LOCATION bed_leveling_items[] =
-{
-	ui::Command(i18n::bed_leveling_caption, enque<go_to_front_left_corner>)
-};
-
-CompositeItem LOCATION front_left_corner_calibration_items[] =
-{
-	ui::Command(i18n::front_left_corner_caption, enque<go_to_front_right_corner>)
-};
-
-CompositeItem LOCATION front_right_corner_calibration_items[] =
-{
-	ui::Command(i18n::front_right_corner_caption, enque<go_to_back_right_corner>)
-};
-
-CompositeItem LOCATION back_right_corner_calibration_items[] =
-{
-	ui::Command(i18n::back_right_corner_caption, enque<go_to_back_left_corner>)
-};
-
-CompositeItem LOCATION back_left_corner_calibration_items[] =
-{
-	ui::Command(i18n::back_left_corner_caption, enque<go_to_front_left_corner>)
-};
-
-void extrude()
-{
-	send_gcode("G91");
-	send_gcode("G1 E5 F100");
-	send_gcode("G90");
-}
-
-void retract()
-{
-	send_gcode("G91");
-	send_gcode("G1 E-5 F100");
-	send_gcode("G90");
-}
-
 void buffered_extrude()
 {
 	command_buffer.push(extrude);
@@ -704,29 +671,29 @@ CompositeItem LOCATION cold_extrusion_splash_items[] =
 	ui::Item(i18n::cold_extrusion_prevented_caption)
 };
 
-ui::Widget logo_menu_widget(&splash_layout);
-ui::Widget init_menu_widget(&modal_layout);
-ui::Widget main_menu_widget(&default_layout);
-ui::Widget move_menu_widget(&stacked_layout, &scroll_bar_layout); // correctness is not checked during compilation
-ui::Widget file_menu_widget(&stacked_layout);
-ui::Widget abort_menu_widget(&modal_layout);
-ui::Widget heat_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget home_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget manual_heat_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget status_menu_widget(&status_layout);
-ui::Widget maintenance_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget extrude_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget options_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget motors_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget leds_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget fans_menu_widget(&stacked_layout, &scroll_bar_layout);
-ui::Widget cold_extrusion_splash_widget(&splash_layout);
+CompositeItem LOCATION printing_warning_splash_items[] = 
+{
+	ui::Item(i18n::printing_warning_caption)
+};
 
-ui::Widget bed_leveling_widget(&splash_layout);
-ui::Widget front_left_corner_calibration_widget(&splash_layout);
-ui::Widget front_right_corner_calibration_widget(&splash_layout);
-ui::Widget back_right_corner_calibration_widget(&splash_layout);
-ui::Widget back_left_corner_calibration_widget(&splash_layout);
+ui::Widget LOCATION logo_menu_widget(&splash_layout);
+ui::Widget LOCATION init_menu_widget(&modal_layout);
+ui::Widget LOCATION main_menu_widget(&default_layout);
+ui::Widget LOCATION move_menu_widget(&stacked_layout, &scroll_bar_layout); // correctness is not checked during compilation
+ui::Widget LOCATION file_menu_widget(&stacked_layout);
+ui::Widget LOCATION abort_menu_widget(&modal_layout);
+ui::Widget LOCATION heat_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION home_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION manual_heat_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION status_menu_widget(&status_layout);
+ui::Widget LOCATION maintenance_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION extrude_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION options_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION motors_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION leds_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION fans_menu_widget(&stacked_layout, &scroll_bar_layout);
+ui::Widget LOCATION cold_extrusion_splash_widget(&splash_layout);
+ui::Widget LOCATION printing_warning_splash_widget(&splash_layout);
 
 ui::Link LOCATION logo_menu_links[1];
 ui::Link LOCATION init_menu_links[2];
@@ -735,7 +702,9 @@ ui::Link LOCATION move_menu_links[5];
 ui::Link LOCATION file_menu_links[3];
 ui::Link LOCATION heat_menu_links[5];
 ui::Link LOCATION home_menu_links[4];
-ui::Link LOCATION abort_menu_links[2];
+ui::Link LOCATION abort_menu_file_links[2];
+ui::Link LOCATION abort_menu_move_links[2];
+ui::Link LOCATION abort_menu_maintenance_links[2];
 ui::Link LOCATION manual_heat_menu_links[3];
 ui::Link LOCATION status_menu_links[4];
 ui::Link LOCATION maintenance_menu_links[7];
@@ -745,19 +714,16 @@ ui::Link LOCATION motors_menu_links[3];
 ui::Link LOCATION leds_menu_links[3];
 ui::Link LOCATION fans_menu_links[5];
 ui::Link LOCATION cold_extrusion_splash_links[1];
-
-ui::Link bed_leveling_links[1];
-ui::Link front_left_corner_calibration_links[1];
-ui::Link front_right_corner_calibration_links[1];
-ui::Link back_right_corner_calibration_links[1];
-ui::Link back_left_corner_calibration_links[1];
+ui::Link LOCATION printing_warning_splash_links[1];
 
 ui::Group LOCATION logo(logo_menu_items, logo_menu_links, logo_menu_widget);
 ui::Group LOCATION init_menu(init_menu_items, init_menu_links, init_menu_widget);
 ui::Group LOCATION main_menu(main_menu_items, main_menu_links, main_menu_widget);
 ui::Group LOCATION move_menu(move_menu_items, move_menu_links, move_menu_widget);
 ui::Group LOCATION file_menu(file_menu_items, file_menu_links, file_menu_widget);
-ui::Group LOCATION abort_menu(abort_menu_items, abort_menu_links, abort_menu_widget);
+ui::Group LOCATION abort_menu_file(abort_menu_items, abort_menu_file_links, abort_menu_widget);
+ui::Group LOCATION abort_menu_move(abort_menu_items, abort_menu_move_links, abort_menu_widget);
+ui::Group LOCATION abort_menu_maintenance(abort_menu_items, abort_menu_maintenance_links, abort_menu_widget);
 ui::Group LOCATION heat_menu(heat_menu_items, heat_menu_links, heat_menu_widget);
 ui::Group LOCATION home_menu(home_menu_items, home_menu_links, home_menu_widget);
 ui::Group LOCATION manual_heat_menu(manual_heat_menu_items, manual_heat_menu_links, manual_heat_menu_widget);
@@ -769,11 +735,7 @@ ui::Group LOCATION motors_menu(motors_menu_items, motors_menu_links, motors_menu
 ui::Group LOCATION leds_menu(leds_menu_items, leds_menu_links, leds_menu_widget);
 ui::Group LOCATION fans_menu(fans_menu_items, fans_menu_links, fans_menu_widget);
 ui::Group LOCATION cold_extrusion_splash(cold_extrusion_splash_items, cold_extrusion_splash_links, cold_extrusion_splash_widget);
-ui::Group LOCATION bed_leveling_menu(bed_leveling_items, bed_leveling_links, bed_leveling_widget);
-ui::Group LOCATION front_left_corner_calibration_menu(front_left_corner_calibration_items, front_left_corner_calibration_links, front_left_corner_calibration_widget);
-ui::Group LOCATION front_right_corner_calibration_menu(front_right_corner_calibration_items, front_right_corner_calibration_links, front_right_corner_calibration_widget);
-ui::Group LOCATION back_right_corner_calibration_menu(back_right_corner_calibration_items, back_right_corner_calibration_links, back_right_corner_calibration_widget);
-ui::Group LOCATION back_left_corner_calibration_menu(back_left_corner_calibration_items, back_left_corner_calibration_links, back_left_corner_calibration_widget);
+ui::Group LOCATION printing_warning_splash(printing_warning_splash_items, printing_warning_splash_links, printing_warning_splash_widget);
 
 void make_link(ui::Group& menu_a, size_t index_a, ui::Group& menu_b, size_t index_b)
 {
@@ -785,6 +747,7 @@ Panel::Panel()
 :up_button(10, 5), down_button(10, 5), select_button(10, 5), user_interface(logo.get_link_to(0), screen)
 {
 	info::settings.init(THEKERNEL);
+	file_browser.open_directory("/");
 
 	move_menu_widget.set_global_group(&logo);
 	heat_menu_widget.set_global_group(&logo);
@@ -797,21 +760,37 @@ Panel::Panel()
 	leds_menu_widget.set_global_group(&logo);
 	fans_menu_widget.set_global_group(&logo);
 
-	//init_menu.set_link_for(index(0), status_menu.get_link_to(0));
-	//init_menu.set_link_for(index(1), status_menu.get_link_to(0));
-	file_browser.open_directory("/");
+	init_menu.set_link_for(index(0), move_menu.get_link_to(index(MoveMenu::Back)));
+	init_menu.set_link_for(index(1), main_menu.get_link_to(index(MainMenu::Move)));
 
 	make_link(main_menu, index(MainMenu::Move), move_menu, index(MoveMenu::Back));
+	main_menu.set_link_for(index(MainMenu::Move), ui::Link(is_file_being_played, 0, &abort_menu_move, index(MoveMenu::Back), &move_menu) );
+
+
+	//main_menu.set_link_for(index(MainMenu::Move)).when(is_file_being_played, ). 
+
 	make_link(main_menu, index(MainMenu::Heat), heat_menu, index(HeatMenu::Back));
-	make_link(main_menu, index(MainMenu::Maintenance), maintenance_menu, index(MaintenanceMenu::Back));
+	main_menu.set_link_for(index(MainMenu::Heat), ui::Link(is_file_being_played, 0, &printing_warning_splash, index(HeatMenu::Back), &heat_menu));
+	printing_warning_splash.set_link_for(0, heat_menu.get_link_to(index(HeatMenu::Back)));
+	make_link(main_menu, index(MainMenu::Maintenance), maintenance_menu, index(MaintenanceMenu::Back) );
+	main_menu.set_link_for(index(MainMenu::Maintenance), ui::Link(is_file_being_played, 0, &abort_menu_maintenance, index(MaintenanceMenu::Back), &maintenance_menu));
 	make_link(main_menu, index(MainMenu::Options), options_menu, index(OptionsMenu::Back));
 
 	make_link(move_menu, index(MoveMenu::Home), home_menu, index(HomeMenu::Back));
 
-	main_menu.set_link_for(index(MainMenu::Print), ui::Link(is_file_being_played, 0, &abort_menu, 0, &file_menu) );
-	file_menu.set_link_for(0, status_menu.get_link_to(0));
-	file_menu.set_link_for(1, status_menu.get_link_to(0));
-	file_menu.set_link_for(2, status_menu.get_link_to(0));
+	main_menu.set_link_for(index(MainMenu::Print), ui::Link(is_file_being_played, 0, &abort_menu_file, 0, &file_menu) );
+	file_menu.set_link_for(0, main_menu.get_link_to(index(MainMenu::Print)));
+	file_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Print)));
+	file_menu.set_link_for(2, main_menu.get_link_to(index(MainMenu::Print)));
+
+	abort_menu_file.set_link_for(0, status_menu.get_link_to(0) );
+	abort_menu_file.set_link_for(1, main_menu.get_link_to(index(MainMenu::Print)) );
+
+	abort_menu_move.set_link_for(0, status_menu.get_link_to(0) );
+	abort_menu_move.set_link_for(1, main_menu.get_link_to(index(MainMenu::Move)) );
+
+	abort_menu_maintenance.set_link_for(0, status_menu.get_link_to(0) );
+	abort_menu_maintenance.set_link_for(1, main_menu.get_link_to(index(MainMenu::Maintenance)) );
 
 	main_menu.set_link_for(index(MainMenu::Status), status_menu.get_link_to(0));
 	status_menu.set_link_for(0, main_menu.get_link_to(index(MainMenu::Status)));
@@ -826,13 +805,10 @@ Panel::Panel()
 	make_link(maintenance_menu, index(MaintenanceMenu::Fans), fans_menu, 0);
 
 	maintenance_menu.set_link_for(index(MaintenanceMenu::ManualExtrusion), ui::Link( is_hotend_hot, index(ExtrudeMenu::Back), &extrude_menu, 0, &cold_extrusion_splash) );
-	extrude_menu.set_link_for(index(ExtrudeMenu::Back), maintenance_menu.get_link_to(index(MaintenanceMenu::Back)));
+	extrude_menu.set_link_for(index(ExtrudeMenu::Back), maintenance_menu.get_link_to(index(MaintenanceMenu::ManualExtrusion)));
 
-	maintenance_menu.set_link_for(index(MaintenanceMenu::PrimePrinthead), cold_extrusion_splash.get_link_to(0) );
+	maintenance_menu.set_link_for(index(MaintenanceMenu::PrimePrinthead), ui::Link( cold_extrusion_splash.get_link_to(0) ));
 	maintenance_menu.set_link_for(index(MaintenanceMenu::LevelBed), bed_leveling_menu.get_link_to(0) );
-
-	abort_menu.set_link_for(0, status_menu.get_link_to(0) );
-	abort_menu.set_link_for(1, main_menu.get_link_to(index(MainMenu::Print)) );
 
 	cold_extrusion_splash.set_link_for(0, heat_menu.get_link_to(index(HeatMenu::Back)));
 	logo.set_link_for(0, main_menu.get_link_to(0));
@@ -841,7 +817,11 @@ Panel::Panel()
 	front_left_corner_calibration_menu.set_link_for(0, front_right_corner_calibration_menu.get_link_to(0));
 	front_right_corner_calibration_menu.set_link_for(0, back_right_corner_calibration_menu.get_link_to(0));
 	back_right_corner_calibration_menu.set_link_for(0, back_left_corner_calibration_menu.get_link_to(0));
-	back_left_corner_calibration_menu.set_link_for(0, maintenance_menu.get_link_to(index(MaintenanceMenu::LevelBed)));
+	back_left_corner_calibration_menu.set_link_for(0, front_left_corner_again_calibration_menu.get_link_to(0));
+	front_left_corner_again_calibration_menu.set_link_for(0, front_right_corner_again_calibration_menu.get_link_to(0));
+	front_right_corner_again_calibration_menu.set_link_for(0, back_right_corner_again_calibration_menu.get_link_to(0));
+	back_right_corner_again_calibration_menu.set_link_for(0, back_left_corner_again_calibration_menu.get_link_to(0));
+	back_left_corner_again_calibration_menu.set_link_for(0, maintenance_menu.get_link_to(index(MaintenanceMenu::LevelBed)));
 }
 
 void Panel::on_module_loaded()

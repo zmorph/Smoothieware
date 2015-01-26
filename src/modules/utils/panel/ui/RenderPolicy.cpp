@@ -27,6 +27,18 @@ size_t print_caption(Screen& screen, std::string const & name, uint16_t x_origin
 	return letter_offset*letter_index;
 }
 
+template <> 
+Dimensions DefaultMultilineRenderPolicy::apply_to<ui::File const>(ui::File const & item, Dimensions const & dimensions, Screen &screen) const
+{
+	return dimensions;
+}
+
+template <> 
+Dimensions ActiveMultilineRenderPolicy::apply_to<ui::File const>(ui::File const & item, Dimensions const & dimensions, Screen &screen) const
+{
+	return dimensions;
+}
+
 template <>
 Dimensions ActiveRenderPolicy::apply_to<ui::GraphicalItem const>(ui::GraphicalItem const & item, Dimensions const & dimensions, Screen &screen) const
 {

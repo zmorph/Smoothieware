@@ -13,6 +13,11 @@ constexpr size_t letter_and_whitespace(size_t letter_width, size_t letter_offset
 	return letter_width + letter_offset;
 }
 
+constexpr size_t line_height(size_t letter_height, size_t line_offset)
+{
+	return letter_height + line_offset;
+}
+
 template <size_t letter_width, size_t letter_offset, bool color>
 void print(Screen& screen, std::string const & sequence, size_t x_origin, size_t y_origin)
 {
@@ -106,6 +111,36 @@ void print_right_base(Screen& screen, Dimensions const & cell, std::string const
 	}
 }
 
+template <size_t margin, size_t letter_width, size_t letter_height, size_t letter_offset, size_t line_offset, bool color>
+void print_multiline_base(Screen& screen, Dimensions const & cell, std::string const & sequence)
+{
+	size_t number_of_lines = (cell.h - 2 * margin) / line_height(letter_height, line_offset);
+	size_t characters_in_line = (cell.w - 2 * margin) /  letter_and_whitespace(letter_width, letter_offset);
+	size_t first_character = 0;
+	for(size_t line = 0; line < number_of_lines; ++line)
+	{
+		if(first_character + characters_in_line > sequence.size())
+		{
+			print_center_base<margin, letter_width, letter_height, letter_offset, color>(
+				screen, 
+				Dimensions{cell.x, cell.y + margin + line * line_height(letter_height, line_offset), cell.w, line_height(letter_height, line_offset)}, 
+				sequence.substr(first_character, sequence.size())	
+			);
+			break;
+		}
+		else
+		{
+			size_t last_character = sequence.find_last_of(" ", first_character + characters_in_line);
+			print_center_base<margin, letter_width, letter_height, letter_offset, color>(
+				screen, 
+				Dimensions{cell.x, cell.y + margin + line * line_height(letter_height, line_offset), cell.w, line_height(letter_height, line_offset)}, 
+				sequence.substr(first_character, last_character - first_character)	
+			);
+			first_character = last_character;
+		}
+		
+	}
+}
 
 void print_black_left(Screen& screen, Dimensions const & cell, std::string const & sequence);
 void print_white_left(Screen& screen, Dimensions const & cell, std::string const & sequence);

@@ -18,6 +18,7 @@ struct DefaultRenderPolicy
 	Dimensions apply_to(ItemType const & item, Dimensions const & dimensions, Screen &screen) const
 	{
 		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 0);
+		//print_multiline_black_center(screen, dimensions, item.caption);
 		print_black_left(screen, dimensions, item.caption);
 		return dimensions;
 	}
@@ -30,6 +31,28 @@ struct ActiveRenderPolicy
 	{
 		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 1);
 		print_white_left(screen, dimensions, item.caption);
+		return dimensions;
+	}
+};
+
+struct DefaultMultilineRenderPolicy
+{
+	template <typename ItemType>
+	Dimensions apply_to(ItemType const & item, Dimensions const & dimensions, Screen &screen) const
+	{
+		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 0);
+		print_multiline_black_center(screen, dimensions, item.caption);
+		return dimensions;
+	}
+};
+
+struct ActiveMultilineRenderPolicy
+{
+	template <typename ItemType>
+	Dimensions apply_to(ItemType const & item, Dimensions const & dimensions, Screen &screen) const
+	{
+		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 1);
+		print_multiline_white_center(screen, dimensions, item.caption);
 		return dimensions;
 	}
 };
@@ -47,6 +70,12 @@ struct DefaultGlobalRenderPolicy
 		return dimensions;
 	}
 };
+
+template <> 
+Dimensions DefaultMultilineRenderPolicy::apply_to<ui::File const>(ui::File const & item, Dimensions const & dimensions, Screen &screen) const;
+
+template <> 
+Dimensions ActiveMultilineRenderPolicy::apply_to<ui::File const>(ui::File const & item, Dimensions const & dimensions, Screen &screen) const;
 
 template <> 
 Dimensions DefaultRenderPolicy::apply_to<ui::File const>(ui::File const & item, Dimensions const & dimensions, Screen &screen) const;
@@ -102,7 +131,7 @@ ui::Dimensions ActiveRenderPolicy::apply_to<ui::LogoItem const>(const ui::LogoIt
 template <> 
 ui::Dimensions DefaultRenderPolicy::apply_to<ui::LogoItem const>(const ui::LogoItem&  item, ui::Dimensions const & dimensions, ui::Screen &screen) const;
 
-using RenderPolicy = boost::variant<DefaultRenderPolicy, ActiveRenderPolicy>;
+using RenderPolicy = boost::variant<DefaultRenderPolicy, ActiveRenderPolicy, DefaultMultilineRenderPolicy, ActiveMultilineRenderPolicy>;
 using GlobalRenderPolicy = boost::variant<DefaultGlobalRenderPolicy>;
 
 } // namespace
