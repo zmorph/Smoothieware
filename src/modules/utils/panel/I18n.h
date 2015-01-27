@@ -53,17 +53,19 @@ char const * const turn_enclosure_fans_on_caption = "Wlacz went. obudowy";
 char const * const turn_enclosure_fans_off_caption = "Wylacz went. obudowy";
 char const * const cold_extrusion_prevented_caption	= "Rozgrzej glowice!";
 char const * const scroll_bar_caption			= "";
-char const * const bed_leveling_caption 		= "Czy stol jest pusty?";
+char const * const printing_warning_caption		= "Uwaga! Trwa wydruk.";
 
-char const * const front_left_corner_caption 	= "Ustaw i wcisnij OK";
-char const * const front_right_corner_caption 	= "Ustaw i wcisnij OK";
-char const * const back_right_corner_caption 	= "Ustaw i wcisnij OK";
-char const * const back_left_corner_caption 	= "Ustaw i wcisnij OK";
+char const * const bed_leveling_caption = "Upewnij sie, ze stol jest pusty. Aby przejsc do kolejnego kroku wcisnij OK.";
 
-char const * const front_left_corner_again_caption 	= "Potwierdz i wcisnij OK";
-char const * const front_right_corner_again_caption	= "Potwierdz i wcisnij OK";
-char const * const back_right_corner_again_caption 	= "Potwierdz i wcisnij OK";
-char const * const back_left_corner_again_caption 	= "Potwierdz i wcisnij OK";
+char const * const front_left_corner_caption 	= "Ustaw odstep stolu od glowicy w przednim lewym rogu na grubosc kartki papieru.";
+char const * const front_right_corner_caption 	= "Ustaw odstep stolu od glowicy w przednim prawym rogu na grubosc kartki papieru.";
+char const * const back_right_corner_caption 	= "Ustaw odstep stolu od glowicy w tylnym prawym rogu na grubosc kartki papieru.";
+char const * const back_left_corner_caption 	= "Ustaw odstep stolu od glowicy w tylnym lewym rogu na grubosc kartki papieru.";
+
+char const * const front_left_corner_again_caption 	= "Potwierdz odstep stolu od glowicy w przednim lewym rogu i wcisnij OK";
+char const * const front_right_corner_again_caption	= "Potwierdz odstep stolu od glowicy w przednim prawym rogu i wcisnij OK";
+char const * const back_right_corner_again_caption 	= "Potwierdz odstep stolu od glowicy w tylnym prawym rogu i wcisnij OK";
+char const * const back_left_corner_again_caption 	= "Potwierdz odstep stolu od glowicy w tylnym lewym rogu i wcisnij OK";
 
 char const * const finish_bed_leveling_caption 	= "Czy powtorzyc operacje?";
 } // namespace i18n
@@ -121,6 +123,7 @@ char const * const turn_enclosure_fans_off_caption = "Turn enclosure fans off";
 char const * const cold_extrusion_prevented_caption = "Heat up hotend first!";
 char const * const scroll_bar_caption			= "";
 char const * const bed_leveling_caption 		= "";
+char const * const printing_warning_caption		= "Warning! Printing in progress.";
 
 char const * const front_left_corner_caption 	= "";
 char const * const front_right_corner_caption 	= "";
