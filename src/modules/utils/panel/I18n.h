@@ -53,6 +53,7 @@ char const * const turn_enclosure_fans_on_caption = "Wlacz went. obudowy";
 char const * const turn_enclosure_fans_off_caption = "Wylacz went. obudowy";
 char const * const cold_extrusion_prevented_caption	= "Rozgrzej glowice!";
 char const * const scroll_bar_caption			= "";
+char const * const velocity_caption				= "Szybkosc";
 char const * const printing_warning_caption		= "Uwaga! Trwa wydruk.";
 
 char const * const bed_leveling_caption = "Upewnij sie, ze stol jest pusty. Aby przejsc do kolejnego kroku wcisnij OK.";
@@ -116,26 +117,28 @@ char const * const leds_caption					= "Lights";
 char const * const fans_caption                 = "Fans";
 char const * const turn_leds_on_caption			= "Turn lights on";
 char const * const turn_leds_off_caption		= "Turn lights off";
-char const * const turn_extruder_fans_on_caption = "Turn extruder fans on";
-char const * const turn_extruder_fans_off_caption = "Turn extruder fans off";
-char const * const turn_enclosure_fans_on_caption = "Turn enclosure fans on";
-char const * const turn_enclosure_fans_off_caption = "Turn enclosure fans off";
+char const * const turn_extruder_fans_on_caption = "Extruder fans on";
+char const * const turn_extruder_fans_off_caption = "Extruder fans off";
+char const * const turn_enclosure_fans_on_caption = "Enclosure fans on";
+char const * const turn_enclosure_fans_off_caption = "Enclosure fans off";
 char const * const cold_extrusion_prevented_caption = "Heat up hotend first!";
 char const * const scroll_bar_caption			= "";
-char const * const bed_leveling_caption 		= "";
+char const * const velocity_caption				= "Velocity";
 char const * const printing_warning_caption		= "Warning! Printing in progress.";
 
-char const * const front_left_corner_caption 	= "";
-char const * const front_right_corner_caption 	= "";
-char const * const back_right_corner_caption 	= "";
-char const * const back_left_corner_caption 	= "";
+char const * const bed_leveling_caption = "Make sure the bed is empty. Press OK to proceed.";
 
-char const * const front_left_corner_again_caption 	= "";
-char const * const front_right_corner_again_caption	= "";
-char const * const back_right_corner_again_caption 	= "";
-char const * const back_left_corner_again_caption 	= "";
+char const * const front_left_corner_caption 	= "Set the front-left bed-printing head gap to the thickness of a paper sheet.";
+char const * const front_right_corner_caption 	= "Set the front-right bed-printing head gap to the thickness of a paper sheet.";
+char const * const back_right_corner_caption 	= "Set the rear-right bed-printing head gap to the thickness of a paper sheet.";
+char const * const back_left_corner_caption 	= "Set the rear-left bed-printing head gap to the thickness of a paper sheet.";
 
-char const * const finish_bed_leveling_caption 	= "";
+char const * const front_left_corner_again_caption 	= "Confirm the correct gap size in front-left corner.";
+char const * const front_right_corner_again_caption	= "Confirm the correct gap size in front-right corner.";
+char const * const back_right_corner_again_caption 	= "Confirm the correct gap size in rear-right corner.";
+char const * const back_left_corner_again_caption 	= "Confirm the correct gap size in rear-left corner.";
+
+char const * const finish_bed_leveling_caption 	= "Repeat calibration?";
 } // namespace i18n
 #endif // LANG
 
