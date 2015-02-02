@@ -2,7 +2,7 @@
 
 std::string G0_XY(float x, float y)
 {
-	char buffer[14];
+	char buffer[15];
 	snprintf(buffer, sizeof(buffer), "G0 X%4.0f Y%4.0f", x, y);
 	return std::string(buffer);
 } 
