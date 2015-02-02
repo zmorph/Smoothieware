@@ -132,18 +132,20 @@ public:
 	bool mode;
 };
 
+typedef ComplexControl<float> VelocityControl;
 
 template <typename DataType>
 class PositionControlBase : public Item
 {
 public:
-	constexpr PositionControlBase(char const * const caption, DataGetter<DataType> getter, DataSetter<DataType> setter)
-	: Item(caption), get_data(getter), set_data(setter), mode(false)
+	constexpr PositionControlBase(char const * const caption, DataGetter<DataType> getter, DataSetter<DataType> setter, DataType increment)
+	: Item(caption), get_data(getter), set_data(setter), increment(increment), mode(false)
 	{
 
 	}
 	DataGetter<DataType> get_data;
 	DataSetter<DataType> set_data;
+	DataType increment;
 	bool mode;
 };
 

@@ -105,6 +105,38 @@ Dimensions DefaultRenderPolicy::apply_to<ui::PositionControl const>(ui::Position
 }
 
 template <> 
+Dimensions ActiveRenderPolicy::apply_to<ui::VelocityControl const>(ui::VelocityControl const & item, Dimensions const & dimensions, Screen &screen) const
+{
+	if(item.mode)
+	{
+		screen.draw_rectangle(dimensions.x +dimensions.w / 2 + 4, dimensions.y, dimensions.w - dimensions.w / 2 - 4 , dimensions.h, 1);
+		print_black_left(screen, dimensions, item.caption);
+	}
+	else
+	{
+		screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 1);
+		print_white_left(screen, dimensions, item.caption);
+	}
+	char buffer[10];
+	snprintf(buffer, sizeof(buffer), "%.0f%%", item.get_data());
+	//print_white_right();
+	print_caption(screen, buffer, dimensions.w - 40, dimensions.y + dimensions.h/2, dimensions.w - 4, 0);
+	return dimensions;
+}
+
+template <> 
+Dimensions DefaultRenderPolicy::apply_to<ui::VelocityControl const>(ui::VelocityControl const &  item, Dimensions const & dimensions, Screen &screen) const
+{
+	screen.draw_rectangle(dimensions.x, dimensions.y, dimensions.w, dimensions.h, 0);
+	print_caption(screen, item.caption, dimensions.x + 4, dimensions.y + dimensions.h/2, dimensions.w - 4, 1);
+	char buffer[10];
+	snprintf(buffer, sizeof(buffer), "%.0f%%", item.get_data());
+	print_caption(screen, buffer, dimensions.w - 40, dimensions.y + dimensions.h/2, dimensions.w - 4, 1);
+	
+	return dimensions;
+}
+
+template <> 
 Dimensions ActiveRenderPolicy::apply_to<ui::HeatControl const>(ui::HeatControl const & item, Dimensions const & dimensions, Screen &screen) const
 {
 	if(item.mode)

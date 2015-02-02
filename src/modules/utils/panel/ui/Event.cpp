@@ -15,6 +15,41 @@ void play_file(std::string const & path)
 }
 
 template <>
+Link OkEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const
+{
+	active_item.mode = !active_item.mode;
+	return same();
+}
+
+template <>
+Link DownEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const
+{
+	if(active_item.mode)
+	{
+		active_item.set_data(active_item.get_data()-5.0);
+		return same();
+	}
+	else
+	{
+		return next();
+	}
+}
+
+template <>
+Link UpEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const
+{
+	if(active_item.mode)
+	{
+		active_item.set_data(active_item.get_data()+5.0);
+		return same();
+	}
+	else
+	{
+		return previous();
+	}
+}
+
+template <>
 Link OkEvent::operator()<ui::Command>(ui::Command& active_item) const
 {
 	active_item.send_command();
@@ -27,7 +62,7 @@ Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_
 	if(active_item.condition())
 	{
 		active_item.send_command();
-		return same();		
+		return same();
 	}
 	else
 	{
@@ -48,7 +83,7 @@ Link DownEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_it
 {
 	if(active_item.mode)
 	{
-		active_item.set_data(active_item.get_data()-10.0);
+		active_item.set_data(active_item.get_data()-active_item.increment);
 		return same();
 	}
 	else
@@ -62,7 +97,7 @@ Link UpEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item
 {
 	if(active_item.mode)
 	{
-		active_item.set_data(active_item.get_data()+10.0);
+		active_item.set_data(active_item.get_data()+active_item.increment);
 		return same();
 	}
 	else

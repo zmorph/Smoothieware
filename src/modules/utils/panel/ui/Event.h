@@ -102,6 +102,15 @@ template <>
 Link OkEvent::operator()<ui::ConditionalCommand>(ui::ConditionalCommand& active_item) const;
 
 template <>
+Link OkEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const;
+
+template <>
+Link DownEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const;
+
+template <>
+Link UpEvent::operator()<ui::VelocityControl >(ui::VelocityControl&  active_item) const;
+
+template <>
 Link OkEvent::operator()<ui::PositionControl >(ui::PositionControl&  active_item) const;
 
 template <>

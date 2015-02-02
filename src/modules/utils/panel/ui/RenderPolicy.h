@@ -90,6 +90,12 @@ template <>
 Dimensions DefaultRenderPolicy::apply_to<ui::GraphicalItem const>(const ui::GraphicalItem& item, Dimensions const & dimensions, Screen &screen) const;
 
 template <> 
+Dimensions ActiveRenderPolicy::apply_to<ui::VelocityControl const>(const ui::VelocityControl&  item, Dimensions const & dimensions, Screen &screen) const;
+
+template <>
+Dimensions DefaultRenderPolicy::apply_to<ui::VelocityControl const>(const ui::VelocityControl&  item, Dimensions const & dimensions, Screen &screen) const;
+
+template <> 
 Dimensions ActiveRenderPolicy::apply_to<ui::PositionControl const>(const ui::PositionControl&  item, Dimensions const & dimensions, Screen &screen) const;
 
 template <>

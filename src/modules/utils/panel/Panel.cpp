@@ -46,9 +46,9 @@
 #define hotend_temp_PLA_checksum CHECKSUM("hotend_temperature_PLA")
 #define bed_temp_PLA_checksum    CHECKSUM("bed_temperature_PLA")
 #define panel_checksum           CHECKSUM("panel")
-#define alpha_max_checksum                   CHECKSUM("alpha_max")
-#define beta_max_checksum                    CHECKSUM("beta_max")
-#define gamma_max_checksum                   CHECKSUM("gamma_max")
+#define alpha_max_checksum       CHECKSUM("alpha_max")
+#define beta_max_checksum        CHECKSUM("beta_max")
+#define gamma_max_checksum       CHECKSUM("gamma_max")
 
 namespace info
 {
@@ -375,7 +375,7 @@ enum class StatusMenu : size_t
 	HotendTemperature,
 	HotbedTemperature,
 	Z,
-	Progress	
+	Progress
 };
 
 enum class MaintenanceMenu : size_t
@@ -405,6 +405,27 @@ enum class OptionsMenu : size_t
 };
 
 #include "menu/BedLeveling.h"
+
+float get_velocity()
+{
+    void *returned_data;
+    if (PublicData::get_value( robot_checksum, speed_override_percent_checksum, &returned_data )) 
+    {
+        float v = *static_cast<float *>(returned_data);
+        return v;
+    }
+    else
+    {
+        return 0.0;
+    }
+}
+
+void set_velocity(float v)
+{
+    char buffer[11];
+    snprintf(buffer, sizeof(buffer), "M220 S%4.0f", v);
+    command_buffer.push(std::bind(send_gcode, std::string(buffer)));
+}
 
 CompositeItem LOCATION logo_menu_items[] = 
 {
@@ -491,6 +512,10 @@ void buffered_home_xyz()
 /*
 	[CompI, CompI, CompI]
 */
+// CompositeItem LOCATION velocity_menu_items[] = 
+// {
+//     ui::VelocityControl(i18n::velocity_caption, get_velocity, set_velocity)
+// };
 
 CompositeItem LOCATION home_menu_items[] = 
 {
@@ -504,9 +529,9 @@ CompositeItem LOCATION move_menu_items[] =
 {
 	ui::Item(i18n::back_caption),
 	ui::Item(i18n::home_caption),
-	ui::PositionControl(i18n::z_caption, get_current_pos_<2>, set_z_position),
-	ui::PositionControl(i18n::x_caption, get_current_pos_<0>, set_x_position),
-	ui::PositionControl(i18n::y_caption, get_current_pos_<1>, set_y_position)
+	ui::PositionControl(i18n::z_caption, get_current_pos_<2>, set_z_position, -10.0),
+	ui::PositionControl(i18n::x_caption, get_current_pos_<0>, set_x_position, 10.0),
+	ui::PositionControl(i18n::y_caption, get_current_pos_<1>, set_y_position, 10.0)
 };
 
 CompositeItem LOCATION main_menu_items[] = 
@@ -593,6 +618,7 @@ CompositeItem LOCATION extrude_menu_items[] =
 CompositeItem LOCATION options_menu_items[] = 
 {
 	ui::Item(i18n::back_caption),
+    ui::VelocityControl(i18n::velocity_caption, get_velocity, set_velocity),
 	ui::CharInfo(i18n::ip_caption, get_network),
 	ui::CharInfo(i18n::version_caption, info::get_version)
 };
@@ -694,6 +720,7 @@ ui::Widget LOCATION leds_menu_widget(&stacked_layout, &scroll_bar_layout);
 ui::Widget LOCATION fans_menu_widget(&stacked_layout, &scroll_bar_layout);
 ui::Widget LOCATION cold_extrusion_splash_widget(&splash_layout);
 ui::Widget LOCATION printing_warning_splash_widget(&splash_layout);
+//ui::Widget LOCATION velocity_menu_widget(&splash_layout);
 
 ui::Link LOCATION logo_menu_links[1];
 ui::Link LOCATION init_menu_links[2];
@@ -709,12 +736,13 @@ ui::Link LOCATION manual_heat_menu_links[3];
 ui::Link LOCATION status_menu_links[4];
 ui::Link LOCATION maintenance_menu_links[7];
 ui::Link LOCATION extrude_menu_links[3];
-ui::Link LOCATION options_menu_links[3];
+ui::Link LOCATION options_menu_links[4];
 ui::Link LOCATION motors_menu_links[3];
 ui::Link LOCATION leds_menu_links[3];
 ui::Link LOCATION fans_menu_links[5];
 ui::Link LOCATION cold_extrusion_splash_links[1];
 ui::Link LOCATION printing_warning_splash_links[1];
+//ui::Link LOCATION velocity_menu_links[1];
 
 ui::Group LOCATION logo(logo_menu_items, logo_menu_links, logo_menu_widget);
 ui::Group LOCATION init_menu(init_menu_items, init_menu_links, init_menu_widget);
@@ -736,6 +764,7 @@ ui::Group LOCATION leds_menu(leds_menu_items, leds_menu_links, leds_menu_widget)
 ui::Group LOCATION fans_menu(fans_menu_items, fans_menu_links, fans_menu_widget);
 ui::Group LOCATION cold_extrusion_splash(cold_extrusion_splash_items, cold_extrusion_splash_links, cold_extrusion_splash_widget);
 ui::Group LOCATION printing_warning_splash(printing_warning_splash_items, printing_warning_splash_links, printing_warning_splash_widget);
+//ui::Group LOCATION velocity_menu(velocity_menu_items, velocity_menu_links, velocity_menu_widget);
 
 void make_link(ui::Group& menu_a, size_t index_a, ui::Group& menu_b, size_t index_b)
 {
@@ -765,9 +794,6 @@ Panel::Panel()
 
 	make_link(main_menu, index(MainMenu::Move), move_menu, index(MoveMenu::Back));
 	main_menu.set_link_for(index(MainMenu::Move), ui::Link(is_file_being_played, 0, &abort_menu_move, index(MoveMenu::Back), &move_menu) );
-
-
-	//main_menu.set_link_for(index(MainMenu::Move)).when(is_file_being_played, ). 
 
 	make_link(main_menu, index(MainMenu::Heat), heat_menu, index(HeatMenu::Back));
 	main_menu.set_link_for(index(MainMenu::Heat), ui::Link(is_file_being_played, 0, &printing_warning_splash, index(HeatMenu::Back), &heat_menu));
