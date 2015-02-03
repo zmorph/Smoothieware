@@ -297,14 +297,14 @@ Dimensions DefaultRenderPolicy::apply_to<ui::TimeInfo const>(ui::TimeInfo const 
 template <> 
 Dimensions ActiveRenderPolicy::apply_to<ui::LogoItem const>(ui::LogoItem const & item, Dimensions const & dimensions, Screen &screen) const
 {
-	screen.draw_picture(dimensions.x + 12, dimensions.y, 104, 64, item.icon, false);
+	screen.draw_picture(dimensions.x, dimensions.y, 128, 64, item.icon, false);
 	return dimensions;
 }
 
 template <> 
 Dimensions DefaultRenderPolicy::apply_to<ui::LogoItem const>(ui::LogoItem const &  item, Dimensions const & dimensions, Screen &screen) const
 {
-	screen.draw_picture(dimensions.x + 12, dimensions.y, 104, 64, item.icon, false);
+	screen.draw_picture(dimensions.x, dimensions.y, 128, 64, item.icon, false);
 	return dimensions;
 }
 
