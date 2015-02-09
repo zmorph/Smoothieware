@@ -429,7 +429,7 @@ void set_velocity(float v)
 
 CompositeItem LOCATION logo_menu_items[] = 
 {
-	ui::LogoItem(i18n::back_caption, picture::logo, 18)
+	ui::LogoItem(i18n::back_caption, picture::logo, 3)
 };
 
 CompositeItem LOCATION status_menu_items[] = 
@@ -773,7 +773,7 @@ void make_link(ui::Group& menu_a, size_t index_a, ui::Group& menu_b, size_t inde
 }
 
 Panel::Panel()
-:up_button(10, 5), down_button(10, 5), select_button(10, 5), user_interface(logo.get_link_to(0), screen)
+:up_button(10, 5), down_button(10, 5), select_button(10, 5), user_interface(logo.get_link_to(0), screen), start_tick_delay(100), tick_enabled(false)
 {
 	info::settings.init(THEKERNEL);
 	file_browser.open_directory("/");
@@ -909,7 +909,7 @@ void Panel::on_main_loop(void* argument)
 
 void Panel::on_second_tick(void* argument)
 {
-	this->tick_flag = true;
+	this->tick_flag = this->tick_enabled;
 }
 
 void Panel::on_idle(void* argument)
@@ -937,6 +937,14 @@ void Panel::on_idle(void* argument)
 		refresh_flag = false;
 		user_interface.render();
 		user_interface.refresh();
+	}
+	if(this->start_tick_delay > 0)
+	{
+		this->start_tick_delay--;
+	}
+	else
+	{
+		this->tick_enabled = true;
 	}
 }
 

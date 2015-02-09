@@ -23,6 +23,8 @@ private:
 	volatile ui::Button down_button;
 	volatile ui::Button select_button;
 
+	volatile uint8_t start_tick_delay;
+	volatile bool tick_enabled;
 	volatile bool tick_flag;
 	volatile bool refresh_flag;
 	volatile uint8_t button_state;
