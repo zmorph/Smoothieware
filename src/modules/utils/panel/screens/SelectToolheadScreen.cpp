@@ -32,7 +32,7 @@ void SelectToolheadScreen::on_enter()
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
-    THEPANEL->setup_menu(7);
+    THEPANEL->setup_menu(9);
     this->refresh_menu();
 }
 
@@ -100,8 +100,20 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
                 THEPANEL->lcd->printf("> Time-lapse rail" );
             }
             break; }
-        //case 7: THEPANEL->lcd->printf("Milling"); break;
-        //case 8: THEPANEL->lcd->printf("Laser"); break;
+        case 7: {
+            if(toolhead_number != 7) {
+                THEPANEL->lcd->printf("Milling"           );
+            } else {
+                THEPANEL->lcd->printf("> Milling"         );
+            }
+            break; }
+        case 8: {
+            if(toolhead_number != 8) {
+                THEPANEL->lcd->printf("Laser"             );
+            } else {
+                THEPANEL->lcd->printf("> Laser"           );
+            }
+            break; }
         //case 9: THEPANEL->lcd->printf("5-Axis"); break;
     }
 }
@@ -140,6 +152,17 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             toolhead_number = 6;
             this->refresh_menu();
             break; }
+        case 7: {
+            command = "T1\nM907 A0.5\nT0\nM907 E0.5";
+            toolhead_number = 7;
+            this->refresh_menu();
+            break; }
+        case 8: {
+            command = "T1\nM907 A0.5\nT0\nM907 E0.5";
+            toolhead_number = 8;
+            this->refresh_menu();
+            break; }
+
     }
 }
 

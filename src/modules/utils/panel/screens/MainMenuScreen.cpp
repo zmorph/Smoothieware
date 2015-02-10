@@ -106,7 +106,7 @@ void MainMenuScreen::setupConfigureScreen()
 void MainMenuScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(6);
+    THEPANEL->setup_menu(7);
     this->refresh_menu();
 }
 
