@@ -102,16 +102,16 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             break; }
         case 7: {
             if(toolhead_number != 7) {
-                THEPANEL->lcd->printf("Milling"           );
+                THEPANEL->lcd->printf("Laser OFF"         );
             } else {
-                THEPANEL->lcd->printf("> Milling"         );
+                THEPANEL->lcd->printf("> Laser OFF"       );
             }
             break; }
         case 8: {
             if(toolhead_number != 8) {
-                THEPANEL->lcd->printf("Laser"             );
+                THEPANEL->lcd->printf("Laser ON"          );
             } else {
-                THEPANEL->lcd->printf("> Laser"           );
+                THEPANEL->lcd->printf("> Laser ON"        );
             }
             break; }
         //case 9: THEPANEL->lcd->printf("5-Axis"); break;
@@ -153,12 +153,12 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 7: {
-            command = "T1\nM907 A0.5\nT0\nM907 E0.5";
+            command = "config-set sd laser_module_enable false \nG4 P1000\nreset\n";
             toolhead_number = 7;
             this->refresh_menu();
             break; }
         case 8: {
-            command = "T1\nM907 A0.5\nT0\nM907 E0.5";
+            command = "config-set sd laser_module_enable true \nG4 P1000\nreset\n";
             toolhead_number = 8;
             this->refresh_menu();
             break; }
