@@ -80,8 +80,8 @@ void PrepareScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "T1\nM104_S200\nT0\nM104_S200\nM140_S60"; break;
-        case 2: command = "T1\nM104_S245\nT0\nM104_S245\nM140_S100"; break;
+        case 1: command = "T1\nM104 S200\nG4 P1\nT0\nM104 S200\nM140 S60"; break;
+        case 2: command = "T1\nM104 S245\nG4 P1\nT0\nM104 S245\nM140 S100"; break;
         case 3: command = "G28 X0 Y0 Z0\nG0 X25 Y 25 Z20"; break;
         case 4: command = "T0\nG92 E0\nG1 E35 F300\nG92 E0\nT1\nG92 E0\nG1 E35 F300\nG92 E0\nT0"; break;
         case 5: THEPANEL->enter_screen(THEPANEL->temperature_screen); break;
