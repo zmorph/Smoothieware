@@ -17,6 +17,7 @@
 #include "PublicDataRequest.h"
 #include "PublicData.h"
 #include "TemperatureControlPublicAccess.h"
+#include "modules/tools/laser/Laser.h"
 
 #include <string>
 using namespace std;
@@ -158,7 +159,10 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 8: {
-            command = "config-set sd laser_module_enable true \nG4 P1000\nreset\n";
+            if (!Laser::isActivated()){  
+                Laser::enableDynamicActivation();                
+                THEKERNEL->add_module( new Laser() );
+            }
             toolhead_number = 8;
             this->refresh_menu();
             break; }

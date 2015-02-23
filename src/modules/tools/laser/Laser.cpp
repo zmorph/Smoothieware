@@ -30,16 +30,24 @@
 Laser::Laser(){
 }
 
+bool should_dynamically_activate{false};
+
 void Laser::on_module_loaded() {
-    if( !THEKERNEL->config->value( laser_module_enable_checksum )->by_default(false)->as_bool() ){
+    static std::string laser_module_pin = THEKERNEL->config->value(laser_module_pin_checksum)->by_default("nc")->as_string();
+    static float laser_module_pwm_period = THEKERNEL->config->value(laser_module_pwm_period_checksum)->by_default(20)->as_number();
+    static float laser_module_max_power = THEKERNEL->config->value(laser_module_max_power_checksum   )->by_default(0.8f)->as_number();
+    static float laser_module_tickle_power = THEKERNEL->config->value(laser_module_tickle_power_checksum)->by_default(0   )->as_number();
+
+    if( !should_dynamically_activate && !THEKERNEL->config->value( laser_module_enable_checksum )->by_default(false)->as_bool()  ){
         // as not needed free up resource
         delete this;
         return;
     }
+    should_dynamically_activate = true;
 
     // Get smoothie-style pin from config
     Pin* dummy_pin = new Pin();
-    dummy_pin->from_string(THEKERNEL->config->value(laser_module_pin_checksum)->by_default("nc")->as_string())->as_output();
+    dummy_pin->from_string(laser_module_pin)->as_output();
 
     laser_pin = NULL;
 
@@ -66,11 +74,11 @@ void Laser::on_module_loaded() {
     delete dummy_pin;
     dummy_pin = NULL;
 
-    this->laser_pin->period_us(THEKERNEL->config->value(laser_module_pwm_period_checksum)->by_default(20)->as_number());
+    this->laser_pin->period_us(laser_module_pwm_period);
     this->laser_pin->write(this->laser_inverting ? 1 : 0);
 
-    this->laser_max_power =    THEKERNEL->config->value(laser_module_max_power_checksum   )->by_default(0.8f)->as_number() ;
-    this->laser_tickle_power = THEKERNEL->config->value(laser_module_tickle_power_checksum)->by_default(0   )->as_number() ;
+    this->laser_max_power = laser_module_max_power;
+    this->laser_tickle_power = laser_module_tickle_power;
 
     //register for events
     this->register_for_event(ON_GCODE_EXECUTE);
@@ -134,4 +142,12 @@ void Laser::set_proportional_power(){
         float proportional_power = float(float(this->laser_max_power) * float(THEKERNEL->stepper->get_trapezoid_adjusted_rate()) / float(THEKERNEL->stepper->get_current_block()->nominal_rate));
         this->laser_pin->write(this->laser_inverting ? 1 - proportional_power : proportional_power);
     }
+}
+
+bool Laser::isActivated() {
+    return should_dynamically_activate;
+}
+
+void Laser::enableDynamicActivation(){
+    should_dynamically_activate = true;
 }

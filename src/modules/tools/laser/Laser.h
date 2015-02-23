@@ -26,6 +26,8 @@ class Laser : public Module{
         void on_gcode_execute(void* argument);
         void on_speed_change(void* argument);
 
+        static bool isActivated();
+        static void enableDynamicActivation();         
     private:
         void set_proportional_power();
         mbed::PwmOut *laser_pin;    // PWM output to regulate the laser power
