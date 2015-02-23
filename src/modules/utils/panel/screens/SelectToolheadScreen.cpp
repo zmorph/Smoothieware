@@ -33,7 +33,7 @@ void SelectToolheadScreen::on_enter()
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
-    THEPANEL->setup_menu(9);
+    THEPANEL->setup_menu(8);
     this->refresh_menu();
 }
 
@@ -102,13 +102,6 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             }
             break; }
         case 7: {
-            if(toolhead_number != 7) {
-                THEPANEL->lcd->printf("Laser OFF"         );
-            } else {
-                THEPANEL->lcd->printf("> Laser OFF"       );
-            }
-            break; }
-        case 8: {
             if(toolhead_number != 8) {
                 THEPANEL->lcd->printf("Laser ON"          );
             } else {
@@ -154,13 +147,8 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 7: {
-            command = "config-set sd laser_module_enable false \nG4 P1000\nreset\n";
-            toolhead_number = 7;
-            this->refresh_menu();
-            break; }
-        case 8: {
-            if (!Laser::isActivated()){  
-                Laser::enableDynamicActivation();                
+            if (!Laser::isActivated()) {
+                Laser::enableDynamicActivation();
                 THEKERNEL->add_module( new Laser() );
             }
             toolhead_number = 8;
