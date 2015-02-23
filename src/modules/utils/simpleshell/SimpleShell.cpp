@@ -24,6 +24,7 @@
 #include "Gcode.h"
 
 #include "modules/tools/temperaturecontrol/TemperatureControlPublicAccess.h"
+#include "modules/tools/laser/Laser.h"
 #include "modules/robot/RobotPublicAccess.h"
 #include "NetworkPublicAccess.h"
 #include "platform_memory.h"
@@ -64,7 +65,8 @@ const SimpleShell::ptentry_t SimpleShell::commands_table[] = {
     {"net",      SimpleShell::net_command},
     {"load",     SimpleShell::load_command},
     {"save",     SimpleShell::save_command},
-    {"remount",       SimpleShell::remount_command},
+    {"remount",  SimpleShell::remount_command},
+    {"has_laser", SimpleShell::has_laser_command},
 
     // unknown command
     {NULL, NULL}
@@ -526,6 +528,15 @@ void SimpleShell::switch_command( string parameters, StreamOutput *stream)
     } else {
         stream->printf("%s is not a known switch device\r\n", type.c_str());
     }
+}
+
+// Responds with the present working directory
+void SimpleShell::has_laser_command( string parameters, StreamOutput *stream )
+{
+    if (Laser::isActivated())        
+        stream->printf("laser: on\r\n");
+    else
+        stream->printf("laser: off\r\n");
 }
 
 void SimpleShell::help_command( string parameters, StreamOutput *stream )

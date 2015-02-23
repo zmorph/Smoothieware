@@ -43,6 +43,7 @@ private:
     static void set_temp_command(string parameters, StreamOutput *stream );
     static void switch_command(string parameters, StreamOutput *stream );
     static void mem_command(string parameters, StreamOutput *stream );
+    static void has_laser_command(string parameters, StreamOutput *stream );
 
     static void net_command( string parameters, StreamOutput *stream);
 
