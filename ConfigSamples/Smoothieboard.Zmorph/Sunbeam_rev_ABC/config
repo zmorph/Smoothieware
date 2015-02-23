@@ -253,6 +253,11 @@ panel.gamma_jog_feedrate                     200              # z jogging feedra
 panel.hotend_temperature                     200              #
 panel.hotbed_temperature                     60               #
 
+# setup for external sd card on the GLCD which uses the onboard sdcard SPI port
+panel.external_sd                            true             # set to true if there is an extrernal sdcard on the panel
+panel.external_sd.spi_channel                0                # set spi channel the sdcard is on
+panel.external_sd.spi_cs_pin                 1.25             # set spi chip select for the sdcard
+panel.external_sd.sdcd_pin                   1.26!^           # sd detect signal (set to nc if no sdcard detect) 
 
 
 # Only needed on a smoothieboard
@@ -294,7 +299,7 @@ laser_module_enable                          false            # Whether to activ
 laser_module_pin                             2.5              # this pin will be PWMed to control the laser
 laser_module_max_power                       0.1              # this is the maximum duty cycle that will be applied to the laser
 laser_module_tickle_power                    0.0              # this duty cycle will be used for travel moves to keep the laser active without actually burning
-laser_module_pwm_period                      200              # 100 = 10kHz this sets the pwm frequency, the value is the period in microseconds
+laser_module_pwm_period                      100              # 100 = 10kHz this sets the pwm frequency, the value is the period in microseconds
 
 
 # Network settings
