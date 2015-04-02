@@ -63,9 +63,9 @@ msd_disable                                  false            # disable the MSD 
 # Extruder module configuration
 extruder.hotend.enable                          true          # Whether to activate the extruder module at all. All configuration is ignored if false
 extruder.hotend.steps_per_mm                    100           # Steps per mm for extruder stepper
-extruder.hotend.default_feed_rate               600           # Default rate ( mm/minute ) for moves where only the extruder moves
-extruder.hotend.acceleration                    1000          # Acceleration for the stepper motor, as of 0.6, arbitrary ratio
-extruder.hotend.max_speed                       3000          # mm^3/s
+extruder.hotend.default_feed_rate               500           # Default rate ( mm/minute ) for moves where only the extruder moves
+extruder.hotend.acceleration                    300           # Acceleration for the stepper motor, as of 0.6, arbitrary ratio
+extruder.hotend.max_speed                       1000          # mm^3/s
 extruder.hotend.step_pin                        2.3           # Pin for extruder step signal
 extruder.hotend.dir_pin                         0.22          # Pin for extruder dir signal
 extruder.hotend.en_pin                          0.21          # Pin for extruder enable signal
@@ -78,9 +78,9 @@ extruder.hotend.z_offset                        0             # z offset from fi
 # Second extruder module configuration
 extruder.hotend2.enable                          true         # Whether to activate the extruder module at all. All configuration is ignored if false
 extruder.hotend2.steps_per_mm                    1150         # Steps per mm for extruder stepper
-extruder.hotend2.default_feed_rate               600          # Default rate ( mm/minute ) for moves where only the extruder moves
-extruder.hotend2.acceleration                    1500         # Acceleration for the stepper motor, as of 0.6, arbitrary ratio
-extruder.hotend2.max_speed                       3000         # mm^3/s
+extruder.hotend2.default_feed_rate               500          # Default rate ( mm/minute ) for moves where only the extruder moves
+extruder.hotend2.acceleration                    300          # Acceleration for the stepper motor, as of 0.6, arbitrary ratio
+extruder.hotend2.max_speed                       1000         # mm^3/s
 extruder.hotend2.step_pin                        2.4          # Pin for extruder step signal
 extruder.hotend2.dir_pin                         1.23!        # Pin for extruder dir signal
 extruder.hotend2.en_pin                          1.22         # Pin for extruder enable signal
