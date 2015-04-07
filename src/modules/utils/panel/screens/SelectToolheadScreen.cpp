@@ -102,7 +102,7 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             }
             break; }
         case 7: {
-            if(toolhead_number != 8) {
+            if(toolhead_number != 7) {
                 THEPANEL->lcd->printf("Laser ON"          );
             } else {
                 THEPANEL->lcd->printf("> Laser ON"        );
@@ -132,17 +132,17 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 4: {
-            command = "T0\nM92 E400\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 400 \nG4 P1000";
+            command = "T0\nM92 E401\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 401 \nG4 P1000";
             toolhead_number = 4;
             this->refresh_menu();
             break; }
         case 5: {
-            command = "T0\nM92 E400\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 400 \nG4 P1000";
+            command = "T0\nM92 E402\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
             toolhead_number = 5;
             this->refresh_menu();
             break; }
         case 6: {
-            command = "T1\nM92 E3200\nM907 A1.0\nT0\nG4 P100\nconfig-set sd epsilon_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 400 \nG4 P1000";
+            command = "T1\nM92 E3200\nM907 A1.0\nT0\nG4 P100\nconfig-set sd epsilon_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 3200 \nG4 P1000";
             toolhead_number = 6;
             this->refresh_menu();
             break; }
@@ -151,7 +151,7 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
                 Laser::enableDynamicActivation();
                 THEKERNEL->add_module( new Laser() );
             }
-            toolhead_number = 8;
+            toolhead_number = 7;
             this->refresh_menu();
             break; }
 
