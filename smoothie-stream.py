@@ -33,6 +33,8 @@ tn.read_until("> ")
 okcnt= 0
 linecnt= 0
 for line in f:
+    if line.strip().startswith(";"):
+        continue
     tn.write(line)
     linecnt+=1
     rep= tn.read_eager()
