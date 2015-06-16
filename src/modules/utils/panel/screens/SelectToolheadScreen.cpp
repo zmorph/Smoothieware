@@ -22,6 +22,9 @@
 #include <string>
 using namespace std;
 
+
+#define extruder_checksum CHECKSUM("extruder")
+
 //OprionsScreen because ConfigureScreen is already used in Smoothie.
 SelectToolheadScreen::SelectToolheadScreen()
 {
@@ -33,8 +36,38 @@ void SelectToolheadScreen::on_enter()
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
+    
     THEPANEL->setup_menu(9);
-    this->refresh_menu();
+    float *rd; 
+    PublicData::get_value( extruder_checksum, (void **)&rd );
+    int steps = *rd;
+    switch (steps){
+        case 100:{
+            toolhead_number = 1;
+            break;
+        }
+        case 400: {
+            toolhead_number = 2;
+            break;
+        }
+        case 1150: {
+            toolhead_number = 3;
+            break;
+        }
+        case 401: {
+            toolhead_number = 4;
+            break;
+        }
+        case 402: {
+            toolhead_number = 5;
+            break;
+        }
+        case 122: {
+            toolhead_number = 8;
+            break;
+        }
+     }
+     this->refresh_menu();
 }
 
 void SelectToolheadScreen::on_refresh()
@@ -61,7 +94,7 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             break; }
         case 1: {
             if(toolhead_number != 1) {
-                THEPANEL->lcd->printf("Single Head 1.75" );
+                THEPANEL->lcd->printf("Single Head 1.75"  );
             } else {
                 THEPANEL->lcd->printf("> Single Head 1.75");
             }
@@ -110,12 +143,11 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             break; }
         case 8: {
             if(toolhead_number != 8) {
-                THEPANEL->lcd->printf("5-Axis"          );
+                THEPANEL->lcd->printf("5-Axis"            );
             } else {
-                THEPANEL->lcd->printf("> 5-Axis"        );
+                THEPANEL->lcd->printf("> 5-Axis"          );
             }
             break; }
-        //case 9: THEPANEL->lcd->printf("5-Axis"); break;
     }
 }
 
