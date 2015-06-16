@@ -27,6 +27,7 @@ private:
     void get_current_pos(float *cp);
     void get_sd_play_info();
     const char *get_status();
+    const char *get_message();
     const char *get_network();
 
     bool speed_changed;

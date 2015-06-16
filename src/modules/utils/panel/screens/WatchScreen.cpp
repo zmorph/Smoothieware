@@ -68,7 +68,7 @@ WatchScreen::~WatchScreen()
 void WatchScreen::on_enter()
 {
     THEPANEL->lcd->clear();
-    THEPANEL->setup_menu(5);
+    THEPANEL->setup_menu(6);
     get_temp_data();
     get_current_pos(this->pos);
     get_sd_play_info();
@@ -131,22 +131,22 @@ void WatchScreen::on_refresh()
             // display the graphical icons below the status are
             // this->panel->lcd->bltGlyph(0, 45, 115, 19, icons);
             int x_start = 0;
-            int y_start = 45;
+            int y_start = 52;
             //for (int i = 0; i < 5; ++i) {
             //     THEPANEL->lcd->bltGlyph(i*24, 38, 23, 19, icons, 15, i*24, 0);
             // }
 
             if (this->hotendtarget > 0)
-                THEPANEL->lcd->bltGlyph(x_start + 8  , y_start, 20, 19, icons, 15, 0, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 8  , y_start, 20, 19, icons, 15, 0, 7);
 
             if (this->hotend2target >0)
-                THEPANEL->lcd->bltGlyph(x_start + 24 , y_start, 20, 19, icons, 15, 24, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 24 , y_start, 20, 19, icons, 15, 24, 7);
 
             if (this->bedtarget > 0)
-                THEPANEL->lcd->bltGlyph(x_start + 40 , y_start, 23, 19, icons, 15, 64, 0);
+                THEPANEL->lcd->bltGlyph(x_start + 40 , y_start, 23, 19, icons, 15, 64, 7);
 
-            if(this->fan_state)
-                THEPANEL->lcd->bltGlyph(x_start + 96 , y_start, 23, 19, icons, 15, 96, 0);
+            // if(this->fan_state)
+            //     THEPANEL->lcd->bltGlyph(x_start + 96 , y_start, 23, 19, icons, 15, 96, 7);
         }
     }
 }
@@ -307,16 +307,13 @@ void WatchScreen::display_menu_line(uint16_t line)
         case 2: THEPANEL->lcd->printf("X%4d Y%4d Z%7.2f", (int)round(this->pos[0]), (int)round(this->pos[1]), this->pos[2]); break;
         case 3: THEPANEL->lcd->printf("%3d%% %2lu:%02lu:%02lu %3u%% sd", this->current_speed, this->last_time / 3600, this->last_time % 3600 / 60, this->last_time % 60, this->sd_pcnt_played); break;
         case 4: THEPANEL->lcd->printf("%19s", this->get_status()); break;
+        case 5: THEPANEL->lcd->printf("%19s", this->get_message()); break;
         default : break;
     }
 }
 
 const char *WatchScreen::get_status()
 {
-    if (THEPANEL->hasMessage()) {
-        return THEPANEL->getMessage().c_str();
-    }
-
     if (THEKERNEL->pauser->paused())
         return "Paused";
 
@@ -329,10 +326,19 @@ const char *WatchScreen::get_status()
 
     const char *ip = get_network();
     if (ip == NULL) {
-        return "ZMorph3D ready";
-    } else {
-        return ip;
+        return "";
+    } 
+    else return ip;
+    return "";
+}
+
+const char *WatchScreen::get_message()
+{
+    if (THEPANEL->hasMessage()) {
+        return THEPANEL->getMessage().c_str();
     }
+    else return "";
+
 }
 
 void WatchScreen::set_speed()

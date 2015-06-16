@@ -261,6 +261,7 @@ void TemperatureControl::on_gcode_execute(void *argument)
                 this->target_temperature = UNDEFINED;
                 this->heater_pin.set((this->o = 0));
             } else {
+                if(v > 250) v = 250;
                 this->set_desired_temperature(v);
 
                 if( gcode->m == this->set_and_wait_m_code && !this->waiting) {

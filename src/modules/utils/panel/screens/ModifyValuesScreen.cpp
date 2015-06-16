@@ -53,6 +53,7 @@ void ModifyValuesScreen::on_refresh()
 {
     constexpr int hotend_start_temperature {90};
     constexpr int bed_start_temperature {30};
+    constexpr int hotend_end_temperature {250};
 
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
@@ -84,6 +85,8 @@ void ModifyValuesScreen::on_refresh()
                     value = hotend_start_temperature;
                 else if (value < hotend_start_temperature)
                     value = 0;
+                else if (value > hotend_end_temperature)
+                    value = hotend_end_temperature;
                 THEPANEL->set_control_value(value); 
                 THEPANEL->reset_counter();
             }

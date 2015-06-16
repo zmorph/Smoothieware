@@ -33,7 +33,7 @@ void SelectToolheadScreen::on_enter()
     THEPANEL->enter_menu_mode();
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
-    THEPANEL->setup_menu(8);
+    THEPANEL->setup_menu(9);
     this->refresh_menu();
 }
 
@@ -108,6 +108,13 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
                 THEPANEL->lcd->printf("> Laser ON"        );
             }
             break; }
+        case 8: {
+            if(toolhead_number != 8) {
+                THEPANEL->lcd->printf("5-Axis"          );
+            } else {
+                THEPANEL->lcd->printf("> 5-Axis"        );
+            }
+            break; }
         //case 9: THEPANEL->lcd->printf("5-Axis"); break;
     }
 }
@@ -152,6 +159,11 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
                 THEKERNEL->add_module( new Laser() );
             }
             toolhead_number = 7;
+            this->refresh_menu();
+            break; }
+        case 8: {
+            command = "T1\nM92 E122.04\nM907 A0.5\nT0\nM92 E888.88\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 888.88 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 122.04 \nG4 P1000";
+            toolhead_number = 8;
             this->refresh_menu();
             break; }
 
