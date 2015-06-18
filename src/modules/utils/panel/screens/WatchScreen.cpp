@@ -97,7 +97,10 @@ void WatchScreen::on_refresh()
             // flag the update to change the speed, we don't want to issue hundreds of M220s
             // but we do want to display the change we are going to make
             this->speed_changed = true; // flag indicating speed changed
-            this->refresh_screen(false);
+            THEPANEL->lcd->setCursor(0,3);
+            this->display_menu_line(3);
+            THEPANEL->lcd->setCursor(0,4);
+            this->display_menu_line(4);
         }
     }
 
