@@ -74,7 +74,7 @@ void WatchScreen::on_enter()
     get_sd_play_info();
     this->current_speed = lround(get_current_speed());
     this->refresh_screen(false);
-    THEPANEL->enter_control_mode(1, 0.5);
+    THEPANEL->enter_control_mode(5, 0.5);
     THEPANEL->set_control_value(this->current_speed);
 }
 
@@ -97,10 +97,32 @@ void WatchScreen::on_refresh()
             // flag the update to change the speed, we don't want to issue hundreds of M220s
             // but we do want to display the change we are going to make
             this->speed_changed = true; // flag indicating speed changed
-            THEPANEL->lcd->setCursor(0,3);
-            this->display_menu_line(3);
-            THEPANEL->lcd->setCursor(0,4);
-            this->display_menu_line(4);
+            for(int i = 2; i < 6; i++)
+            {
+                THEPANEL->lcd->setCursor(0,i);
+                this->display_menu_line(i);
+            }
+            if (THEPANEL->lcd->hasGraphics()) {
+                // display the graphical icons below the status are
+                // this->panel->lcd->bltGlyph(0, 45, 115, 19, icons);
+                int x_start = 0;
+                int y_start = 52;
+                //for (int i = 0; i < 5; ++i) {
+                //     THEPANEL->lcd->bltGlyph(i*24, 38, 23, 19, icons, 15, i*24, 0);
+                // }
+
+                if (this->hotendtarget > 0)
+                    THEPANEL->lcd->bltGlyph(x_start + 8  , y_start, 20, 19, icons, 15, 0, 7);
+
+                if (this->hotend2target >0)
+                    THEPANEL->lcd->bltGlyph(x_start + 24 , y_start, 20, 19, icons, 15, 24, 7);
+
+                if (this->bedtarget > 0)
+                    THEPANEL->lcd->bltGlyph(x_start + 40 , y_start, 23, 19, icons, 15, 64, 7);
+
+                // if(this->fan_state)
+                //     THEPANEL->lcd->bltGlyph(x_start + 96 , y_start, 23, 19, icons, 15, 96, 7);
+            }
         }
     }
 
