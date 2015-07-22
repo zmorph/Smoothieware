@@ -16,6 +16,7 @@
 #include "modules/tools/switch/SwitchPool.h"
 #include "modules/tools/temperatureswitch/TemperatureSwitch.h"
 
+
 #include "modules/robot/Conveyor.h"
 #include "modules/utils/simpleshell/SimpleShell.h"
 #include "modules/utils/configurator/Configurator.h"
@@ -24,6 +25,7 @@
 #include "modules/utils/pausebutton/PauseButton.h"
 #include "modules/utils/PlayLed/PlayLed.h"
 #include "modules/utils/panel/Panel.h"
+#include "modules/utils/encoders/Encoders.h"
 #include "libs/Network/uip/Network.h"
 #include "Config.h"
 #include "checksumm.h"
@@ -128,6 +130,7 @@ void init() {
     kernel->add_module( new PlayLed() );
     kernel->add_module( new Endstops() );
     kernel->add_module( new Player() );
+    kernel->add_module( new Encoders() );
 
 
     // these modules can be completely disabled in the Makefile by adding to EXCLUDE_MODULES
@@ -170,6 +173,8 @@ void init() {
     // Must be loaded after TemperatureControlPool
     kernel->add_module( new TemperatureSwitch() );
     #endif
+//    #ifndef NO_TOOLS_ENCODERS
+     //   #endif
 
     // Create and initialize USB stuff
     u.init();

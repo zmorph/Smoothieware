@@ -176,7 +176,7 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 5: {
-            command = "T0\nM92 E402\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
+            command = "T0\nM92 E402\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
             toolhead_number = 5;
             this->refresh_menu();
             break; }
