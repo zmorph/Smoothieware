@@ -11,6 +11,7 @@
 #include "DigipotBase.h"
 #include "cstdio"
 
+#include "libs/SlowTicker.h"
 
 #include "libs/Kernel.h"
 
@@ -21,7 +22,7 @@
 #include "PublicData.h"
 
 // add new encoders here
-#include "AS5510.h"
+#include "AS5048B.h"
 
 #include <string>
 using namespace std;
@@ -46,10 +47,12 @@ void Encoders::on_module_loaded()
 
     // see which chip to use
 
-    encoders = new AS5510();
+    encoders = new AS5048B();
 
     this->register_for_event(ON_GCODE_RECEIVED);
     this->register_for_event(ON_MAIN_LOOP);
+
+  //  THEKERNEL->slow_ticker->attach(1, this, &Encoders::periodic_encoder_check);
 }
 
 void Encoders::send_gcode(std::string g)
@@ -64,28 +67,26 @@ void Encoders::on_gcode_received(void *argument)
     if (gcode->has_m) {
         if (gcode->m == 700) 
         {
-            send_gcode("G0 Z10");
-            int val = 0;
-            char *str;
- //           val = this->encoders->get_position_value();
-            sprintf(str, "M117 %d", val);
-            this->command = str;
-            gcode->stream->printf(this->command);
-
-            send_gcode(command);
+            unsigned int val = 0;
+            char buffer [30];
+            val = this->encoders->get_position_value();
+            sprintf(buffer, "encoder value is %d", val);
+            gcode->stream->printf(buffer);
         }
     }
 }
 
+uint32_t Encoders::periodic_encoder_check(uint32_t dummy)
+{
+    unsigned int val = 0;
+    val = this->encoders->get_position_value();
+    sprintf(this->command, "M117 %d", val);
+    //send_gcode("M117 this->command");
+    return 0;
+}
+
 void Encoders::on_main_loop()
 {
-    // change actual axis value
-//if (this->command == nullptr) return;
-    // send_command(this->command);
-    // this->command = nullptr;
-
-    // char buf[32];
-    // int n = snprintf(buf, sizeof(buf), "M117 %d", val);
-    // string g(buf, n);
- //   this->command = nullptr;
+  //      send_gcode(this->command);
+  //      sprintf(this->command, "");
 }
