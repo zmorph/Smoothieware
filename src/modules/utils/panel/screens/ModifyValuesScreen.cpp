@@ -7,10 +7,10 @@
 #include "ModifyValuesScreen.h"
 #include "libs/Kernel.h"
 #include "Config.h"
+#include "ConfigValue.h"
 #include "checksumm.h"
 #include "LcdBase.h"
 #include "Panel.h"
-#include "ConfigValue.h"
 
 #include <string.h>
 
@@ -21,11 +21,21 @@ using namespace std;
 #define MENU_CONTROL_MODE 0
 #define VALUE_CONTROL_MODE 1
 
+
+#define temperature_control_checksum             CHECKSUM("temperature_control")
+#define hotend_checksum                          CHECKSUM("hotend")
+#define hotend2_checksum                         CHECKSUM("hotend2")
+#define max_temp_checksum                        CHECKSUM("max_temp")
+#define bed_checksum                             CHECKSUM("bed")
+
 ModifyValuesScreen::ModifyValuesScreen(bool delete_on_exit)
 {
     this->delete_on_exit= delete_on_exit;
     this->execute_function = -1;
     this->control_mode = MENU_CONTROL_MODE;
+    this->hotend_max_temperature = THEKERNEL->config->value(temperature_control_checksum, hotend_checksum, max_temp_checksum)->by_default(250)->as_number();
+    this->hotend2_max_temperature = THEKERNEL->config->value(temperature_control_checksum, hotend2_checksum, max_temp_checksum)->by_default(250)->as_number();
+    this->hotbed_max_temperature = THEKERNEL->config->value(temperature_control_checksum, bed_checksum, max_temp_checksum)->by_default(120)->as_number();
 }
 
 ModifyValuesScreen::~ModifyValuesScreen()
@@ -53,7 +63,6 @@ void ModifyValuesScreen::on_refresh()
 {
     constexpr int hotend_start_temperature {90};
     constexpr int bed_start_temperature {30};
-    constexpr int hotend_end_temperature {250};
 
     if ( THEPANEL->menu_change() ) {
         this->refresh_menu();
@@ -85,8 +94,16 @@ void ModifyValuesScreen::on_refresh()
                     value = hotend_start_temperature;
                 else if (value < hotend_start_temperature)
                     value = 0;
-                else if (value > hotend_end_temperature)
-                    value = hotend_end_temperature;
+                else if (selected_item_name == 'H')
+                {
+                    if(value > this->hotend_max_temperature)
+                    value = this->hotend_max_temperature;
+                }       
+                else if (selected_item_name == 'Q')
+                {
+                    if(value > this->hotend2_max_temperature)
+                    value = this->hotend2_max_temperature;
+                }
                 THEPANEL->set_control_value(value); 
                 THEPANEL->reset_counter();
             }
@@ -95,6 +112,8 @@ void ModifyValuesScreen::on_refresh()
                     value = bed_start_temperature;
                 else if (value < bed_start_temperature)
                     value = 0;
+                else if (value > hotbed_max_temperature)
+                    value = hotbed_max_temperature;
                 THEPANEL->set_control_value(value); 
                 THEPANEL->reset_counter();
             }

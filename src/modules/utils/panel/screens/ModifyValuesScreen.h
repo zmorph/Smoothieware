@@ -40,6 +40,9 @@ private:
     int execute_function;
     float new_value, min_value, max_value;
     int selected_item;
+    float hotend_max_temperature;
+    float hotend2_max_temperature;
+    float hotbed_max_temperature;
 
     char selected_item_name;
     // name, getter function, setter function, increment
