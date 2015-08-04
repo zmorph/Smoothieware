@@ -67,10 +67,10 @@ void Encoders::on_gcode_received(void *argument)
     if (gcode->has_m) {
         if (gcode->m == 700) 
         {
-            unsigned int val = 0;
+            uint32_t val = 0;
             char buffer [30];
             val = this->encoders->get_position_value();
-            sprintf(buffer, "encoder value is %d", val);
+            sprintf(buffer, "encoder value is %d \n", val);
             gcode->stream->printf(buffer);
         }
     }

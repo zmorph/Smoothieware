@@ -42,8 +42,8 @@ class AS5048B : public EncoderBase {
     		this->i2c->write(ANGLE_REG);
     		this->i2c->start();
     		this->i2c->write(AS5048B_ADDRESS_LL | 1);
-    		lower = this->i2c->read(1);
-    		upper = this->i2c->read(0);
+    		upper = this->i2c->read(1);
+    		lower = this->i2c->read(0);
     		this->i2c->stop();
     		return ((upper << 8) + (lower << 2)) >> 2;
     	}
