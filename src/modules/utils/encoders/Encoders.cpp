@@ -50,7 +50,7 @@ void Encoders::on_module_loaded()
     encoders = new AS5048B();
 
     this->register_for_event(ON_GCODE_RECEIVED);
-    this->register_for_event(ON_MAIN_LOOP);
+//    this->register_for_event(ON_MAIN_LOOP);
 
   //  THEKERNEL->slow_ticker->attach(1, this, &Encoders::periodic_encoder_check);
 }
