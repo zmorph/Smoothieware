@@ -37,7 +37,7 @@ void SelectToolheadScreen::on_enter()
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
     
-    THEPANEL->setup_menu(9);
+    THEPANEL->setup_menu(10);
     float *rd; 
     PublicData::get_value( extruder_checksum, (void **)&rd );
     int steps = *rd;
@@ -148,6 +148,13 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
                 THEPANEL->lcd->printf("> 5-Axis"          );
             }
             break; }
+        case 9: {
+            if(toolhead_number != 9) {
+                THEPANEL->lcd->printf("3D Scanner"            );
+            } else {
+                THEPANEL->lcd->printf("> 3D Scanner"          );
+            }
+            break; }
     }
 }
 
@@ -196,6 +203,11 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
         case 8: {
             command = "T1\nM92 E122.04\nM907 A0.5\nT0\nM92 E888.88\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 888.88 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 122.04 \nG4 P1000";
             toolhead_number = 8;
+            this->refresh_menu();
+            break; }
+        case 9: {
+            command = "T1\nM92 E24228\nM907 A1.25";
+            toolhead_number = 9;
             this->refresh_menu();
             break; }
 
