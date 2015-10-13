@@ -50,7 +50,7 @@ void SelectToolheadScreen::on_enter()
             toolhead_number = 2;
             break;
         }
-        case 1150: {
+        case 900: {
             toolhead_number = 3;
             break;
         }
@@ -122,9 +122,9 @@ void SelectToolheadScreen::display_menu_line(uint16_t line)
             break; }
         case 5: {
             if(toolhead_number != 5) {
-                THEPANEL->lcd->printf("Ceramics"          );
+                THEPANEL->lcd->printf("Ceramics (syringe)"          );
             } else {
-                THEPANEL->lcd->printf("> Ceramics"        );
+                THEPANEL->lcd->printf("> Ceramics (syringe"        );
             }
             break; }
         case 6: {
@@ -173,17 +173,17 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 3: {
-            command = "T1\nM92 E1150\nM907 A0.5\nT0\nM92 E1150\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 1150 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 1150 \nG4 P1000";
+            command = "T1\nM92 E900\nM907 A0.5\nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900 \nG4 P1000";
             toolhead_number = 3;
             this->refresh_menu();
             break; }
         case 4: {
-            command = "T0\nM92 E401\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 401 \nG4 P1000";
+            command = "T0\nM92 E401\nM907 E1.0\nG4 P100\nconfig-set sd delta_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 401 \nG4 P1000";
             toolhead_number = 4;
             this->refresh_menu();
             break; }
         case 5: {
-            command = "T0\nM92 E402\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
+            command = "T0\nM92 E402\nM907 E0.8\nG4 P100\nconfig-set sd delta_current 0.8 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
             toolhead_number = 5;
             this->refresh_menu();
             break; }
