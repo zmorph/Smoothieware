@@ -72,6 +72,11 @@ class Extruder : public Tool {
         float          retract_zlift_length;
         float          retract_zlift_feedrate;
 
+        // acceleration correction
+        float pressure_correction_K;
+        float delta_v_e_ascending;
+        float delta_v_e_descending;
+        
         char mode;        // extruder motion mode,  OFF, SOLO, or FOLLOW
         struct {
             bool absolute_mode:1; // absolute/relative coordinate mode switch

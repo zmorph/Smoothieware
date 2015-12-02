@@ -40,6 +40,7 @@ public:
 
     int get_acceleration_ticks_per_second() const { return acceleration_ticks_per_second; }
     unsigned int get_minimum_steps_per_second() const { return minimum_steps_per_second; }
+    unsigned int get_current_steps_completed() const;
     float get_trapezoid_adjusted_rate() const { return trapezoid_adjusted_rate; }
     const Block *get_current_block() const { return current_block; }
 

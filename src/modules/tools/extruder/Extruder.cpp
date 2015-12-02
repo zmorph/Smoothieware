@@ -59,6 +59,8 @@
 #define retract_zlift_length_checksum        CHECKSUM("retract_zlift_length")
 #define retract_zlift_feedrate_checksum      CHECKSUM("retract_zlift_feedrate")
 
+#define pressure_correction_checksum         CHECKSUM("pressure_correction")
+
 #define X_AXIS      0
 #define Y_AXIS      1
 #define Z_AXIS      2
@@ -178,6 +180,8 @@ void Extruder::on_config_reload(void *argument)
     this->retract_recover_feedrate = THEKERNEL->config->value(extruder_checksum, this->identifier, retract_recover_feedrate_checksum)->by_default(8)->as_number();
     this->retract_zlift_length     = THEKERNEL->config->value(extruder_checksum, this->identifier, retract_zlift_length_checksum)->by_default(0)->as_number();
     this->retract_zlift_feedrate   = THEKERNEL->config->value(extruder_checksum, this->identifier, retract_zlift_feedrate_checksum)->by_default(100*60)->as_number(); // mm/min
+
+    this->pressure_correction_K = THEKERNEL->config->value(extruder_checksum, this->identifier, pressure_correction_checksum)->by_default(2)->as_number();
 
     if(filament_diameter > 0.01) {
         this->volumetric_multiplier = 1.0F / (powf(this->filament_diameter / 2, 2) * PI);
@@ -490,6 +494,22 @@ void Extruder::on_block_begin(void *argument)
         // In non-solo mode, we just follow the stepper module
         this->travel_distance = block->millimeters * this->travel_ratio;
 
+        // We correct for the block's acceleration
+        const float K = pressure_correction_K;
+        this->travel_distance += (block->exit_speed - block->entry_speed)*K;
+
+        const float steps_per_millimeter = block->nominal_rate / block->nominal_speed;
+        const float K_prime = K * steps_per_millimeter;
+        
+        const auto V_p = block->nominal_rate;
+        const auto V_0 = block->initial_rate;
+        const auto V_k = block->final_rate;
+        const auto k_a = block->accelerate_until;
+        const auto k_d = block->steps_event_count - block->decelerate_after;
+
+        delta_v_e_ascending = K_prime*(V_p*V_p - V_0*V_0)/(2*k_a);
+        delta_v_e_descending = K_prime*(V_p*V_p - V_k*V_k)/(2*k_d);        
+
         this->current_position += this->travel_distance;
 
         int steps_to_step = abs(int(floor(this->steps_per_millimeter * (this->travel_distance + this->unstepped_distance) )));
@@ -572,7 +592,14 @@ void Extruder::on_speed_change( void *argument )
     * or even : ( stepper steps per second ) * ( extruder steps / current block's steps )
     */
 
-    this->stepper_motor->set_speed( max( ( THEKERNEL->stepper->get_trapezoid_adjusted_rate()) * ( (float)this->stepper_motor->get_steps_to_move() / (float)this->current_block->steps_event_count ), THEKERNEL->stepper->get_minimum_steps_per_second() ) );
+    unsigned int steps_completed = THEKERNEL->stepper->get_current_steps_completed();
+    float speed_modifier{0};
+    if (steps_completed < this->current_block->accelerate_until)
+        speed_modifier = delta_v_e_ascending;
+    else if (steps_completed > this->current_block->steps_event_count - this->current_block->decelerate_after)
+        speed_modifier = -delta_v_e_descending;
+
+    this->stepper_motor->set_speed( max( ( THEKERNEL->stepper->get_trapezoid_adjusted_rate()) * ( (float)this->stepper_motor->get_steps_to_move() / (float)this->current_block->steps_event_count ) + speed_modifier, THEKERNEL->stepper->get_minimum_steps_per_second() ) );
 
 }
 

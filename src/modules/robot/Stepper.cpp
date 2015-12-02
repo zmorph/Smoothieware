@@ -311,3 +311,6 @@ uint32_t Stepper::synchronize_acceleration(uint32_t dummy){
     return 0;
 }
 
+unsigned int Stepper::get_current_steps_completed() const {
+    return main_stepper->stepped;
+}
