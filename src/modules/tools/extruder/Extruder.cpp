@@ -508,7 +508,9 @@ void Extruder::on_block_begin(void *argument)
         const auto k_d = block->steps_event_count - block->decelerate_after;
 
         delta_v_e_ascending = K_prime*(V_p*V_p - V_0*V_0)/(2*k_a);
+        delta_v_e_ascending *= steps_per_millimeter;
         delta_v_e_descending = K_prime*(V_p*V_p - V_k*V_k)/(2*k_d);        
+        delta_v_e_descending *= steps_per_millimeter;
 
         this->current_position += this->travel_distance;
 
