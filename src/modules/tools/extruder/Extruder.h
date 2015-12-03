@@ -72,10 +72,17 @@ class Extruder : public Tool {
         float          retract_zlift_length;
         float          retract_zlift_feedrate;
 
-        // acceleration correction
+        // acceleration pressure correction
         float pressure_correction_K;
-        float delta_v_e_ascending;
-        float delta_v_e_descending;
+        int acceleration_steps_e;
+        int acceleration_steps_head;
+        int plateau_steps_e;
+        int plateau_steps_head;
+        int deceleration_steps_e;
+        int deceleration_steps_head;
+        float head_acceleration;
+        float head_deceleration;
+
         
         char mode;        // extruder motion mode,  OFF, SOLO, or FOLLOW
         struct {

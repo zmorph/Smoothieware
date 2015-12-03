@@ -24,6 +24,7 @@
 #include "Gcode.h"
 #include "libs/StreamOutput.h"
 #include "PublicDataRequest.h"
+#include "StreamOutputPool.h"
 
 #include <mri.h>
 
@@ -457,6 +458,12 @@ void Extruder::on_gcode_execute(void *argument)
 
 }
 
+namespace {
+    template <typename T> int sgn(T val) {
+        return (T(0) < val) - (val < T(0));
+    }
+}
+
 // When a new block begins, either follow the robot, or step by ourselves ( or stay back and do nothing )
 void Extruder::on_block_begin(void *argument)
 {
@@ -491,42 +498,80 @@ void Extruder::on_block_begin(void *argument)
         }
 
     } else if( this->mode == FOLLOW ) {
-        // In non-solo mode, we just follow the stepper module
-        this->travel_distance = block->millimeters * this->travel_ratio;
+        // In non-solo mode, we follow the stepper module
 
-        // We correct for the block's acceleration
-        const float K = pressure_correction_K;
-        this->travel_distance += (block->exit_speed - block->entry_speed)*K;
+        block->gcodes[0].stream->printf("e_spm: %f ", this->steps_per_millimeter);
+        block->gcodes[0].stream->printf("K: %f ", pressure_correction_K);
 
-        const float steps_per_millimeter = block->nominal_rate / block->nominal_speed;
-        const float K_prime = K * steps_per_millimeter;
-        
         const auto V_p = block->nominal_rate;
         const auto V_0 = block->initial_rate;
         const auto V_k = block->final_rate;
         const auto k_a = block->accelerate_until;
         const auto k_d = block->steps_event_count - block->decelerate_after;
 
-        delta_v_e_ascending = K_prime*(V_p*V_p - V_0*V_0)/(2*k_a);
-        delta_v_e_ascending *= steps_per_millimeter;
-        delta_v_e_descending = K_prime*(V_p*V_p - V_k*V_k)/(2*k_d);        
-        delta_v_e_descending *= steps_per_millimeter;
+        acceleration_steps_head = k_a;
+        plateau_steps_head = block->decelerate_after - k_a;
+        deceleration_steps_head = k_d;
 
+        block->gcodes[0].stream->printf("ash: %d ", acceleration_steps_head);
+        block->gcodes[0].stream->printf("psh: %d ", plateau_steps_head);
+        block->gcodes[0].stream->printf("dsh: %d ", deceleration_steps_head);
+
+        if (acceleration_steps_head == 0)
+            head_acceleration = 0;
+        else
+            head_acceleration = (V_p*V_p-V_0*V_0)/(2*acceleration_steps_head);
+
+        block->gcodes[0].stream->printf("h_acc: %f ", head_acceleration);
+
+        if (deceleration_steps_head == 0)
+            head_deceleration = 0;
+        else
+            head_deceleration = (V_p*V_p-V_k*V_k)/(2*deceleration_steps_head);
+
+        block->gcodes[0].stream->printf("h_decc: %f ", head_deceleration);
+
+        float delta_e_acceleration = pressure_correction_K*(float(block->nominal_rate) - float(block->initial_rate));
+        float delta_e_deceleration = pressure_correction_K*(float(block->final_rate) - float(block->nominal_rate));
+
+        block->gcodes[0].stream->printf("delta_e_a: %f ", delta_e_acceleration);
+        block->gcodes[0].stream->printf("delta_e_d: %f ", delta_e_deceleration);
+
+        float steps_per_mm_head = block->nominal_rate / block->nominal_speed;
+
+        float travel_distance_accelerating = (acceleration_steps_head/steps_per_mm_head)*this->travel_ratio + delta_e_acceleration;
+        float travel_distance_plateau = (plateau_steps_head/steps_per_mm_head)* this->travel_ratio;
+        float travel_distance_decelerating = (deceleration_steps_head/steps_per_mm_head)* this->travel_ratio + delta_e_deceleration;
+
+        this->travel_distance = travel_distance_accelerating + travel_distance_plateau + travel_distance_decelerating;
         this->current_position += this->travel_distance;
 
-        int steps_to_step = abs(int(floor(this->steps_per_millimeter * (this->travel_distance + this->unstepped_distance) )));
+        block->gcodes[0].stream->printf("trv_dist: %f ", this->travel_distance);
 
-        if ( this->travel_distance > 0 ) {
-            this->unstepped_distance += this->travel_distance - (steps_to_step / this->steps_per_millimeter); //catch any overflow
-        }   else {
-            this->unstepped_distance += this->travel_distance + (steps_to_step / this->steps_per_millimeter); //catch any overflow
-        }
+        acceleration_steps_e = abs(int(floor(this->steps_per_millimeter * (travel_distance_accelerating + this->unstepped_distance) )));
+        this->unstepped_distance += travel_distance_accelerating - (acceleration_steps_e / this->steps_per_millimeter)*sgn(travel_distance_accelerating);
+
+        block->gcodes[0].stream->printf("ase: %d ", acceleration_steps_e);
+
+        plateau_steps_e = abs(int(floor(this->steps_per_millimeter * (travel_distance_plateau + this->unstepped_distance) )));
+        this->unstepped_distance += travel_distance_plateau - (plateau_steps_e / this->steps_per_millimeter)*sgn(travel_distance_plateau);
+
+        block->gcodes[0].stream->printf("psa: %d ", plateau_steps_e);
+
+        deceleration_steps_e = abs(int(floor(this->steps_per_millimeter * (travel_distance_decelerating + this->unstepped_distance) )));
+        this->unstepped_distance += travel_distance_decelerating - (deceleration_steps_e / this->steps_per_millimeter)*sgn(travel_distance_decelerating);
+
+        block->gcodes[0].stream->printf("dse: %d ", deceleration_steps_e);
+
+        int steps_to_step = acceleration_steps_e + plateau_steps_e + deceleration_steps_e;
 
         if( steps_to_step != 0 ) {
             block->take();
             this->current_block = block;
 
             this->stepper_motor->move( ( this->travel_distance > 0 ), steps_to_step );
+            //this->stepper_motor->move( ( this->travel_distance > 0 ), 1 );
+            //stepper_motor_finished_move(0);
             this->on_speed_change(0); // initialise speed in case we get called first
         } else {
             this->current_block = NULL;
@@ -595,14 +640,23 @@ void Extruder::on_speed_change( void *argument )
     */
 
     unsigned int steps_completed = THEKERNEL->stepper->get_current_steps_completed();
-    float speed_modifier{0};
-    if (steps_completed < this->current_block->accelerate_until)
-        speed_modifier = delta_v_e_ascending;
-    else if (steps_completed > this->current_block->steps_event_count - this->current_block->decelerate_after)
-        speed_modifier = -delta_v_e_descending;
-
-    this->stepper_motor->set_speed( max( ( THEKERNEL->stepper->get_trapezoid_adjusted_rate()) * ( (float)this->stepper_motor->get_steps_to_move() / (float)this->current_block->steps_event_count ) + speed_modifier, THEKERNEL->stepper->get_minimum_steps_per_second() ) );
-
+    if (steps_completed < this->current_block->accelerate_until) {
+        // the head is accelerating
+        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(acceleration_steps_e) / float(acceleration_steps_head);
+        float pressure_correction_factor = pressure_correction_K * head_acceleration;
+        this->stepper_motor->set_speed(regular_factor + pressure_correction_factor);
+    }
+    else if (steps_completed <= this->current_block->decelerate_after) {
+        // the head is cruising
+        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(plateau_steps_e) / float(plateau_steps_head);
+        this->stepper_motor->set_speed(regular_factor);
+    }
+    else {
+        // the head is decelerating
+        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(deceleration_steps_e) / float(deceleration_steps_head);
+        float pressure_correction_factor = pressure_correction_K * head_deceleration;
+        this->stepper_motor->set_speed(regular_factor - pressure_correction_factor);
+    }
 }
 
 // When the stepper has finished it's move
