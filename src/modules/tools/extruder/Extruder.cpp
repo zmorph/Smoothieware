@@ -294,6 +294,9 @@ void Extruder::on_gcode_received(void *argument)
             // Mcodes to pass along to on_gcode_execute
             THEKERNEL->conveyor->append_gcode(gcode);
             gcode->mark_as_taken();
+        } else if ( gcode->m == 108 ) {
+            if(gcode->has_letter('S')) this->pressure_correction_K = gcode->get_value('S');
+            gcode->mark_as_taken();
         }
 
     }else if(gcode->has_g) {
@@ -539,7 +542,7 @@ void Extruder::on_block_begin(void *argument)
         plateau_steps_e = abs(int(floor(this->steps_per_millimeter * (travel_distance_plateau + this->unstepped_distance) )));
         this->unstepped_distance += travel_distance_plateau - (plateau_steps_e / this->steps_per_millimeter)*sgn(travel_distance_plateau);
 
-        block->gcodes[0].stream->printf("psa: %d ", plateau_steps_e);
+        block->gcodes[0].stream->printf("pse: %d ", plateau_steps_e);
 
         deceleration_steps_e = abs(int(floor(this->steps_per_millimeter * (travel_distance_decelerating + this->unstepped_distance) )));
         this->unstepped_distance += travel_distance_decelerating - (deceleration_steps_e / this->steps_per_millimeter)*sgn(travel_distance_decelerating);
