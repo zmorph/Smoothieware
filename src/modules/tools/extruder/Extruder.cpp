@@ -503,33 +503,13 @@ void Extruder::on_block_begin(void *argument)
         block->gcodes[0].stream->printf("e_spm: %f ", this->steps_per_millimeter);
         block->gcodes[0].stream->printf("K: %f ", pressure_correction_K);
 
-        const auto V_p = block->nominal_rate;
-        const auto V_0 = block->initial_rate;
-        const auto V_k = block->final_rate;
-        const auto k_a = block->accelerate_until;
-        const auto k_d = block->steps_event_count - block->decelerate_after;
-
-        acceleration_steps_head = k_a;
-        plateau_steps_head = block->decelerate_after - k_a;
-        deceleration_steps_head = k_d;
+        acceleration_steps_head = block->accelerate_until;
+        plateau_steps_head = block->decelerate_after - block->accelerate_until;
+        deceleration_steps_head = block->steps_event_count - block->decelerate_after;
 
         block->gcodes[0].stream->printf("ash: %d ", acceleration_steps_head);
         block->gcodes[0].stream->printf("psh: %d ", plateau_steps_head);
         block->gcodes[0].stream->printf("dsh: %d ", deceleration_steps_head);
-
-        if (acceleration_steps_head == 0)
-            head_acceleration = 0;
-        else
-            head_acceleration = (V_p*V_p-V_0*V_0)/(2*acceleration_steps_head);
-
-        block->gcodes[0].stream->printf("h_acc: %f ", head_acceleration);
-
-        if (deceleration_steps_head == 0)
-            head_deceleration = 0;
-        else
-            head_deceleration = (V_p*V_p-V_k*V_k)/(2*deceleration_steps_head);
-
-        block->gcodes[0].stream->printf("h_decc: %f ", head_deceleration);
 
         float delta_e_acceleration = pressure_correction_K*(float(block->nominal_rate) - float(block->initial_rate));
         float delta_e_deceleration = pressure_correction_K*(float(block->final_rate) - float(block->nominal_rate));
@@ -642,20 +622,15 @@ void Extruder::on_speed_change( void *argument )
     unsigned int steps_completed = THEKERNEL->stepper->get_current_steps_completed();
     if (steps_completed < this->current_block->accelerate_until) {
         // the head is accelerating
-        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(acceleration_steps_e) / float(acceleration_steps_head);
-        float pressure_correction_factor = pressure_correction_K * head_acceleration;
-        this->stepper_motor->set_speed(regular_factor + pressure_correction_factor);
+        this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(acceleration_steps_e) / float(acceleration_steps_head));
     }
     else if (steps_completed <= this->current_block->decelerate_after) {
         // the head is cruising
-        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(plateau_steps_e) / float(plateau_steps_head);
-        this->stepper_motor->set_speed(regular_factor);
+        this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(plateau_steps_e) / float(plateau_steps_head));
     }
     else {
         // the head is decelerating
-        float regular_factor = THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(deceleration_steps_e) / float(deceleration_steps_head);
-        float pressure_correction_factor = pressure_correction_K * head_deceleration;
-        this->stepper_motor->set_speed(regular_factor - pressure_correction_factor);
+        this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(deceleration_steps_e) / float(deceleration_steps_head));
     }
 }
 

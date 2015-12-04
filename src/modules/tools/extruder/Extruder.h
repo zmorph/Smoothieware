@@ -80,9 +80,6 @@ class Extruder : public Tool {
         int plateau_steps_head;
         int deceleration_steps_e;
         int deceleration_steps_head;
-        float head_acceleration;
-        float head_deceleration;
-
         
         char mode;        // extruder motion mode,  OFF, SOLO, or FOLLOW
         struct {
