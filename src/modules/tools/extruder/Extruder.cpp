@@ -507,6 +507,9 @@ void Extruder::on_block_begin(void *argument)
         plateau_steps_head = block->decelerate_after - block->accelerate_until;
         deceleration_steps_head = block->steps_event_count - block->decelerate_after;
 
+        accelerate_until = block->accelerate_until;
+        decelerate_after = block->decelerate_after;
+
         block->gcodes[0].stream->printf("ash: %d ", acceleration_steps_head);
         block->gcodes[0].stream->printf("psh: %d ", plateau_steps_head);
         block->gcodes[0].stream->printf("dsh: %d ", deceleration_steps_head);
@@ -542,6 +545,15 @@ void Extruder::on_block_begin(void *argument)
         this->unstepped_distance += travel_distance_decelerating - (deceleration_steps_e / this->steps_per_millimeter)*sgn(travel_distance_decelerating);
 
         block->gcodes[0].stream->printf("dse: %d ", deceleration_steps_e);
+
+        if (acceleration_steps_e == 0) // no acceleration
+            accelerate_until = 0;
+        if (deceleration_steps_e == 0) // no deceleration
+            decelerate_after = block->steps_event_count;
+        if (plateau_steps_e == 0 && deceleration_steps_e == 0) // only acceleration
+            accelerate_until = block->steps_event_count;
+        else if (plateau_steps_e == 0) // no plateau
+            decelerate_after = accelerate_until;
 
         int steps_to_step = acceleration_steps_e + plateau_steps_e + deceleration_steps_e;
 
@@ -619,18 +631,18 @@ void Extruder::on_speed_change( void *argument )
     * or even : ( stepper steps per second ) * ( extruder steps / current block's steps )
     */
 
-    unsigned int steps_completed = THEKERNEL->stepper->get_current_steps_completed();
-    if (steps_completed < this->current_block->accelerate_until) {
+    unsigned int next_step = THEKERNEL->stepper->get_current_steps_completed() + 1;
+    if (next_step <= accelerate_until) {
         // the head is accelerating
         this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(acceleration_steps_e) / float(acceleration_steps_head));
     }
-    else if (steps_completed <= this->current_block->decelerate_after) {
-        // the head is cruising
-        this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(plateau_steps_e) / float(plateau_steps_head));
-    }
-    else {
+    else if (next_step > decelerate_after) {
         // the head is decelerating
         this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(deceleration_steps_e) / float(deceleration_steps_head));
+    }
+    else {
+        // the head is cruising
+        this->stepper_motor->set_speed(THEKERNEL->stepper->get_trapezoid_adjusted_rate() * float(plateau_steps_e) / float(plateau_steps_head));
     }
 }
 
