@@ -82,6 +82,7 @@ class Extruder : public Tool {
         int deceleration_steps_head;
         unsigned int accelerate_until;
         unsigned int decelerate_after;
+        bool needs_to_suck_during_deceleration = false;
         
         char mode;        // extruder motion mode,  OFF, SOLO, or FOLLOW
         struct {

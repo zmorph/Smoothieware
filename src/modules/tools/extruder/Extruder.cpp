@@ -558,13 +558,20 @@ void Extruder::on_block_begin(void *argument)
         else if (plateau_steps_e == 0) // no plateau
             decelerate_after = accelerate_until;
 
-        int steps_to_step = acceleration_steps_e + plateau_steps_e + deceleration_steps_e;
+        int steps_to_step = acceleration_steps_e + plateau_steps_e;
 
-        if( steps_to_step != 0 ) {
+        if (travel_distance_decelerating > 0) {
+            steps_to_step += deceleration_steps_e;
+        }
+        else {
+            needs_to_suck_during_deceleration = true;
+        }
+
+        if( steps_to_step != 0 || deceleration_steps_e != 0) {
             block->take();
             this->current_block = block;
 
-            this->stepper_motor->move( ( this->travel_distance > 0 ), steps_to_step );
+            this->stepper_motor->move( ( (travel_distance_accelerating + travel_distance_plateau) > 0 ), steps_to_step );
             //this->stepper_motor->move( ( this->travel_distance > 0 ), 1 );
             //stepper_motor_finished_move(0);
             this->on_speed_change(0); // initialise speed in case we get called first
@@ -653,6 +660,12 @@ void Extruder::on_speed_change( void *argument )
 uint32_t Extruder::stepper_motor_finished_move(uint32_t dummy)
 {
     if(!this->enabled) return 0;
+
+    if (needs_to_suck_during_deceleration) {
+        needs_to_suck_during_deceleration = false;
+        this->stepper_motor->move(false, deceleration_steps_e);
+        return 0;
+    }
 
     //printf("extruder releasing\r\n");
 
