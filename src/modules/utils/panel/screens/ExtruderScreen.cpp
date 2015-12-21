@@ -28,7 +28,7 @@ using namespace std;
 
 ExtruderScreen::ExtruderScreen()
 {
-    this->command= nullptr;
+    this->command = nullptr;
 }
 
 

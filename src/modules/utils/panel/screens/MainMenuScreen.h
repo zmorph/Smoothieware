@@ -27,6 +27,9 @@ class MainMenuScreen : public PanelScreen {
         PanelScreen* jog_screen_basic;
         PanelScreen* select_toolhead_screen;
         PanelScreen* prepare_screen;
+        PanelScreen* choco_screen;
+        PanelScreen* laser_screen;
+        PanelScreen* cnc_screen;
         PanelScreen* calibrate_screen;
 
         void abort_playing();

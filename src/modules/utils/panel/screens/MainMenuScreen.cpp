@@ -18,6 +18,7 @@
 #include "SelectToolheadScreen.h"
 #include "ControlScreen.h"
 #include "PrepareScreen.h"
+#include "ChocoMenu.h"
 #include "ProbeScreen.h"
 #include "libs/nuts_bolts.h"
 #include "libs/utils.h"
@@ -29,6 +30,10 @@
 #include "Planner.h"
 #include "StepperMotor.h"
 #include "EndstopsPublicAccess.h"
+#include "ChocoMenu.h"
+#include "CNCMenu.h"
+#include "LaserMenu.h"
+
 
 #include <string>
 using namespace std;
@@ -45,6 +50,11 @@ MainMenuScreen::MainMenuScreen()
     this->watch_screen   = (new WatchScreen()   )->set_parent(this);
     this->file_screen    = (new FileScreen()    )->set_parent(this);
     this->prepare_screen = (new PrepareScreen() )->set_parent(this);
+    this->choco_screen = (new ChocoMenu() )->set_parent(this);
+    this->laser_screen = (new LaserMenu() )->set_parent(this);
+    this->cnc_screen = (new CNCMenu() )->set_parent(this);
+    
+    
     this->set_parent(this->watch_screen);
 }
 
@@ -107,6 +117,46 @@ void MainMenuScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
     THEPANEL->setup_menu(7);
+    float *rd; 
+    PublicData::get_value( extruder_checksum, (void **)&rd );
+    int steps = *rd;
+    switch (steps){
+        case 100:{
+            THEPANEL->set_toolhead(TOOLHEAD_EXTRU175);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 400: {
+            THEPANEL->set_toolhead(TOOLHEAD_EXTRU300);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 900: {
+            THEPANEL->set_toolhead(TOOLHEAD_DUAL);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }        
+        case 901: {
+            THEPANEL->set_toolhead(TOOLHEAD_DUALPRO);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 401: {
+            THEPANEL->set_toolhead(TOOLHEAD_CHOCO);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+            break;
+        }
+        case 402: {
+            THEPANEL->set_toolhead(TOOLHEAD_CERAMICS);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+            break;
+        }
+        case 888: {
+            THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+     }
     this->refresh_menu();
 }
 
@@ -124,7 +174,19 @@ void MainMenuScreen::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Info Screen"); break;
-        case 1: THEPANEL->lcd->printf("Filament Menu"); break;
+        case 1: 
+        {
+            if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_FILAMENT)
+                THEPANEL->lcd->printf("Filament menu"); 
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_CHOCO)
+                THEPANEL->lcd->printf("Choco/ceramics menu");
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_LASER)
+                THEPANEL->lcd->printf("Laser menu");
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_CNC)
+                THEPANEL->lcd->printf("CNC menu");
+            break;
+        
+        }
         case 2: THEPANEL->lcd->printf(THEPANEL->is_playing() ? "Abort" : "Play"); break;
         case 3: THEPANEL->lcd->printf("Move Axis"); break;
         case 4: THEPANEL->lcd->printf("Select Toolhead"); break;
@@ -140,7 +202,34 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->watch_screen   ); break;
-        case 1: THEPANEL->enter_screen(this->prepare_screen ); break;
+        case 1: 
+            if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_FILAMENT)
+                {
+                    THEPANEL->enter_screen(this->prepare_screen ); 
+                    break;
+                }
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_CHOCO)
+                {
+                    THEPANEL->enter_screen(this->choco_screen ); 
+                    break;
+                }
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_LASER)
+                {
+                    THEPANEL->enter_screen(this->laser_screen ); 
+                    break;
+                }
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_CNC)
+                {
+                    THEPANEL->enter_screen(this->cnc_screen ); 
+                    break;
+                }
+            break;
+        
+
+
+
+
+
         case 2: THEPANEL->is_playing() ? abort_playing() : THEPANEL->enter_screen(this->file_screen); break;
         case 3: THEPANEL->enter_screen(this->jog_screen_basic ); break;
         case 4: THEPANEL->enter_screen(this->select_toolhead_screen ); break;

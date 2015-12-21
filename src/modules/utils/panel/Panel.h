@@ -19,6 +19,30 @@ using std::string;
 
 #define THEPANEL Panel::instance
 
+#define TOOLHEAD_EXTRU175 1
+#define TOOLHEAD_EXTRU300 2
+#define TOOLHEAD_DUALPRO 3
+#define TOOLHEAD_DUAL 4
+#define TOOLHEAD_CHOCO 5
+#define TOOLHEAD_CERAMICS 6
+#define TOOLHEAD_LASER 7
+#define TOOLHEAD_CNCPRO 8
+#define TOOLHEAD_5AXIS 9
+#define TOOLHEAD_SCANNER 10
+#define TOOLHEAD_TIMELAPSE 11
+#define TOOLHEAD_TIMELAPSE_EXTRU175 12
+#define TOOLHEAD_TIMELAPSE_EXTRU300 13
+#define TOOLHEAD_TIMELAPSE_CHOCO 14
+#define TOOLHEAD_TIMELAPSE_CERAMICS 15
+#define TOOLHEAD_TIMELAPSE_CNCPRO 16
+
+#define TOOLHEAD_GROUP_FILAMENT 1
+#define TOOLHEAD_GROUP_CHOCO 2
+#define TOOLHEAD_GROUP_LASER 3
+#define TOOLHEAD_GROUP_CNC 4
+
+
+
 class LcdBase;
 class PanelScreen;
 class SDCard;
@@ -80,6 +104,12 @@ class Panel : public Module {
         bool hasMessage() { return message.size() > 0; }
 
         uint16_t get_screen_lines() const { return screen_lines; }
+        
+        uint8_t get_selected_toolhead() { return selected_toolhead; }
+        void set_toolhead(uint8_t toolhead);
+
+        uint8_t get_toolhead_group() { return toolhead_group; }
+        void set_toolhead_group(uint8_t toolhead);
 
         // public as it is directly accessed by screens... not good
         // TODO pass lcd into ctor of each sub screen
@@ -148,6 +178,9 @@ class Panel : public Module {
 
         char playing_file[20];
         string message;
+
+        uint8_t selected_toolhead;
+        uint8_t toolhead_group;
 };
 
 #endif

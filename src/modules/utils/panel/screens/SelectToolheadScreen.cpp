@@ -37,36 +37,8 @@ void SelectToolheadScreen::on_enter()
     // if no heaters or extruder then don't show related menu items
     //THEPANEL->setup_menu((THEPANEL->temperature_screen != nullptr) ? 9 : 5);
     
-    THEPANEL->setup_menu(10);
-    float *rd; 
-    PublicData::get_value( extruder_checksum, (void **)&rd );
-    int steps = *rd;
-    switch (steps){
-        case 100:{
-            toolhead_number = 1;
-            break;
-        }
-        case 400: {
-            toolhead_number = 2;
-            break;
-        }
-        case 900: {
-            toolhead_number = 3;
-            break;
-        }
-        case 401: {
-            toolhead_number = 4;
-            break;
-        }
-        case 402: {
-            toolhead_number = 5;
-            break;
-        }
-        case 122: {
-            toolhead_number = 8;
-            break;
-        }
-     }
+    THEPANEL->setup_menu(12);
+
      this->refresh_menu();
 }
 
@@ -82,79 +54,87 @@ void SelectToolheadScreen::on_refresh()
 
 void SelectToolheadScreen::display_menu_line(uint16_t line)
 {
-    // TODO change this crappy solution...
-    // char panel_text[20]{};
-    // ...
-    // sprintf(panel_text, "Back");
-    // ...
-    // THEPANEL->lcd->printf(panel_text);
     switch ( line ) {
         case 0: {
             THEPANEL->lcd->printf("Back");
             break; }
         case 1: {
-            if(toolhead_number != 1) {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_EXTRU175 && THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE_EXTRU175) {
                 THEPANEL->lcd->printf("Single Head 1.75"  );
             } else {
                 THEPANEL->lcd->printf("> Single Head 1.75");
             }
             break; }
         case 2: {
-            if(toolhead_number != 2) {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_EXTRU300 && THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE_EXTRU300) {
                 THEPANEL->lcd->printf("Single Head 3.00"  );
             } else {
                 THEPANEL->lcd->printf("> Single Head 3.00");
             }
             break; }
         case 3: {
-            if(toolhead_number != 3) {
-                THEPANEL->lcd->printf("Dual Head 1.75"    );
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_DUALPRO) {
+                THEPANEL->lcd->printf("Dual PRO"  );
             } else {
-                THEPANEL->lcd->printf("> Dual Head 1.75"  );
+                THEPANEL->lcd->printf("> Dual PRO");
             }
             break; }
         case 4: {
-            if(toolhead_number != 4) {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_DUAL) {
+                THEPANEL->lcd->printf("DualHead 1.75"    );
+            } else {
+                THEPANEL->lcd->printf("> DualHead 1.75"  );
+            }
+            break; }
+        case 5: {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_CHOCO && THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE_CHOCO) {
                 THEPANEL->lcd->printf("Chocolate"         );
             } else {
                 THEPANEL->lcd->printf("> Chocolate"       );
             }
             break; }
-        case 5: {
-            if(toolhead_number != 5) {
-                THEPANEL->lcd->printf("Ceramics (syringe)"          );
-            } else {
-                THEPANEL->lcd->printf("> Ceramics (syringe"        );
-            }
-            break; }
         case 6: {
-            if(toolhead_number != 6) {
-                THEPANEL->lcd->printf("Time-lapse rail"   );
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_CERAMICS && THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE_CERAMICS) {
+                THEPANEL->lcd->printf("Ceramics (syringe)" );
             } else {
-                THEPANEL->lcd->printf("> Time-lapse rail" );
+                THEPANEL->lcd->printf("> Ceramics (syringe");
             }
             break; }
         case 7: {
-            if(toolhead_number != 7) {
-                THEPANEL->lcd->printf("Laser ON"          );
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_LASER) {
+                THEPANEL->lcd->printf("Laser"   );
             } else {
-                THEPANEL->lcd->printf("> Laser ON"        );
+                THEPANEL->lcd->printf("> Laser" );
             }
             break; }
         case 8: {
-            if(toolhead_number != 8) {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_CNCPRO  && THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE_CNCPRO) {
+                THEPANEL->lcd->printf("CNC PRO"          );
+            } else {
+                THEPANEL->lcd->printf("> CNC PRO"        );
+            }
+            break; }
+        case 9: {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_5AXIS) {
                 THEPANEL->lcd->printf("5-Axis"            );
             } else {
                 THEPANEL->lcd->printf("> 5-Axis"          );
             }
             break; }
-        case 9: {
-            if(toolhead_number != 9) {
+        case 10: {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_SCANNER) {
                 THEPANEL->lcd->printf("3D Scanner"            );
             } else {
                 THEPANEL->lcd->printf("> 3D Scanner"          );
             }
             break; }
+        case 11: {
+            if(THEPANEL->get_selected_toolhead() != TOOLHEAD_TIMELAPSE) {
+                THEPANEL->lcd->printf("Time-lapse Rail"            );
+            } else {
+                THEPANEL->lcd->printf("> Time-lapse Rail"          );
+            }
+        }
     }
 }
 
@@ -164,32 +144,38 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
         case 0: THEPANEL->enter_screen(this->parent); break;
         case 1: {
             command = "T0\nM92 E100\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 100 \nG4 P1000";
-            toolhead_number = 1;
+            THEPANEL->set_toolhead(TOOLHEAD_EXTRU175);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
             this->refresh_menu();
             break; }
         case 2: {
             command = "T0\nM92 E400\nM907 E1.25\nG4 P100\nconfig-set sd delta_current 1.25 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 400 \nG4 P1000";
-            toolhead_number = 2;
+            THEPANEL->set_toolhead(TOOLHEAD_EXTRU300);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
             this->refresh_menu();
             break; }
         case 3: {
-            command = "T1\nM92 E900\nM907 A0.5\nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900 \nG4 P1000";
-            toolhead_number = 3;
+            command = "T1\nM92 E901\nM907 A0.5\nM222 X0 Y0\nT0\nM92 E901\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 901 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 901\nG4 P100\nconfig-set sd extruder.hotend2.x_offset 0\nG4 P100\nconfig-set sd extruder.hotend2.y_offset 0\nG4 P1000";
+            THEPANEL->set_toolhead(TOOLHEAD_DUALPRO);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
             this->refresh_menu();
             break; }
         case 4: {
-            command = "T0\nM92 E401\nM907 E1.0\nG4 P100\nconfig-set sd delta_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 401 \nG4 P1000";
-            toolhead_number = 4;
+            command = "T1\nM92 E900\nM907 A0.5\nM222 X-11.25 Y0\nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900\nG4 P100\nconfig-set sd extruder.hotend2.x_offset -11.25\nG4 P1000";
+            THEPANEL->set_toolhead(TOOLHEAD_DUAL);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
             this->refresh_menu();
             break; }
         case 5: {
-            command = "T0\nM92 E402\nM907 E0.8\nG4 P100\nconfig-set sd delta_current 0.8 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
-            toolhead_number = 5;
+            command = "T0\nM92 E401\nM907 E1.0\nG4 P100\nconfig-set sd delta_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 401 \nG4 P1000";
+            THEPANEL->set_toolhead(TOOLHEAD_CHOCO);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
             this->refresh_menu();
             break; }
         case 6: {
-            command = "T1\nM92 E3200\nM907 A1.0\nT0\nG4 P100\nconfig-set sd epsilon_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 3200 \nG4 P1000";
-            toolhead_number = 6;
+            command = "T0\nM92 E402\nM907 E0.8\nG4 P100\nconfig-set sd delta_current 0.8 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 402 \nG4 P1000";
+            THEPANEL->set_toolhead(TOOLHEAD_CERAMICS);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
             this->refresh_menu();
             break; }
         case 7: {
@@ -197,17 +183,30 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
                 Laser::enableDynamicActivation();
                 THEKERNEL->add_module( new Laser() );
             }
-            toolhead_number = 7;
+            command = "T1\nM92 E1\nM907 A0.5\nG4 P100\nT0\nM92 E1\nM1 E0.5";
+            THEPANEL->set_toolhead(TOOLHEAD_LASER);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_LASER);
             this->refresh_menu();
             break; }
         case 8: {
+            THEPANEL->set_toolhead(TOOLHEAD_CNCPRO);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CNC);
+            this->refresh_menu();
+            break;
+        }
+        case 9: {
             command = "T1\nM92 E122.04\nM907 A0.5\nT0\nM92 E888.88\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 888.88 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 122.04 \nG4 P1000";
-            toolhead_number = 8;
+            THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
             this->refresh_menu();
             break; }
-        case 9: {
+        case 10: {
             command = "T1\nM92 E24228\nM907 A1.25";
-            toolhead_number = 9;
+            THEPANEL->set_toolhead(TOOLHEAD_SCANNER);
+            this->refresh_menu();
+            break; }
+        case 11: {
+            command = "T1\nM92 E3200\nM907 A1.0\nT0\nG4 P100\nconfig-set sd epsilon_current 1.0 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 3200 \nG4 P1000";
+            THEPANEL->set_toolhead(TOOLHEAD_TIMELAPSE);
             this->refresh_menu();
             break; }
 

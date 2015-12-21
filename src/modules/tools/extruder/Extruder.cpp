@@ -269,6 +269,30 @@ void Extruder::on_gcode_received(void *argument)
             if(gcode->has_letter('S')) this->extruder_multiplier= gcode->get_value('S')/100.0F;
             gcode->mark_as_taken();
 
+        } else if (gcode->m == 222 && this->enabled) { // M222 X10 Y0 change nozzle offsets
+            float x = 0, y = 0, z = 0;
+
+            if(gcode->has_letter('X')) {
+                this->offset[X_AXIS] = gcode->get_value('X');
+                x = gcode->get_value('X');
+            }
+            if(gcode->has_letter('Y')) {
+                this->offset[Y_AXIS] = gcode->get_value('Y'); 
+                y = gcode->get_value('Y');
+            } 
+            if(gcode->has_letter('Z')) {
+                this->offset[Z_AXIS] = gcode->get_value('Z');
+                z = gcode->get_value('Z');
+            }
+            float new_tool_offset[3];
+
+            new_tool_offset[0] = x;
+            new_tool_offset[1] = y;
+            new_tool_offset[2] = z;
+
+            THEKERNEL->robot->setToolOffset(new_tool_offset);
+            gcode->mark_as_taken();
+
         } else if (gcode->m == 500 || gcode->m == 503) { // M500 saves some volatile settings to config override file, M503 just prints the settings
             if( this->single_config ) {
                 gcode->stream->printf(";E Steps per mm:\nM92 E%1.4f\n", this->steps_per_millimeter);

@@ -718,3 +718,13 @@ void Panel::on_second_tick(void *arg)
         // TODO for panels with no sd card detect we need to poll to see if card is inserted - or not
     }
 }
+
+void Panel::set_toolhead(uint8_t toolhead)
+{
+    this->selected_toolhead = toolhead;
+}
+
+void Panel::set_toolhead_group(uint8_t group)
+{
+    this->toolhead_group = group;
+}
