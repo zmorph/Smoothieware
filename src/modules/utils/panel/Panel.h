@@ -40,6 +40,7 @@ using std::string;
 #define TOOLHEAD_GROUP_CHOCO 2
 #define TOOLHEAD_GROUP_LASER 3
 #define TOOLHEAD_GROUP_CNC 4
+#define TOOLHEAD_GROUP_5AXIS 5
 
 
 

@@ -33,6 +33,7 @@
 #include "ChocoMenu.h"
 #include "CNCMenu.h"
 #include "LaserMenu.h"
+#include "AxisMenu.h"
 
 
 #include <string>
@@ -53,6 +54,7 @@ MainMenuScreen::MainMenuScreen()
     this->choco_screen = (new ChocoMenu() )->set_parent(this);
     this->laser_screen = (new LaserMenu() )->set_parent(this);
     this->cnc_screen = (new CNCMenu() )->set_parent(this);
+    this->axis_screen = (new AxisMenu() )->set_parent(this);
     
     
     this->set_parent(this->watch_screen);
@@ -153,7 +155,7 @@ void MainMenuScreen::on_enter()
         }
         case 888: {
             THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_5AXIS);
             break;
         }
      }
@@ -184,6 +186,8 @@ void MainMenuScreen::display_menu_line(uint16_t line)
                 THEPANEL->lcd->printf("Laser menu");
             else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_CNC)
                 THEPANEL->lcd->printf("CNC menu");
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_5AXIS)
+                THEPANEL->lcd->printf("5-Axis menu");
             break;
         
         }
@@ -223,11 +227,13 @@ void MainMenuScreen::clicked_menu_entry(uint16_t line)
                     THEPANEL->enter_screen(this->cnc_screen ); 
                     break;
                 }
+            else if(THEPANEL->get_toolhead_group() == TOOLHEAD_GROUP_5AXIS)
+                {
+                    THEPANEL->enter_screen(this->axis_screen ); 
+                    break;
+                }
             break;
         
-
-
-
 
 
         case 2: THEPANEL->is_playing() ? abort_playing() : THEPANEL->enter_screen(this->file_screen); break;

@@ -30,6 +30,7 @@ class MainMenuScreen : public PanelScreen {
         PanelScreen* choco_screen;
         PanelScreen* laser_screen;
         PanelScreen* cnc_screen;
+        PanelScreen* axis_screen;
         PanelScreen* calibrate_screen;
 
         void abort_playing();

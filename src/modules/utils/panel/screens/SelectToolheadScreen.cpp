@@ -197,6 +197,7 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
         case 9: {
             command = "T1\nM92 E122.04\nM907 A0.5\nT0\nM92 E888.88\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 888.88 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 122.04 \nG4 P1000";
             THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
+            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_5AXIS);
             this->refresh_menu();
             break; }
         case 10: {
