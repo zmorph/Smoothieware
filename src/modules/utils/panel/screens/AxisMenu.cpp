@@ -29,7 +29,7 @@ AxisMenu::AxisMenu()
 void AxisMenu::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(9);
+    THEPANEL->setup_menu(11);
     this->refresh_menu();
 }
 
@@ -47,14 +47,16 @@ void AxisMenu::display_menu_line(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->lcd->printf("Back"           ); break;
-        case 1: THEPANEL->lcd->printf("Rotate H"     ); break;
-        case 2: THEPANEL->lcd->printf("Rotate Q"    ); break;
-        case 3: THEPANEL->lcd->printf("Home All Axis"  ); break;
-        case 4: THEPANEL->lcd->printf("Home To Center" ); break;
-        case 5: THEPANEL->lcd->printf("Home X"         ); break;
-        case 6: THEPANEL->lcd->printf("Home Y"         ); break;
-        case 7: THEPANEL->lcd->printf("Home Z"         ); break;
-        case 8: THEPANEL->lcd->printf("Motors OFF"     ); break;
+        case 1: THEPANEL->lcd->printf("Rotate 4th axis +"); break;
+        case 2: THEPANEL->lcd->printf("Rotate 4th axis -"); break;
+        case 3: THEPANEL->lcd->printf("Rotate 5th axis +"); break;
+        case 4: THEPANEL->lcd->printf("Rotate 5th axis -"); break;
+        case 5: THEPANEL->lcd->printf("Home All Axis"  ); break;
+        case 6: THEPANEL->lcd->printf("Home To Center" ); break;
+        case 7: THEPANEL->lcd->printf("Home X"         ); break;
+        case 8: THEPANEL->lcd->printf("Home Y"         ); break;
+        case 9: THEPANEL->lcd->printf("Home Z"         ); break;
+        case 10: THEPANEL->lcd->printf("Motors OFF"     ); break;
     }
 }
 
@@ -62,14 +64,16 @@ void AxisMenu::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "T0\nG91\nG1 E5 F100\nG90"; break;
-        case 2: command = "T1\nG91\nG1 E5 F100\nG90"; break;
-        case 3: command = "G91\nG0 Z2 F1000\nG90\nG28 X0 Y0\nG28 Z0"; break;
-        case 4: command = "G91\nG0 Z2 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
-        case 5: command = "G28 X0"; break;
-        case 6: command = "G28 Y0"; break;
-        case 7: command = "G28 Z0"; break;
-        case 8: command = "M84"; break;
+        case 1: command = "T0\nG91\nG1 E5 F600\nG90"; break;
+        case 2: command = "T0\nG91\nG1 E-5 F600\nG90"; break;
+        case 3: command = "T1\nG91\nG1 E5 F600\nG90"; break;
+        case 4: command = "T1\nG91\nG1 E-5 F600\nG90"; break;
+        case 5: command = "G91\nG0 Z2 F1000\nG90\nG28 X0 Y0\nG28 Z0"; break;
+        case 6: command = "G91\nG0 Z2 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
+        case 7: command = "G28 X0"; break;
+        case 8: command = "G28 Y0"; break;
+        case 9: command = "G28 Z0"; break;
+        case 10: command = "M84"; break;
     }
 }
 
