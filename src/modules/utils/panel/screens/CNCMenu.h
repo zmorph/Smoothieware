@@ -22,8 +22,11 @@ public:
     void clicked_menu_entry(uint16_t line);
     int idle_timeout_secs() { return 60; }
 
+
 private:
-    PanelScreen *extruder_screen;
+//    void setupCNCPowerScreen();
+//    void setup_temperature_screen();
+
     const char *command;
 };
 

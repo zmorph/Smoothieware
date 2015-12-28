@@ -136,6 +136,7 @@ void Panel::on_module_loaded()
     // these need to be called here as they need the config cache loaded as they enumerate modules
     this->custom_screen= new CustomScreen();
     setup_temperature_screen();
+    setup_cnc_power_screen();
 
     // some panels may need access to this global info
     this->lcd->setPanel(this);
@@ -267,6 +268,17 @@ void Panel::on_gcode_received(void *argument)
             this->message = get_arguments(gcode->get_command());
             if (this->message.size() > 20) this->message = this->message.substr(0, 20);
             gcode->mark_as_taken();
+        }
+        if (gcode->m == 3)
+        {
+            if (gcode->has_letter('S'))
+            {
+                spindle_target_power = gcode->get_value('S') / 2.55;
+            }
+        }
+        else if (gcode->m == 5)
+        {
+            spindle_target_power = 0;
         }
     }
 }
@@ -659,6 +671,34 @@ void Panel::setup_temperature_screen()
         delete mvs;
         this->temperature_screen= nullptr;
     }
+}
+
+void Panel::setup_cnc_power_screen()
+{
+    auto mvs= new ModifyValuesScreen(false); // delete itself on exit
+    this->cnc_power_screen = mvs;
+
+    mvs->addMenuItem("Power %", // menu name
+        [&]() -> int { return spindle_target_power; }, // getter
+        [this](int acc) { send_Gcode("M3", 'S', (int)acc*2.55); }, // setter
+        10.0F, // increment
+        0.0F, // Min
+        100.0F // Max
+        );
+}
+
+void Panel::send_Gcode(std::string g)
+{
+   Gcode gcode(g, &(StreamOutput::NullStream));
+   THEKERNEL->call_event(ON_GCODE_RECEIVED, &gcode );
+}
+
+void Panel::send_Gcode(const char *gm_code, char parameter, float value)
+{
+   char buf[132];
+   int n = snprintf(buf, sizeof(buf), "%s %c%f", gm_code, parameter, value);
+   string g(buf, n);
+   send_Gcode(g);
 }
 
 bool Panel::mount_external_sd(bool on)

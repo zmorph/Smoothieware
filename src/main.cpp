@@ -15,6 +15,7 @@
 #include "modules/tools/scaracal/SCARAcal.h"
 #include "modules/tools/switch/SwitchPool.h"
 #include "modules/tools/temperatureswitch/TemperatureSwitch.h"
+#include "modules/tools/spindle/Spindle.h"
 
 #include "modules/robot/Conveyor.h"
 #include "modules/utils/simpleshell/SimpleShell.h"
@@ -165,6 +166,9 @@ void init() {
     #endif
     #ifndef NONETWORK
     kernel->add_module( new Network() );
+    #endif
+    #ifndef NO_TOOLS_SPINDLE
+    kernel->add_module( new Spindle() );
     #endif
     #ifndef NO_TOOLS_TEMPERATURESWITCH
     // Must be loaded after TemperatureControlPool

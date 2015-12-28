@@ -119,46 +119,49 @@ void MainMenuScreen::on_enter()
 {
     THEPANEL->enter_menu_mode();
     THEPANEL->setup_menu(7);
-    float *rd; 
-    PublicData::get_value( extruder_checksum, (void **)&rd );
-    int steps = *rd;
-    switch (steps){
-        case 100:{
-            THEPANEL->set_toolhead(TOOLHEAD_EXTRU175);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
-            break;
-        }
-        case 400: {
-            THEPANEL->set_toolhead(TOOLHEAD_EXTRU300);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
-            break;
-        }
-        case 900: {
-            THEPANEL->set_toolhead(TOOLHEAD_DUAL);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
-            break;
-        }        
-        case 901: {
-            THEPANEL->set_toolhead(TOOLHEAD_DUALPRO);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
-            break;
-        }
-        case 401: {
-            THEPANEL->set_toolhead(TOOLHEAD_CHOCO);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
-            break;
-        }
-        case 402: {
-            THEPANEL->set_toolhead(TOOLHEAD_CERAMICS);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
-            break;
-        }
-        case 888: {
-            THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
-            THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_5AXIS);
-            break;
-        }
-     }
+    if(THEPANEL->get_selected_toolhead() == 0)
+    {
+        float *rd; 
+        PublicData::get_value( extruder_checksum, (void **)&rd );
+        int steps = *rd;
+        switch (steps){
+            case 100:{
+                THEPANEL->set_toolhead(TOOLHEAD_EXTRU175);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+                break;
+            }
+            case 400: {
+                THEPANEL->set_toolhead(TOOLHEAD_EXTRU300);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+                break;
+            }
+            case 900: {
+                THEPANEL->set_toolhead(TOOLHEAD_DUAL);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+                break;
+            }        
+            case 901: {
+                THEPANEL->set_toolhead(TOOLHEAD_DUALPRO);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+                break;
+            }
+            case 401: {
+                THEPANEL->set_toolhead(TOOLHEAD_CHOCO);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+                break;
+            }
+            case 402: {
+                THEPANEL->set_toolhead(TOOLHEAD_CERAMICS);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+                break;
+            }
+            case 888: {
+                THEPANEL->set_toolhead(TOOLHEAD_5AXIS);
+                THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_5AXIS);
+                break;
+            }
+         }
+    }
     this->refresh_menu();
 }
 

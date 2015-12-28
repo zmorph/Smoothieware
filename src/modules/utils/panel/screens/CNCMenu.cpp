@@ -17,6 +17,9 @@
 #include "PublicDataRequest.h"
 #include "PublicData.h"
 #include "TemperatureControlPublicAccess.h"
+#include "ModifyValuesScreen.h"
+#include "PrepareScreen.h"
+
 
 #include <string>
 using namespace std;
@@ -24,12 +27,14 @@ using namespace std;
 CNCMenu::CNCMenu()
 {
     this->command = nullptr;
+   if(THEPANEL->cnc_power_screen != nullptr)
+       THEPANEL->cnc_power_screen->set_parent(this);
 }
 
 void CNCMenu::on_enter()
 {
     THEPANEL->enter_menu_mode();
-    THEPANEL->setup_menu(9);
+    THEPANEL->setup_menu(10);
     this->refresh_menu();
 }
 
@@ -46,15 +51,16 @@ void CNCMenu::on_refresh()
 void CNCMenu::display_menu_line(uint16_t line)
 {
     switch ( line ) {
-        case 0: THEPANEL->lcd->printf("Back"           ); break;
-        case 1: THEPANEL->lcd->printf("Spindle ON"     ); break;
-        case 2: THEPANEL->lcd->printf("Spindle OFF"    ); break;
-        case 3: THEPANEL->lcd->printf("Home All Axis"  ); break;
-        case 4: THEPANEL->lcd->printf("Home To Center" ); break;
-        case 5: THEPANEL->lcd->printf("Home X"         ); break;
-        case 6: THEPANEL->lcd->printf("Home Y"         ); break;
-        case 7: THEPANEL->lcd->printf("Home Z"         ); break;
-        case 8: THEPANEL->lcd->printf("Motors OFF"     ); break;
+        case 0: THEPANEL->lcd->printf("Back"             ); break;
+        case 1: THEPANEL->lcd->printf("Spindle ON"       ); break;
+        case 2: THEPANEL->lcd->printf("Set spindle power"); break;
+        case 3: THEPANEL->lcd->printf("Spindle OFF"      ); break;
+        case 4: THEPANEL->lcd->printf("Home All Axis"    ); break;
+        case 5: THEPANEL->lcd->printf("Home To Center"   ); break;
+        case 6: THEPANEL->lcd->printf("Home X"           ); break;
+        case 7: THEPANEL->lcd->printf("Home Y"           ); break;
+        case 8: THEPANEL->lcd->printf("Home Z"           ); break;
+        case 9: THEPANEL->lcd->printf("Motors OFF"       ); break;
     }
 }
 
@@ -62,14 +68,15 @@ void CNCMenu::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "T0\nM104 S200"; break;
-        case 2: command = "T0\nM104 S0"; break;
-        case 3: command = "G91\nG0 Z2 F1000\nG90\nG28 X0 Y0\nG28 Z0"; break;
-        case 4: command = "G91\nG0 Z2 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
-        case 5: command = "G28 X0"; break;
-        case 6: command = "G28 Y0"; break;
-        case 7: command = "G28 Z0"; break;
-        case 8: command = "M84"; break;
+        case 1: command = "M3 S255"; break;
+        case 2: THEPANEL->enter_screen(THEPANEL->cnc_power_screen); break;
+        case 3: command = "M5"; break;
+        case 4: command = "G91\nG0 Z2 F1000\nG90\nG28 X0 Y0\nG28 Z0"; break;
+        case 5: command = "G91\nG0 Z2 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
+        case 6: command = "G28 X0"; break;
+        case 7: command = "G28 Y0"; break;
+        case 8: command = "G28 Z0"; break;
+        case 9: command = "M84"; break;
     }
 }
 

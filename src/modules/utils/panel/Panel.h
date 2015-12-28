@@ -117,12 +117,17 @@ class Panel : public Module {
         LcdBase* lcd;
         PanelScreen* custom_screen;
         PanelScreen* temperature_screen;
+        PanelScreen* cnc_power_screen;
 
         // as panelscreen accesses private fields in Panel
         friend class PanelScreen;
 
     private:
         void setup_temperature_screen();
+        void setup_cnc_power_screen();
+        void send_Gcode(std::string g);
+        void send_Gcode(const char *gm_code, char parameter, float value);
+        
 
         // external SD card
         bool mount_external_sd(bool on);
@@ -180,8 +185,10 @@ class Panel : public Module {
         char playing_file[20];
         string message;
 
-        uint8_t selected_toolhead;
+        uint8_t selected_toolhead = 0;
         uint8_t toolhead_group;
+
+        int spindle_target_power = 0;
 };
 
 #endif
