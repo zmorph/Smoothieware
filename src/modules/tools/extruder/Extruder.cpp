@@ -76,7 +76,7 @@
 * or the head moves, and the extruder moves plastic at a speed proportional to the movement of the head ( FOLLOW mode here ).
 */
 
-Extruder::Extruder( uint16_t config_identifier, bool single )
+Extruder::Extruder( uint16_t config_identifier, bool single, char ext_letter )
 {
     this->absolute_mode = true;
     this->enabled = false;
@@ -86,6 +86,7 @@ Extruder::Extruder( uint16_t config_identifier, bool single )
     this->retracted = false;
     this->volumetric_multiplier = 1.0F;
     this->extruder_multiplier = 1.0F;
+    this->extruder_letter = ext_letter; //letter for extruder E or A
 
     memset(this->offset, 0, sizeof(this->offset));
 }
@@ -213,7 +214,7 @@ void Extruder::on_play(void *argument)
 void Extruder::on_gcode_received(void *argument)
 {
     Gcode *gcode = static_cast<Gcode *>(argument);
-
+    
     // M codes most execute immediately, most only execute if enabled
     if (gcode->has_m) {
         if (gcode->m == 114 && this->enabled) {
@@ -224,8 +225,8 @@ void Extruder::on_gcode_received(void *argument)
 
         } else if (gcode->m == 92 && ( (this->enabled && !gcode->has_letter('P')) || (gcode->has_letter('P') && gcode->get_value('P') == this->identifier) ) ) {
             float spm = this->steps_per_millimeter;
-            if (gcode->has_letter('E')) {
-                spm = gcode->get_value('E');
+            if (gcode->has_letter(extruder_letter)) {
+                spm = gcode->get_value(extruder_letter);
                 this->steps_per_millimeter = spm;
             }
 
@@ -269,30 +270,6 @@ void Extruder::on_gcode_received(void *argument)
             if(gcode->has_letter('S')) this->extruder_multiplier= gcode->get_value('S')/100.0F;
             gcode->mark_as_taken();
 
-        } else if (gcode->m == 222 && this->enabled) { // M222 X10 Y0 change nozzle offsets
-            float x = 0, y = 0, z = 0;
-
-            if(gcode->has_letter('X')) {
-                this->offset[X_AXIS] = gcode->get_value('X');
-                x = gcode->get_value('X');
-            }
-            if(gcode->has_letter('Y')) {
-                this->offset[Y_AXIS] = gcode->get_value('Y'); 
-                y = gcode->get_value('Y');
-            } 
-            if(gcode->has_letter('Z')) {
-                this->offset[Z_AXIS] = gcode->get_value('Z');
-                z = gcode->get_value('Z');
-            }
-            float new_tool_offset[3];
-
-            new_tool_offset[0] = x;
-            new_tool_offset[1] = y;
-            new_tool_offset[2] = z;
-
-            THEKERNEL->robot->setToolOffset(new_tool_offset);
-            gcode->mark_as_taken();
-
         } else if (gcode->m == 500 || gcode->m == 503) { // M500 saves some volatile settings to config override file, M503 just prints the settings
             if( this->single_config ) {
                 gcode->stream->printf(";E Steps per mm:\nM92 E%1.4f\n", this->steps_per_millimeter);
@@ -322,7 +299,7 @@ void Extruder::on_gcode_received(void *argument)
             THEKERNEL->conveyor->append_gcode(gcode);
             gcode->mark_as_taken();
 
-        }else if( this->enabled && gcode->g < 4 && gcode->has_letter('E') && !gcode->has_letter('X') && !gcode->has_letter('Y') && !gcode->has_letter('Z') ) {
+        }else if( this->enabled && gcode->g < 4 && gcode->has_letter(extruder_letter) && !gcode->has_letter('X') && !gcode->has_letter('Y') && !gcode->has_letter('Z') ) {
             // This is a solo move, we add an empty block to the queue to prevent subsequent gcodes being executed at the same time
             THEKERNEL->conveyor->append_gcode(gcode);
             THEKERNEL->conveyor->queue_head_block();
@@ -418,7 +395,7 @@ void Extruder::on_gcode_execute(void *argument)
                 this->current_position = gcode->get_value('E');
                 this->target_position  = this->current_position;
                 this->unstepped_distance = 0;
-            } else if( gcode->get_num_args() == 0) {
+            }else if( gcode->get_num_args() == 0) {
                 this->current_position = 0.0;
                 this->target_position = this->current_position;
                 this->unstepped_distance = 0;
@@ -442,9 +419,9 @@ void Extruder::on_gcode_execute(void *argument)
 
         } else if (gcode->g == 0 || gcode->g == 1) {
             // Extrusion length from 'G' Gcode
-            if( gcode->has_letter('E' )) {
+            if( gcode->has_letter(extruder_letter )) {
                 // Get relative extrusion distance depending on mode ( in absolute mode we must substract target_position )
-                float extrusion_distance = gcode->get_value('E');
+                float extrusion_distance = gcode->get_value(extruder_letter);
                 float relative_extrusion_distance = extrusion_distance;
                 if (this->absolute_mode) {
                     relative_extrusion_distance -= this->target_position;
@@ -480,10 +457,13 @@ void Extruder::on_gcode_execute(void *argument)
 // When a new block begins, either follow the robot, or step by ourselves ( or stay back and do nothing )
 void Extruder::on_block_begin(void *argument)
 {
-    if(!this->enabled) return;
     Block *block = static_cast<Block *>(argument);
-
-
+    if(this->extruder_letter != block->extruder_letter){
+        if(block->extruder_letter != 'T') {
+            return;
+        }
+    }
+    
     if( this->mode == SOLO ) {
         // In solo mode we take the block so we can move even if the stepper has nothing to do
 
@@ -615,3 +595,4 @@ uint32_t Extruder::stepper_motor_finished_move(uint32_t dummy)
     return 0;
 
 }
+

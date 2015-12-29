@@ -22,11 +22,14 @@ public:
     virtual void disable(){ enabled= false; }
     virtual const float *get_offset() const { return offset; }
     virtual uint16_t get_name() const { return identifier; }
+    virtual void set_extruder_letter(char ext_letter){ extruder_letter = ext_letter; }
+    virtual char get_extruder_letter(){ return extruder_letter; }
 
 protected:
     bool enabled;
     float offset[3];
     uint16_t identifier;
+    char extruder_letter; //letter for extruder E or A 
 };
 
 

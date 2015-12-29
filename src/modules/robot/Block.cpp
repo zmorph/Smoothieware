@@ -240,8 +240,18 @@ float Block::max_exit_speed()
 void Block::append_gcode(Gcode* gcode)
 {
     Gcode new_gcode = *gcode;
+    if( gcode->has_letter('E') && gcode->has_letter('A')){
+        set_extruder_letter('T'); // use two extruders in the same time
+    }
+    else if (gcode->has_letter('E')){
+        set_extruder_letter('E'); // use the left extruder only
+    }
+    else if (gcode->has_letter('A')){
+        set_extruder_letter('A'); // user the right extruder only
+    }
     new_gcode.strip_parameters(); // optimization to save memory we strip off the XYZIJK parameters from the saved command
     gcodes.push_back(new_gcode);
+    
 }
 
 void Block::begin()
@@ -275,6 +285,9 @@ void Block::take()
     if (times_taken < 0)
         times_taken = 0;
     times_taken++;
+    //sprintf(this->command, "M117 %d", this->times_taken);
+    //send_gcode(this->command);
+
 }
 
 // Mark the block as no longer taken by one module, go to next block if this free's it
@@ -292,4 +305,18 @@ void Block::release()
             THEKERNEL->conveyor->on_block_end(this);
         }
     }
+}
+
+void Block::set_extruder_letter(char letter){
+    this->extruder_letter=letter;
+}
+
+void Block::send_gcode(std::string g)
+{
+    Gcode gcode(g, &(StreamOutput::NullStream));
+    THEKERNEL->call_event(ON_GCODE_RECEIVED, &gcode );
+}
+
+void Block::set_id(int id){
+    this->id = id;
 }

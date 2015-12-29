@@ -39,6 +39,12 @@ class Block {
         void clear();
 
         void begin();
+        void set_extruder_letter(char letter);
+        void send_gcode(std::string g);
+        
+        void set_id(int id);
+        int get_id() const { return id; };
+        int id;
 
         std::vector<Gcode> gcodes;
 
@@ -55,17 +61,18 @@ class Block {
         unsigned int   accelerate_until;   // Stop accelerating after this number of steps
         unsigned int   decelerate_after;   // Start decelerating after this number of steps
         std::bitset<3> direction_bits;     // Direction for each axis in bit form, relative to the direction port's mask
+        char extruder_letter;              // letter for which extruder use E or A
 
         struct {
             bool recalculate_flag:1;             // Planner flag to recalculate trapezoids on entry junction
             bool nominal_length_flag:1;          // Planner flag for nominal speed always reached
             bool is_ready:1;
         };
+        char command [50];
 
         float max_entry_speed;
 
         short times_taken;    // A block can be "taken" by any number of modules, and the next block is not moved to until all the modules have "released" it. This value serves as a tracker.
-
 };
 
 

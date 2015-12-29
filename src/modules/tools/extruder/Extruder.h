@@ -19,7 +19,7 @@ class Block;
 // NOTE Tool is also a module, no need for multiple inheritance here
 class Extruder : public Tool {
     public:
-        Extruder(uint16_t config_identifier, bool single= false);
+        Extruder(uint16_t config_identifier, bool single= false, char ext_letter='E');
         virtual ~Extruder() {}
 
         void     on_module_loaded();

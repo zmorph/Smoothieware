@@ -24,6 +24,7 @@ public:
     void on_get_public_data(void *argument);
     void on_set_public_data(void *argument);
     void add_tool(Tool *tool_to_add);
+    void enable_all();
 
 private:
     vector<Tool *> tools;

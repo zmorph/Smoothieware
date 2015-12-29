@@ -74,12 +74,19 @@ void ExtruderMaker::load_tools(){
 
 
     // For every extruder found, setup the enabled ones
+    int counter = 0;
     for(auto cs : modules){
         // If module is enabled
         if( THEKERNEL->config->value(extruder_checksum, cs, enable_checksum )->as_bool() ){
-
+            
+            Extruder* extruder;
             // Make a new extruder module
-            Extruder* extruder = new Extruder(cs);
+            if(counter == 0){
+                extruder = new Extruder(cs, false, 'E'); // left extruder
+            } else if(counter == 1){
+                extruder = new Extruder(cs, false, 'A'); // right extruder
+            } else
+                extruder = new Extruder(cs, false);
 
             // Add the Extruder module to the kernel
             THEKERNEL->add_module( extruder );
@@ -93,9 +100,11 @@ void ExtruderMaker::load_tools(){
                 extruder->enable();
             }
         }
+        counter++;
 
     }
-
+    if(counter>0)
+        toolmanager->enable_all();
     THEKERNEL->streams->printf("NOTE: %d extruders enabled out of %d\n", cnt, modules.size());
 }
 

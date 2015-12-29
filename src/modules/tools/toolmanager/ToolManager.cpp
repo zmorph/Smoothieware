@@ -52,27 +52,41 @@ void ToolManager::on_gcode_received(void *argument){
     Gcode *gcode = static_cast<Gcode*>(argument);
 
     if( gcode->has_letter('T') ){
-        int new_tool = gcode->get_value('T');
-        gcode->mark_as_taken();
-        if(new_tool >= (int)this->tools.size() || new_tool < 0){
-            // invalid tool
-            if( return_error_on_unhandled_gcode ) {
-                char buf[32]; // should be big enough for any status
-                int n= snprintf(buf, sizeof(buf), "T%d invalid tool ", new_tool);
-                gcode->txt_after_ok.append(buf, n);
-            }
-        } else {
-            if(new_tool != this->active_tool){
-                // We must wait for an empty queue before we can disable the current extruder
-                THEKERNEL->conveyor->wait_for_empty_queue();
-                this->tools[active_tool]->disable();
-                this->active_tool = new_tool;
-                this->current_tool_name = this->tools[active_tool]->get_name();
-                this->tools[active_tool]->enable();
+        if(gcode->get_value('T') == 3)
+        {
+            int new_tool = 0;
+            gcode->mark_as_taken();
+            THEKERNEL->conveyor->wait_for_empty_queue();
+            this->active_tool = new_tool;
+            this->current_tool_name = this->tools[active_tool]->get_name();
+            enable_all();
+            const float *new_tool_offset = tools[new_tool]->get_offset();
+            THEKERNEL->robot->setToolOffset(new_tool_offset);
+        }
+        else{
+            int new_tool = gcode->get_value('T');
+            gcode->mark_as_taken();
+            if(new_tool >= (int)this->tools.size() || new_tool < 0){
+                // invalid tool
+                if( return_error_on_unhandled_gcode ) {
+                    char buf[32]; // should be big enough for any status
+                    int n= snprintf(buf, sizeof(buf), "T%d invalid tool ", new_tool);
+                    gcode->txt_after_ok.append(buf, n);
+                }
+            } else {
+                if(new_tool != this->active_tool){
+                    // We must wait for an empty queue before we can disable the current extruder
+                    THEKERNEL->conveyor->wait_for_empty_queue();
+                    this->tools[active_tool]->disable();
+                    this->active_tool = new_tool;
+                    this->current_tool_name = this->tools[active_tool]->get_name();
+                    this->tools[active_tool]->enable();
+                    this->tools[active_tool]->set_extruder_letter('E');
 
-                //send new_tool_offsets to robot
-                const float *new_tool_offset = tools[new_tool]->get_offset();
-                THEKERNEL->robot->setToolOffset(new_tool_offset);
+                    //send new_tool_offsets to robot
+                    const float *new_tool_offset = tools[new_tool]->get_offset();
+                    THEKERNEL->robot->setToolOffset(new_tool_offset);
+                }
             }
         }
     }
@@ -126,5 +140,11 @@ void ToolManager::add_tool(Tool* tool_to_add){
     this->tools.push_back( tool_to_add );
 }
 
-
-
+void ToolManager::enable_all(){
+    this->tools[0]->enable();
+    this->tools[0]->set_extruder_letter('E');
+    this->tools[1]->enable();
+    this->tools[1]->set_extruder_letter('A');
+    //const float *tool_offset = this->tools[0]->get_offset();
+    //THEKERNEL->robot->setToolOffset(tool_offset);
+}
