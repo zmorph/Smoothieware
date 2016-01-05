@@ -61,8 +61,12 @@
 #define spi_channel_checksum       CHECKSUM("spi_channel")
 #define spi_cs_pin_checksum        CHECKSUM("spi_cs_pin")
 
-#define hotend_temp_checksum CHECKSUM("hotend_temperature")
-#define bed_temp_checksum    CHECKSUM("bed_temperature")
+#define hotend_temp_checksum        CHECKSUM("hotend_temperature")
+#define bed_temp_checksum           CHECKSUM("bed_temperature")
+
+#define extruder_checksum           CHECKSUM("extruder")
+#define steps_per_mm_checksum       CHECKSUM("steps_per_mm")
+#define hotend_checksum             CHECKSUM("hotend")
 
 Panel* Panel::instance= nullptr;
 
@@ -193,6 +197,46 @@ void Panel::on_module_loaded()
 
     // Refresh timer
     THEKERNEL->slow_ticker->attach( 20, this, &Panel::refresh_tick );
+
+    float f = THEKERNEL->config->value(extruder_checksum, hotend_checksum, steps_per_mm_checksum)->by_default(100)->as_number();
+    int steps = f;
+    switch (steps){
+        case 100:{
+            this->set_toolhead(TOOLHEAD_EXTRU175);
+            this->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 400: {
+            this->set_toolhead(TOOLHEAD_EXTRU300);
+            this->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 900: {
+            this->set_toolhead(TOOLHEAD_DUAL);
+            this->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }        
+        case 901: {
+            this->set_toolhead(TOOLHEAD_DUALPRO);
+            this->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
+            break;
+        }
+        case 401: {
+            this->set_toolhead(TOOLHEAD_CHOCO);
+            this->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+            break;
+        }
+        case 402: {
+            this->set_toolhead(TOOLHEAD_CERAMICS);
+            this->set_toolhead_group(TOOLHEAD_GROUP_CHOCO);
+            break;
+        }
+        case 888: {
+            this->set_toolhead(TOOLHEAD_5AXIS);
+            this->set_toolhead_group(TOOLHEAD_GROUP_5AXIS);
+            break;
+        }
+     }
 }
 
 // Enter a screen, we only care about it now
