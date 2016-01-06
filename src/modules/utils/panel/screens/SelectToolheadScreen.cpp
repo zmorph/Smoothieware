@@ -161,7 +161,12 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 4: {
-            command = "T1\nM92 E900\nM907 A0.5\nM222 X-11.25 Y0\nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900\nG4 P100\nconfig-set sd extruder.hotend2.x_offset -11.25\nG4 P1000";
+            float x = THEPANEL->get_dualhead_Xoffset();
+            float y = THEPANEL->get_dualhead_Yoffset();
+            char tmp1[] = "T1\nM92 E900\nM907 A0.5\nM222 X%.2f Y%.2f \nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900\nG4 P100\nconfig-set sd extruder.hotend2.x_offset %.2f \nG4 P100\nconfig-set sd extruder.hotend2.y_offset %.2f \nG4 P1000";
+            char tmp2[500];
+            sprintf(tmp2, tmp1, x, y, x, y);
+            command = tmp2;//"T1\nM92 E900\nM907 A0.5\nM222 X%f Y%f\nT0\nM92 E900\nM907 E0.5\nG4 P100\nconfig-set sd delta_current 0.5 \nG4 P1000\nG4 P100\nconfig-set sd epsilon_current 0.5 \nG4 P100\nconfig-set sd extruder.hotend.steps_per_mm 900 \nG4 P100\nconfig-set sd extruder.hotend2.steps_per_mm 900\nG4 P100\nconfig-set sd extruder.hotend2.x_offset %f \nG4 P100\nconfig-set sd extruder.hotend2.y_offset %f \nG4 P1000";
             THEPANEL->set_toolhead(TOOLHEAD_DUAL);
             THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_FILAMENT);
             this->refresh_menu();

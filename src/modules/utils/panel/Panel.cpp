@@ -67,6 +67,8 @@
 #define extruder_checksum           CHECKSUM("extruder")
 #define steps_per_mm_checksum       CHECKSUM("steps_per_mm")
 #define hotend_checksum             CHECKSUM("hotend")
+#define x_dual_offset_checksum      CHECKSUM("x_dual_offset")
+#define y_dual_offset_checksum      CHECKSUM("y_dual_offset")
 
 Panel* Panel::instance= nullptr;
 
@@ -237,6 +239,9 @@ void Panel::on_module_loaded()
             break;
         }
      }
+
+    this->dualhead_Xoffset = THEKERNEL->config->value(extruder_checksum, x_dual_offset_checksum)->by_default(-11.25f)->as_number();
+    this->dualhead_Yoffset = THEKERNEL->config->value(extruder_checksum, y_dual_offset_checksum)->by_default(0.0f)->as_number();
 }
 
 // Enter a screen, we only care about it now
@@ -725,7 +730,7 @@ void Panel::setup_cnc_power_screen()
     mvs->addMenuItem("Power %", // menu name
         [&]() -> int { return spindle_target_power; }, // getter
         [this](int acc) { send_Gcode("M3", 'S', (int)acc*2.55); }, // setter
-        10.0F, // increment
+        5.0F, // increment
         0.0F, // Min
         100.0F // Max
         );

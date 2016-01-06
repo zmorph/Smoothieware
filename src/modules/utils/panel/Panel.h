@@ -112,6 +112,10 @@ class Panel : public Module {
         uint8_t get_toolhead_group() { return toolhead_group; }
         void set_toolhead_group(uint8_t toolhead);
 
+        float get_dualhead_Xoffset() { return dualhead_Xoffset; }
+        float get_dualhead_Yoffset() { return dualhead_Yoffset; }
+
+
         // public as it is directly accessed by screens... not good
         // TODO pass lcd into ctor of each sub screen
         LcdBase* lcd;
@@ -189,6 +193,9 @@ class Panel : public Module {
         uint8_t toolhead_group;
 
         int spindle_target_power = 0;
+
+        float dualhead_Xoffset = 0;
+        float dualhead_Yoffset = 0;
 };
 
 #endif
