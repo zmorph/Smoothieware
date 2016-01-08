@@ -194,6 +194,7 @@ void SelectToolheadScreen::clicked_menu_entry(uint16_t line)
             this->refresh_menu();
             break; }
         case 8: {
+            command = "config-set sd switch.spindle.enable true";
             THEPANEL->set_toolhead(TOOLHEAD_CNCPRO);
             THEPANEL->set_toolhead_group(TOOLHEAD_GROUP_CNC);
             this->refresh_menu();

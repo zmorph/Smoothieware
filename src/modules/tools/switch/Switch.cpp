@@ -36,6 +36,7 @@
 #define    max_pwm_checksum             CHECKSUM("max_pwm")
 #define    output_on_command_checksum   CHECKSUM("output_on_command")
 #define    output_off_command_checksum  CHECKSUM("output_off_command")
+#define    spindle_checksum             CHECKSUM("spindle")
 
 Switch::Switch() {}
 
@@ -63,15 +64,42 @@ void Switch::on_module_loaded()
 // Get config
 void Switch::on_config_reload(void *argument)
 {
+    // this->input_pin.from_string( THEKERNEL->config->value(switch_checksum, this->name_checksum, input_pin_checksum )->by_default("nc")->as_string())->as_input();
+    // this->input_pin_behavior =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_pin_behavior_checksum )->by_default(momentary_checksum)->as_number();
+    // std::string input_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, input_on_command_checksum )->by_default("")->as_string();
+    // std::string input_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_off_command_checksum )->by_default("")->as_string();
+    // this->output_pin.from_string(THEKERNEL->config->value(switch_checksum, this->name_checksum, output_pin_checksum )->by_default("nc")->as_string())->as_output();
+    // this->output_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, output_on_command_checksum )->by_default("")->as_string();
+    // this->output_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, output_off_command_checksum )->by_default("")->as_string();
+    // this->switch_state =         THEKERNEL->config->value(switch_checksum, this->name_checksum, startup_state_checksum )->by_default(false)->as_bool();
+    // string type =                THEKERNEL->config->value(switch_checksum, this->name_checksum, output_type_checksum )->by_default("pwm")->as_string();
+
+
+
     this->input_pin.from_string( THEKERNEL->config->value(switch_checksum, this->name_checksum, input_pin_checksum )->by_default("nc")->as_string())->as_input();
     this->input_pin_behavior =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_pin_behavior_checksum )->by_default(momentary_checksum)->as_number();
-    std::string input_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, input_on_command_checksum )->by_default("")->as_string();
-    std::string input_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_off_command_checksum )->by_default("")->as_string();
-    this->output_pin.from_string(THEKERNEL->config->value(switch_checksum, this->name_checksum, output_pin_checksum )->by_default("nc")->as_string())->as_output();
+    this->switch_state =         THEKERNEL->config->value(switch_checksum, this->name_checksum, startup_state_checksum )->by_default(false)->as_bool();
     this->output_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, output_on_command_checksum )->by_default("")->as_string();
     this->output_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, output_off_command_checksum )->by_default("")->as_string();
-    this->switch_state =         THEKERNEL->config->value(switch_checksum, this->name_checksum, startup_state_checksum )->by_default(false)->as_bool();
-    string type =                THEKERNEL->config->value(switch_checksum, this->name_checksum, output_type_checksum )->by_default("pwm")->as_string();
+    string type =                       THEKERNEL->config->value(switch_checksum, this->name_checksum, output_type_checksum )->by_default("pwm")->as_string();
+    std::string input_on_command;
+    std::string input_off_command;
+
+    if(this->name_checksum == spindle_checksum)
+    {
+        this->output_pin.from_string(THEKERNEL->config->value(switch_checksum, this->name_checksum, output_pin_checksum )->by_default("2.5")->as_string())->as_output();
+        input_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, input_on_command_checksum )->by_default("M3")->as_string();
+        input_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_off_command_checksum )->by_default("M5")->as_string();
+    }
+    else
+    {
+        this->output_pin.from_string(THEKERNEL->config->value(switch_checksum, this->name_checksum, output_pin_checksum )->by_default("nc")->as_string())->as_output();
+        input_on_command =    THEKERNEL->config->value(switch_checksum, this->name_checksum, input_on_command_checksum )->by_default("")->as_string();
+        input_off_command =   THEKERNEL->config->value(switch_checksum, this->name_checksum, input_off_command_checksum )->by_default("")->as_string();
+    }
+
+
+
 
     if(type == "pwm") this->output_type= PWM;
     else if(type == "digital") this->output_type= DIGITAL;

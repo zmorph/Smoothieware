@@ -51,7 +51,7 @@ void Spindle::on_module_loaded()
     time_since_update = 0;
     spindle_on = true;
 
-    if (!THEKERNEL->config->value(spindle_enable_checksum)->by_default(false)->as_bool())
+    if (!THEKERNEL->config->value(spindle_enable_checksum)->by_default(true)->as_bool())
     {
       delete this; // Spindle control module is disabled
       return;
