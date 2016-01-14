@@ -38,23 +38,6 @@ class Spindle: public Module {
         bool spindle_on;
         float current_rpm;
         float target_rpm;
-        float current_I_value;
-        float prev_error;
-        float current_pwm_value;
-        int time_since_update;
-        uint32_t last_irq;
-        
-        // Values from config
-        float pulses_per_rev;
-        float control_P_term;
-        float control_I_term;
-        float control_D_term;
-        float smoothing_decay;
-        
-        // These fields are updated by the interrupt
-        uint32_t last_edge; // Timestamp of last edge
-        volatile uint32_t last_time; // Time delay between last two edges
-        volatile uint32_t irq_count;
 };
 
 #endif
