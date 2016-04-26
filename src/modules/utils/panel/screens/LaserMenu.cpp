@@ -62,8 +62,8 @@ void LaserMenu::clicked_menu_entry(uint16_t line)
 {
     switch ( line ) {
         case 0: THEPANEL->enter_screen(this->parent); break;
-        case 1: command = "T0\nM104 S200"; break;
-        case 2: command = "T0\nM104 S0"; break;
+        case 1: command = "T1\nM104 S200\nT0"; break;
+        case 2: command = "T1\nM104 S0\nT0"; break;
         case 3: command = "G91\nG0 Z2 F1000\nG90\nG28 X0 Y0\nG28 Z0"; break;
         case 4: command = "G91\nG0 Z2 F1000\nG90\nG28 X0\nG28 Y0\nG0 X115 Y125 F2000\nG28 Z0"; break;
         case 5: command = "G28 X0"; break;
