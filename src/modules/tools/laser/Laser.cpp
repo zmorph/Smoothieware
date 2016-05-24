@@ -33,17 +33,17 @@ Laser::Laser(){
 bool should_dynamically_activate{false};
 
 void Laser::on_module_loaded() {
+    static std::string laser_module_pin = THEKERNEL->config->value(laser_module_pin_checksum)->by_default("nc")->as_string();
+    static float laser_module_pwm_period = THEKERNEL->config->value(laser_module_pwm_period_checksum)->by_default(20)->as_number();
+    static float laser_module_max_power = THEKERNEL->config->value(laser_module_max_power_checksum   )->by_default(0.8f)->as_number();
+    static float laser_module_tickle_power = THEKERNEL->config->value(laser_module_tickle_power_checksum)->by_default(0   )->as_number();
+
     if( !should_dynamically_activate && !THEKERNEL->config->value( laser_module_enable_checksum )->by_default(false)->as_bool()  ){
         // as not needed free up resource
         delete this;
         return;
     }
     should_dynamically_activate = true;
-
-    std::string laser_module_pin = THEKERNEL->config->value(laser_module_pin_checksum)->by_default("nc")->as_string();
-    float laser_module_pwm_period = THEKERNEL->config->value(laser_module_pwm_period_checksum)->by_default(20)->as_number();
-    float laser_module_max_power = THEKERNEL->config->value(laser_module_max_power_checksum   )->by_default(0.8f)->as_number();
-    float laser_module_tickle_power = THEKERNEL->config->value(laser_module_tickle_power_checksum)->by_default(0   )->as_number();
 
     // Get smoothie-style pin from config
     Pin* dummy_pin = new Pin();
